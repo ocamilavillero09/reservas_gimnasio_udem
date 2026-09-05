@@ -1,0 +1,31 @@
+# Node / React
+node_modules/
+.env
+build/
+dist/
+.claude/
+
+# Python / Django
+__pycache__/
+*.pyc
+db.sqlite3
+.venv/
+venv/
+
+# Sistema (Mac/Windows)
+.DS_Store
+Thumbs.db
+
+# Docker logs
+*.log
+
+# Cobertura y artefactos de pruebas
+coverage/
+htmlcov/
+.coverage
+test-results/
+playwright-report/
+.playwright/
+# Claude Code local
+.config/settings.local.json
+.claude/settings.local.json
