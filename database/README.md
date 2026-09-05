@@ -1,323 +1,91 @@
-# Diseño de Base de Datos MongoDB - Sistema de Reservas de Gimnasio Universitario
+# Capa de base de datos
 
-## Estructura del Proyecto
+MongoDB 6.0. Base de datos `gym_udem`.
 
-```
-database/
-├── schema.json           # Esquema de colecciones y ejemplos
-├── validations.js        # Validaciones de esquema MongoDB
-├── indexes.js            # Índices recomendados
-├── queries.js            # Queries para reglas de negocio
-├── init.mongodb.js       # Script de inicialización para Docker
-├── Dockerfile            # Imagen MongoDB personalizada
-├── docker-compose.yml    # Orquestación del contenedor
-└── README.md             # Este archivo
-```
+## Qué hace esta capa y qué no
 
-## Colecciones Principales
+Esta carpeta contiene **estructura, no comportamiento**. Es el requisito no
+funcional RNF06 del proyecto.
 
-### 1. `users`
-Estudiantes, entrenadores y administradores.
+**Sí vive aquí**
 
-```javascript
-{
-  _id: ObjectId,
-  nombre: string,
-  correo_institucional: string (único),
-  rol: enum["ESTUDIANTE", "ENTRENADOR", "ADMIN"],
-  estado: enum["ACTIVO", "PENALIZADO", "INACTIVO"],
-  fecha_creacion: ISODate,
-  penalizacion_hasta: ISODate (opcional)
-}
-```
+- La creación de las colecciones
+- Los validadores de esquema
+- Los índices
+- Los datos de prueba
+- Consultas de solo lectura para inspeccionar el sistema
 
-### 2. `schedules`
-Horarios disponibles de lunes a viernes.
+**No vive aquí**
 
-```javascript
-{
-  _id: ObjectId,
-  fecha: ISODate (solo fecha),
-  hora_inicio: string ("06:00" | "08:00" | "10:00" | "12:00" | "14:00" | "16:00"),
-  hora_fin: string ("08:00" | "10:00" | "12:00" | "14:00" | "16:00" | "18:00"),
-  aforo_maximo: integer,
-  cupos_disponibles: integer,
-  estado: enum["DISPONIBLE", "LLENO", "CANCELADO"],
-  entrenador_id: ObjectId (opcional)
-}
-```
+Ninguna función que cree, modifique o decida sobre una reserva. Las doce reglas
+de negocio están implementadas una sola vez, en el backend, en Python.
 
-### 3. `reservations`
-Reservas realizadas por usuarios.
+La versión anterior de `queries.js` implementaba en JavaScript decidir si
+alguien podía reservar, crear la reserva y cancelarla. Además lo hacía con otra
+regla: permitía **dos** reservas activas por persona, una para hoy y otra para
+mañana, con un caso especial de viernes a lunes. Eso contradice las reglas RN04
+y RN05. Nada lo llamaba, así que era código muerto que documentaba reglas
+falsas. Por eso se retiró.
 
-```javascript
-{
-  _id: ObjectId,
-  usuario_id: ObjectId,
-  horario_id: ObjectId,
-  fecha_reserva: ISODate,
-  hora_inicio: string,
-  hora_fin: string,
-  estado: enum["ACTIVA", "CANCELADA", "COMPLETADA", "NO_SHOW"],
-  creada_por: ObjectId,
-  fecha_creacion: ISODate
-}
-```
+## Archivos
 
-### 4. `audit_log` (Auditoría)
-Registro de operaciones importantes.
-
-### 5. `configuration`
-Configuración del sistema (aforo default, horarios, etc.).
-
----
-
-## Reglas de Negocio y Estrategia de Implementación
-
-### Regla: Máximo 2 Reservas Activas
-
-**Restricción de BD:**
-- Índice parcial único: `{ usuario_id: 1, horario_id: 1 }` con `partialFilterExpression: { estado: "ACTIVA" }`
-- Esto impide que un usuario tenga dos reservas activas para el mismo horario
-
-**Validación de límite (2 reservas):**
-```javascript
-// Query para contar reservas activas del usuario
-const reservasActivas = db.reservations.countDocuments({
-  usuario_id: usuarioId,
-  estado: "ACTIVA",
-  fecha_reserva: { $gte: hoy, $lte: fechaMaxima }
-});
-
-if (reservasActivas >= 2) {
-  // Rechazar nueva reserva
-}
-```
-
-**Caso especial viernes → lunes:**
-- Calcular `fechaMaxima` según el día de la semana actual
-- Si hoy es viernes (getDay() === 5), permitir hasta el lunes siguiente (+3 días)
-- Si es otro día, permitir solo hasta mañana (+1 día)
-
-### Regla: Bloques Horarios Fijos (06:00 a 16:00)
-
-**Validación de BD:**
-```javascript
-// Regex para validar hora_inicio
-pattern: "^(06|08|10|12|14|16):00$"
-```
-
-**Configuración:**
-Almacenar bloques en colección `configuration` para fácil modificación:
-```javascript
-{
-  clave: "BLOQUES_HORARIOS",
-  valor: ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00"]
-}
-```
-
-### Regla: Solo Lunes a Viernes
-
-**Validación:**
-```javascript
-const diaSemana = fecha.getDay();
-if (diaSemana === 0 || diaSemana === 6) {
-  // Rechazar: domingo o sábado
-}
-```
-
-**Índice TTL (opcional):** Para auto-limpiar horarios antiguos.
-
-### Regla: Cupos Disponibles en Tiempo Real
-
-**Estrategia de actualización:**
-1. **Al crear reserva:** Decrementar `cupos_disponibles` en la misma transacción
-2. **Al cancelar:** Incrementar `cupos_disponibles` en la misma transacción
-3. **Verificación antes de reservar:**
-   ```javascript
-   const horario = db.schedules.findOne(
-     { _id: horarioId },
-     { cupos_disponibles: 1, estado: 1 }
-   );
-   if (horario.cupos_disponibles <= 0 || horario.estado === "LLENO") {
-     // Rechazar
-   }
-   ```
-
-### Regla: Cancelación Libera Cupo
-
-**Transacción atómica:**
-```javascript
-session.startTransaction();
-// 1. Actualizar reserva: estado = "CANCELADA"
-// 2. Incrementar schedules.cupos_disponibles
-// 3. Actualizar estado si pasaba de LLENO a DISPONIBLE
-// 4. Registrar en audit_log
-session.commitTransaction();
-```
-
----
-
-## Índices Clave
-
-| Colección | Índice | Propósito |
-|-----------|--------|-----------|
-| users | `{ correo_institucional: 1 }` unique | Autenticación |
-| users | `{ estado: 1, rol: 1 }` | Filtros de admin |
-| schedules | `{ fecha: 1, hora_inicio: 1 }` unique | Evitar duplicados |
-| schedules | `{ fecha: 1, estado: 1 }` | Query horarios disponibles |
-| reservations | `{ usuario_id: 1, estado: 1, fecha_reserva: 1 }` | Contar reservas activas |
-| reservations | `{ usuario_id: 1, horario_id: 1, estado: 1 }` partial unique | Evitar doble reserva misma hora |
-| reservations | `{ horario_id: 1, estado: 1 }` | Verificar cupos |
-
----
-
-## Instrucciones de Uso
-
-### 1. Crear Base de Datos y Colecciones con Validaciones
+| Archivo | Para qué sirve | Cuándo se ejecuta |
+|---|---|---|
+| `init.mongodb.js` | Crea las colecciones con sus validadores e índices y carga los seis bloques horarios | Automático, al arrancar el contenedor sobre un volumen vacío |
+| `validations.js` | Vuelve a aplicar los validadores sobre una base que ya existe, sin borrar datos | A mano, cuando cambia el esquema |
+| `indexes.js` | Crea y lista los índices | A mano; es idempotente |
+| `seed.js` | Carga cuentas, reservas y sugerencias de demostración | A mano, en desarrollo |
+| `queries.js` | Consultas de inspección, todas de solo lectura | A mano |
+| `schema.json` | Documentación del esquema, campo por campo | Referencia |
 
 ```bash
-mongosh < validations.js
+mongosh mongodb://localhost:27017 database/validations.js
+mongosh mongodb://localhost:27017 database/indexes.js
+mongosh mongodb://localhost:27017 database/seed.js
+mongosh mongodb://localhost:27017 database/queries.js
 ```
 
-### 2. Crear Índices
+## Colecciones
 
-```bash
-mongosh < indexes.js
-```
+| Colección | Contenido |
+|---|---|
+| `users` | Personas del sistema, sin importar su rol |
+| `slots` | Los seis bloques horarios con su aforo y sus cupos libres |
+| `reservations` | Reservas, con su fecha, su bloque y su desenlace |
+| `suggestions` | Buzón de sugerencias (RF20 y RF21) |
 
-### 3. Cargar Queries (para desarrollo/testing)
+Los campos declarados son exactamente los que escribe el backend. Antes no era
+así: el script creaba `users` con nombres en español y un validador que exigía
+`nombre`, `correo_institucional`, `rol` y `fecha_creacion`, mientras el backend
+insertaba `name`, `email`, `role` y `created_at`. Sobre un volumen nuevo el
+registro fallaba por validación de esquema. Además creaba `schedules`,
+`audit_log` y `configuration`, que el backend nunca usó.
 
-```bash
-mongosh < queries.js
-```
+## Reglas que la base de datos respalda por sí misma
 
-### 4. Insertar Configuración Inicial
+Un validador o un índice no reemplazan a la regla de negocio, que sigue estando
+en el backend. Son una segunda barrera para que un error de programación no
+llegue a corromper los datos.
 
-```javascript
-db.configuration.insertMany([
-  { clave: "AFORO_DEFAULT", valor: 30, descripcion: "Aforo por defecto", ultima_actualizacion: new Date(), actualizado_por: ObjectId() },
-  { clave: "BLOQUES_HORARIOS", valor: ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00"], descripcion: "Bloques horarios", ultima_actualizacion: new Date(), actualizado_por: ObjectId() },
-  { clave: "MAX_RESERVAS_ACTIVAS", valor: 2, descripcion: "Máx reservas por usuario", ultima_actualizacion: new Date(), actualizado_por: ObjectId() }
-]);
-```
+| Regla | Cómo la respalda la base de datos |
+|---|---|
+| RN01 El dominio del correo determina el rol | El patrón del campo `email` solo admite los tres dominios institucionales |
+| RN02 El documento es la credencial | `documento` es único y el patrón de `password` exige el formato cifrado, de modo que no se pueda guardar en claro |
+| RN03 Bloques de dos horas en horas pares | `hour` es una enumeración con las seis horas; no admite ninguna otra |
+| RN05 Una reserva por estudiante por día | Índice único parcial sobre correo y fecha, limitado a las reservas en estado `ACTIVA` |
+| RN06 Sin sobrecupo | `available` no admite valores negativos, así que un descuento de más es rechazado |
 
----
+## Tipos numéricos
 
-## Ejecutar con Docker
+`mongosh` guarda un número suelto como decimal, y los validadores exigen
+enteros. Por eso los scripts de esta carpeta usan `NumberInt()` en los campos
+enteros. El backend en Python ya escribe enteros de 32 bits, de modo que las dos
+capas guardan exactamente el mismo tipo.
 
-### Iniciar el contenedor
+## Pendiente
 
-```bash
-cd database
-docker-compose up -d
-```
-
-### Verificar que está corriendo
-
-```bash
-docker-compose ps
-docker-compose logs mongodb
-```
-
-### Detener el contenedor
-
-```bash
-docker-compose down
-```
-
-### Detener y eliminar volúmenes (borra todos los datos)
-
-```bash
-docker-compose down -v
-```
-
----
-
-## Conectar con mongosh
-
-### Conexión local (sin Docker)
-
-```bash
-mongosh
-```
-
-### Conexión a Docker (con autenticación)
-
-```bash
-mongosh "mongodb://admin:password@localhost:27017/gym_reservas_universitario?authSource=admin"
-```
-### Conexión a Docker (con autenticación) No se tiene Mongo Shell instalado
-
-```bash
-docker exec -it gym-mongodb mongosh -u admin -p password --authenticationDatabase admin
-```
-
-
-### Usar la base de datos
-
-```javascript
-use gym_reservas_universitario
-```
-
-### Comandos útiles
-
-```javascript
-// Ver colecciones
-show collections
-
-// Contar documentos
-db.users.countDocuments()
-db.schedules.countDocuments()
-db.reservations.countDocuments()
-
-// Ver usuarios
-db.users.find().pretty()
-
-// Ver configuración
-db.configuration.find().pretty()
-
-// Ver horarios disponibles para una fecha
-db.schedules.find({ fecha: new Date("2025-03-24"), estado: "DISPONIBLE" }).pretty()
-```
-
-### Salir de mongosh
-
-```javascript
-exit
-```
-
----
-
-## Notas de Diseño
-
-### Transacciones
-MongoDB soporta transacciones multi-documento desde v4.0 (replica sets) y v4.2 (sharded clusters). Las operaciones de **crear reserva** y **cancelar reserva** deben ejecutarse en transacciones para garantizar:
-- Atomicidad de la operación completa
-- Consistencia de cupos disponibles
-- No race conditions en concurrencia
-
-### Denormalización
-Se almacenan copias de `hora_inicio` y `hora_fin` en `reservations` para:
-- Evitar joins innecesarios al listar reservas del usuario
-- Tener histórico si el horario se modifica
-
-### Soft Deletes
-Las reservas canceladas se mantienen con estado "CANCELADA" (no se borran físicamente) para:
-- Historial completo
-- Estadísticas
-- Auditoría
-
-### TTL (Time To Live)
-- `audit_log`: Auto-eliminar después de 2 años
-- `reservations` completadas/canceladas: Auto-eliminar después de 1 año (opcional)
-
----
-
-## Patrones Utilizados
-
-1. **Schema Validation**: Validaciones a nivel de base de datos
-2. **Partial Indexes**: Índices únicos condicionados (reservas activas)
-3. **Compound Indexes**: Índices compuestos para queries frecuentes
-4. **Audit Trail**: Registro de todas las operaciones importantes
-5. **Configuration Collection**: Settings centralizados y versionados
+- El contador de cupos vive en `slots` y es global: no distingue la fecha. Al
+  implementar RF06 y RF07 se separa en un catálogo de bloques y una colección de
+  disponibilidad por fecha, como describe el modelo de análisis v2.0.
+- `cancel_count` es un campo heredado de la penalización por cancelaciones, que
+  el equipo decidió retirar. Sale cuando se refactorice la cancelación (RF09).

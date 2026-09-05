@@ -21,9 +21,9 @@ describe('api service', () => {
     expect(JSON.parse(opts.body).documento).toBe('1001234567');
   });
 
-  it('register envía nombre, correo y documento de identidad (RF01)', async () => {
+  it('registrarCuenta envía nombre, correo y documento de identidad (RF01)', async () => {
     mockFetch({ message: 'Registro exitoso.', role: 'ESTUDIANTE' }, true);
-    await authApi.register({ name: 'Juan', email: 'j@soyudemedellin.edu.co', documento: '1001234567' });
+    await authApi.registrarCuenta({ name: 'Juan', email: 'j@soyudemedellin.edu.co', documento: '1001234567' });
     const [url, opts] = global.fetch.mock.calls[0];
     expect(url).toContain('/auth/register/');
     expect(JSON.parse(opts.body)).toMatchObject({ name: 'Juan', documento: '1001234567' });

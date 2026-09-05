@@ -3,7 +3,8 @@ from . import views, features, reports, attendance
 
 urlpatterns = [
     # Auth
-    path('auth/register/',              views.register,            name='register'),
+    # RF01 — Registrar una cuenta
+    path('auth/register/',              views.registrar_cuenta,    name='register'),
     path('auth/login/',                 views.login,               name='login'),
     path('auth/session/',               views.session,             name='session'),
 

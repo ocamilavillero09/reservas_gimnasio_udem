@@ -1,400 +1,153 @@
-// ============================================
-// SEED DATA - Datos de Ejemplo
-// ============================================
-// Ejecutar en MongoDB shell para poblar la base de datos
+// ============================================================================
+//  DATOS DE PRUEBA — solo para desarrollo
+// ----------------------------------------------------------------------------
+//      mongosh mongodb://localhost:27017 database/seed.js
+//
+//  Carga un juego de datos con el que probar la aplicación sin registrar todo
+//  a mano. Borra y vuelve a crear ÚNICAMENTE las cuentas de demostración, que
+//  son las que llevan el sufijo .demo en el correo. No toca ningún otro dato.
+//
+//  Advertencia honesta: estos documentos se insertan directamente y no pasan
+//  por las reglas de negocio del backend. Están construidos para ser
+//  consistentes entre sí, pero cargarlos no prueba que las reglas funcionen.
+//  Para eso están las pruebas del backend.
+//
+//  Las contraseñas son el documento de identidad de cada persona, cifrado con
+//  el mismo algoritmo que usa el backend (PBKDF2, 100.000 iteraciones).
+// ============================================================================
 
-use gym_reservas_universitario;
+db = db.getSiblingDB('gym_udem');
 
-// Limpiar colecciones (opcional - quitar si no se quiere borrar datos existentes)
-db.users.deleteMany({});
-db.schedules.deleteMany({});
-db.reservations.deleteMany({});
-db.audit_log.deleteMany({});
-db.configuration.deleteMany({});
+// ── Personas de demostración ────────────────────────────────────────────────
+// El correo determina el rol (RN01). El documento es la contraseña (RN02).
+var PERSONAS = [
+  { name: 'Ana Restrepo',   email: 'ana.demo@soyudemedellin.edu.co',   documento: '1001234567',
+    password: 'a1d1af6309debd88a81f8ca08368909da080378217fd2f920dea547d6db8ee6c:77aa700ea85c2e2858917cf8997db84688cb6dc5cbf040f3231b94b40ed3c535',
+    role: 'ESTUDIANTE', estado: 'ACTIVO', no_show_count: 0,
+    edad: 21, peso: 62, altura: 165, meta: 'Ganar resistencia' },
 
-print("Insertando configuración...");
+  { name: 'Bruno Cardona',  email: 'bruno.demo@soyudemedellin.edu.co', documento: '1002345678',
+    password: '193a3415bda3d86712d3612c2e5bf149021d0812f55d974d0862941b5d18e9f8:b6a77bc93227563e412fd57a5b68c98c8afb40258df8e56a8d5f63ab3162a8ad',
+    role: 'ESTUDIANTE', estado: 'ACTIVO', no_show_count: 3,
+    edad: 23, peso: 78, altura: 181, meta: 'Aumentar masa muscular' },
 
-// ============================================
-// CONFIGURACIÓN
-// ============================================
-const adminId = ObjectId();
+  // Cuenta penalizada: llegó al límite de cinco inasistencias (RN08 y RN09).
+  { name: 'Clara Ospina',   email: 'clara.demo@soyudemedellin.edu.co', documento: '1003456789',
+    password: 'd35f1d804f12d1aa412362ac90c0753bebb614114aa88b2730f27a0cbd33b579:83c1a4ad46c73be79531383cd41927c5d6a89381664236883398d529c6cf3e21',
+    role: 'ESTUDIANTE', estado: 'PENALIZADO', no_show_count: 5,
+    edad: 20, peso: 55, altura: 160, meta: 'Mejorar condicion fisica' },
 
-db.configuration.insertMany([
-  {
-    _id: ObjectId(),
-    clave: "AFORO_DEFAULT",
-    valor: 30,
-    descripcion: "Aforo máximo por defecto para nuevos horarios",
-    ultima_actualizacion: new Date(),
-    actualizado_por: adminId
-  },
-  {
-    _id: ObjectId(),
-    clave: "BLOQUES_HORARIOS",
-    valor: ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00"],
-    descripcion: "Horarios de inicio de bloques disponibles",
-    ultima_actualizacion: new Date(),
-    actualizado_por: adminId
-  },
-  {
-    _id: ObjectId(),
-    clave: "MAX_RESERVAS_ACTIVAS",
-    valor: 2,
-    descripcion: "Máximo de reservas activas por usuario",
-    ultima_actualizacion: new Date(),
-    actualizado_por: adminId
-  },
-  {
-    _id: ObjectId(),
-    clave: "HORAS_CANCELLATION_WINDOW",
-    valor: 2,
-    descripcion: "Horas antes del horario para permitir cancelación",
-    ultima_actualizacion: new Date(),
-    actualizado_por: adminId
-  }
-]);
+  { name: 'Diego Marulanda', email: 'diego.demo@udem.edu.co',          documento: '7009998881',
+    password: '1c8c90713c9c7d0ab0f41819905a7a5de08525ab3c60387aa1e498223d5b52c8:cd7f3092e714b0b0a2b152fd286961cc8674467a558f024228602004439669ff',
+    role: 'ENTRENADOR', estado: 'ACTIVO', no_show_count: 0 },
 
-print("Insertando usuarios...");
-
-// ============================================
-// USUARIOS
-// ============================================
-const usuarios = [
-  // Estudiantes
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9c001"),
-    nombre: "Ana María López",
-    correo_institucional: "ana.lopez@universidad.edu",
-    rol: "ESTUDIANTE",
-    estado: "ACTIVO",
-    fecha_creacion: new Date("2025-01-15T10:30:00Z"),
-    ultimo_acceso: new Date("2025-03-20T08:15:00Z")
-  },
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9c002"),
-    nombre: "Carlos Rodríguez Pérez",
-    correo_institucional: "carlos.rodriguez@universidad.edu",
-    rol: "ESTUDIANTE",
-    estado: "ACTIVO",
-    fecha_creacion: new Date("2025-01-16T09:00:00Z"),
-    ultimo_acceso: new Date("2025-03-19T18:30:00Z")
-  },
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9c003"),
-    nombre: "María Fernanda García",
-    correo_institucional: "maria.garcia@universidad.edu",
-    rol: "ESTUDIANTE",
-    estado: "PENALIZADO",
-    fecha_creacion: new Date("2025-01-20T14:00:00Z"),
-    ultimo_acceso: new Date("2025-03-18T07:00:00Z"),
-    penalizacion_hasta: new Date("2025-03-25T23:59:59Z")
-  },
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9c004"),
-    nombre: "Luis Alberto Torres",
-    correo_institucional: "luis.torres@universidad.edu",
-    rol: "ESTUDIANTE",
-    estado: "ACTIVO",
-    fecha_creacion: new Date("2025-02-01T11:00:00Z")
-  },
-  // Entrenadores
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9c005"),
-    nombre: "Pedro Sánchez Vega",
-    correo_institucional: "pedro.sanchez@universidad.edu",
-    rol: "ENTRENADOR",
-    estado: "ACTIVO",
-    fecha_creacion: new Date("2024-08-01T08:00:00Z"),
-    ultimo_acceso: new Date("2025-03-20T06:00:00Z")
-  },
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9c006"),
-    nombre: "Diana Patricia Castro",
-    correo_institucional: "diana.castro@universidad.edu",
-    rol: "ENTRENADOR",
-    estado: "ACTIVO",
-    fecha_creacion: new Date("2024-09-15T10:00:00Z"),
-    ultimo_acceso: new Date("2025-03-20T09:00:00Z")
-  },
-  // Admin
-  {
-    _id: adminId,
-    nombre: "Roberto Administrator",
-    correo_institucional: "admin@universidad.edu",
-    rol: "ADMIN",
-    estado: "ACTIVO",
-    fecha_creacion: new Date("2024-01-01T00:00:00Z"),
-    ultimo_acceso: new Date("2025-03-20T12:00:00Z")
-  }
+  // Primera cuenta ADMIN: es la del administrador principal (RF22 y RF23).
+  { name: 'Elena Zapata',   email: 'elena.demo@udemedellin.edu.co',    documento: '3005554442',
+    password: '6ba0f5f49f392b5c69325f69b3709ede91fe2e5c46d1e026d6053f39ace05455:db632c2525c869b764067f3a89ada5a6b2be505de655aeb5700c992f1241b69d',
+    role: 'ADMIN', estado: 'ACTIVO', no_show_count: 0, es_principal: true }
 ];
 
-db.users.insertMany(usuarios);
+// ── Limpieza acotada: solo lo que este mismo archivo crea ───────────────────
+var correosDemo = PERSONAS.map(function (p) { return p.email; });
+var borradas = db.reservations.deleteMany({ email: { $in: correosDemo } }).deletedCount;
+var borradosU = db.users.deleteMany({ email: { $in: correosDemo } }).deletedCount;
+var borradasS = db.suggestions.deleteMany({ autor_email: { $in: correosDemo } }).deletedCount;
+print('Limpieza de datos de demostracion: ' + borradosU + ' cuentas, ' +
+      borradas + ' reservas, ' + borradasS + ' sugerencias.');
 
-print("Insertando horarios...");
-
-// ============================================
-// HORARIOS (Schedules)
-// ============================================
-// Generar horarios para la semana del 24-28 de marzo 2025 (lunes-viernes)
-
-function crearHorario(fechaStr, horaInicio, horaFin, cuposDisp, entrenadorId = null, notas = null) {
+// ── Cuentas ─────────────────────────────────────────────────────────────────
+var ahora = new Date();
+db.users.insertMany(PERSONAS.map(function (p) {
   return {
-    _id: ObjectId(),
-    fecha: new Date(fechaStr),
-    hora_inicio: horaInicio,
-    hora_fin: horaFin,
-    aforo_maximo: 30,
-    cupos_disponibles: cuposDisp,
-    estado: cuposDisp === 0 ? "LLENO" : "DISPONIBLE",
-    entrenador_id: entrenadorId,
-    notas: notas,
-    fecha_creacion: new Date("2025-03-01T00:00:00Z"),
-    ultima_actualizacion: new Date()
+    name: p.name,
+    email: p.email,
+    documento: p.documento,
+    password: p.password,
+    role: p.role,
+    estado: p.estado,
+    es_principal: p.es_principal === true,
+    no_show_count: NumberInt(p.no_show_count),
+    cancel_count: NumberInt(0),
+    penalizado_hasta: p.estado === 'PENALIZADO'
+      ? new Date(ahora.getTime() + 5 * 24 * 60 * 60 * 1000)
+      : null,
+    created_at: ahora,
+    edad:   p.edad   !== undefined ? NumberInt(p.edad) : null,
+    peso:   p.peso   !== undefined ? NumberInt(p.peso) : null,
+    altura: p.altura !== undefined ? NumberInt(p.altura) : null,
+    meta:   p.meta   !== undefined ? p.meta : null
   };
+}));
+
+// ── Bloques horarios ────────────────────────────────────────────────────────
+// Se recrean solo si faltan, para no pisar el aforo de una base ya en uso.
+var HORAS = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00'];
+if (db.slots.countDocuments({}) === 0) {
+  db.slots.insertMany(HORAS.map(function (hora, i) {
+    return { slotId: NumberInt(i + 1), hour: hora, available: NumberInt(20), total: NumberInt(20) };
+  }));
+  print('Bloques horarios creados: 6');
+} else {
+  print('Bloques horarios ya existentes: ' + db.slots.countDocuments({}));
 }
 
-const entrenador1 = ObjectId("65f8a2b3c4d5e6f7a8b9c005");
-const entrenador2 = ObjectId("65f8a2b3c4d5e6f7a8b9c006");
+// ── Reservas ────────────────────────────────────────────────────────────────
+// Las reservas son siempre para el dia siguiente (RN04) y solo una por
+// estudiante y por dia (RN05).
+function isoMasDias(dias) {
+  var d = new Date();
+  d.setDate(d.getDate() + dias);
+  return d.toISOString().slice(0, 10);
+}
+var manana = isoMasDias(1);
+var ayer   = isoMasDias(-1);
 
-const horarios = [
-  // Lunes 24 de marzo
-  crearHorario("2025-03-24", "06:00", "08:00", 5, entrenador1, "CrossFit básico"),
-  crearHorario("2025-03-24", "08:00", "10:00", 12, null, null),
-  crearHorario("2025-03-24", "10:00", "12:00", 0, entrenador2, "Clase llena"),
-  crearHorario("2025-03-24", "12:00", "14:00", 25, null, null),
-  crearHorario("2025-03-24", "14:00", "16:00", 18, entrenador1, "Yoga"),
-  crearHorario("2025-03-24", "16:00", "18:00", 30, null, null),
+db.reservations.insertMany([
+  // Reservas activas de mañana: dos estudiantes en el bloque de las 06:00.
+  { email: 'ana.demo@soyudemedellin.edu.co',   slotId: NumberInt(1), hour: '06:00',
+    reserva_date: manana, date: manana, estado: 'ACTIVA',
+    created_by: 'ana.demo@soyudemedellin.edu.co', created_at: ahora },
+  { email: 'bruno.demo@soyudemedellin.edu.co', slotId: NumberInt(1), hour: '06:00',
+    reserva_date: manana, date: manana, estado: 'ACTIVA',
+    created_by: 'bruno.demo@soyudemedellin.edu.co', created_at: ahora },
 
-  // Martes 25 de marzo
-  crearHorario("2025-03-25", "06:00", "08:00", 20, null, null),
-  crearHorario("2025-03-25", "08:00", "10:00", 15, entrenador2, "Spinning"),
-  crearHorario("2025-03-25", "10:00", "12:00", 28, null, null),
-  crearHorario("2025-03-25", "12:00", "14:00", 30, null, null),
-  crearHorario("2025-03-25", "14:00", "16:00", 22, entrenador1, "Pilates"),
-  crearHorario("2025-03-25", "16:00", "18:00", 8, null, null),
-
-  // Miércoles 26 de marzo
-  crearHorario("2025-03-26", "06:00", "08:00", 25, entrenador1, null),
-  crearHorario("2025-03-26", "08:00", "10:00", 0, null, "Horario cancelado temporalmente"),
-  crearHorario("2025-03-26", "10:00", "12:00", 20, null, null),
-  crearHorario("2025-03-26", "12:00", "14:00", 15, entrenador2, "Zumba"),
-  crearHorario("2025-03-26", "14:00", "16:00", 10, null, null),
-  crearHorario("2025-03-26", "16:00", "18:00", 30, entrenador1, null),
-
-  // Jueves 27 de marzo
-  crearHorario("2025-03-27", "06:00", "08:00", 30, null, null),
-  crearHorario("2025-03-27", "08:00", "10:00", 25, entrenador2, null),
-  crearHorario("2025-03-27", "10:00", "12:00", 20, null, null),
-  crearHorario("2025-03-27", "12:00", "14:00", 18, entrenador1, "Funcional"),
-  crearHorario("2025-03-27", "14:00", "16:00", 25, null, null),
-  crearHorario("2025-03-27", "16:00", "18:00", 12, null, null),
-
-  // Viernes 28 de marzo
-  crearHorario("2025-03-28", "06:00", "08:00", 28, entrenador1, null),
-  crearHorario("2025-03-28", "08:00", "10:00", 30, null, null),
-  crearHorario("2025-03-28", "10:00", "12:00", 25, entrenador2, "Baile"),
-  crearHorario("2025-03-28", "12:00", "14:00", 20, null, null),
-  crearHorario("2025-03-28", "14:00", "16:00", 15, entrenador1, "Boxeo"),
-  crearHorario("2025-03-28", "16:00", "18:00", 30, null, null),
-
-  // Lunes siguiente (31 de marzo) - para caso especial viernes-lunes
-  crearHorario("2025-03-31", "06:00", "08:00", 30, entrenador1, null),
-  crearHorario("2025-03-31", "08:00", "10:00", 30, null, null),
-  crearHorario("2025-03-31", "10:00", "12:00", 30, entrenador2, null)
-];
-
-const horariosInsertados = db.schedules.insertMany(horarios);
-const idsHorarios = Object.values(horariosInsertados.insertedIds);
-
-print("Insertando reservas...");
-
-// ============================================
-// RESERVAS
-// ============================================
-const usuarioAna = ObjectId("65f8a2b3c4d5e6f7a8b9c001");
-const usuarioCarlos = ObjectId("65f8a2b3c4d5e6f7a8b9c002");
-const usuarioMaria = ObjectId("65f8a2b3c4d5e6f7a8b9c003");
-const usuarioLuis = ObjectId("65f8a2b3c4d5e6f7a8b9c004");
-
-const reservas = [
-  // Ana tiene 2 reservas activas (una hoy, una mañana) - OK
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9d001"),
-    usuario_id: usuarioAna,
-    horario_id: idsHorarios[0],  // Lunes 24 mar 06:00
-    fecha_reserva: new Date("2025-03-24"),
-    hora_inicio: "06:00",
-    hora_fin: "08:00",
-    estado: "ACTIVA",
-    creada_por: usuarioAna,
-    fecha_creacion: new Date("2025-03-20T10:00:00Z")
-  },
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9d002"),
-    usuario_id: usuarioAna,
-    horario_id: idsHorarios[6],  // Martes 25 mar 06:00
-    fecha_reserva: new Date("2025-03-25"),
-    hora_inicio: "06:00",
-    hora_fin: "08:00",
-    estado: "ACTIVA",
-    creada_por: usuarioAna,
-    fecha_creacion: new Date("2025-03-20T10:05:00Z")
-  },
-
-  // Carlos tiene 1 reserva activa
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9d003"),
-    usuario_id: usuarioCarlos,
-    horario_id: idsHorarios[1],  // Lunes 24 mar 08:00
-    fecha_reserva: new Date("2025-03-24"),
-    hora_inicio: "08:00",
-    hora_fin: "10:00",
-    estado: "ACTIVA",
-    creada_por: usuarioCarlos,
-    fecha_creacion: new Date("2025-03-20T14:00:00Z")
-  },
-
-  // María tiene 1 reserva cancelada
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9d004"),
-    usuario_id: usuarioMaria,
-    horario_id: idsHorarios[12], // Miércoles 26 mar 06:00
-    fecha_reserva: new Date("2025-03-26"),
-    hora_inicio: "06:00",
-    hora_fin: "08:00",
-    estado: "CANCELADA",
-    creada_por: usuarioMaria,
-    fecha_creacion: new Date("2025-03-18T09:00:00Z"),
-    fecha_cancelacion: new Date("2025-03-19T16:00:00Z"),
-    motivo_cancelacion: "Emergencia personal"
-  },
-
-  // Luis tiene 1 reserva completada (asistió)
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9d005"),
-    usuario_id: usuarioLuis,
-    horario_id: idsHorarios[2],  // Lunes 24 mar 10:00
-    fecha_reserva: new Date("2025-03-24"),
-    hora_inicio: "10:00",
-    hora_fin: "12:00",
-    estado: "COMPLETADA",
-    creada_por: usuarioLuis,
-    fecha_creacion: new Date("2025-03-17T11:00:00Z"),
-    fecha_completacion: new Date("2025-03-24T12:00:00Z")
-  },
-
-  // Más reservas para llenar horarios
-  {
-    _id: ObjectId("65f8a2b3c4d5e6f7a8b9d006"),
-    usuario_id: usuarioCarlos,
-    horario_id: idsHorarios[6],  // Martes 25 mar 06:00
-    fecha_reserva: new Date("2025-03-25"),
-    hora_inicio: "06:00",
-    hora_fin: "08:00",
-    estado: "ACTIVA",
-    creada_por: usuarioCarlos,
-    fecha_creacion: new Date("2025-03-20T15:00:00Z")
-  }
-];
-
-db.reservations.insertMany(reservas);
-
-print("Insertando logs de auditoría...");
-
-// ============================================
-// AUDIT LOG
-// ============================================
-db.audit_log.insertMany([
-  {
-    _id: ObjectId(),
-    tipo_operacion: "RESERVA_CREADA",
-    coleccion_afectada: "reservations",
-    documento_id: ObjectId("65f8a2b3c4d5e6f7a8b9d001"),
-    usuario_ejecutor: usuarioAna,
-    datos_nuevos: {
-      usuario_id: usuarioAna,
-      horario_id: idsHorarios[0],
-      estado: "ACTIVA"
-    },
-    timestamp: new Date("2025-03-20T10:00:00Z")
-  },
-  {
-    _id: ObjectId(),
-    tipo_operacion: "RESERVA_CREADA",
-    coleccion_afectada: "reservations",
-    documento_id: ObjectId("65f8a2b3c4d5e6f7a8b9d002"),
-    usuario_ejecutor: usuarioAna,
-    datos_nuevos: {
-      usuario_id: usuarioAna,
-      horario_id: idsHorarios[6],
-      estado: "ACTIVA"
-    },
-    timestamp: new Date("2025-03-20T10:05:00Z")
-  },
-  {
-    _id: ObjectId(),
-    tipo_operacion: "RESERVA_CANCELADA",
-    coleccion_afectada: "reservations",
-    documento_id: ObjectId("65f8a2b3c4d5e6f7a8b9d004"),
-    usuario_ejecutor: usuarioMaria,
-    datos_anteriores: { estado: "ACTIVA" },
-    datos_nuevos: { estado: "CANCELADA" },
-    timestamp: new Date("2025-03-19T16:00:00Z")
-  },
-  {
-    _id: ObjectId(),
-    tipo_operacion: "CUPO_LIBERADO",
-    coleccion_afectada: "schedules",
-    documento_id: idsHorarios[12],
-    usuario_ejecutor: usuarioMaria,
-    datos_anteriores: { cupos_disponibles: 24 },
-    datos_nuevos: { cupos_disponibles: 25 },
-    timestamp: new Date("2025-03-19T16:00:00Z")
-  }
+  // Jornada de ayer, ya cerrada: una asistencia, una cancelacion y una inasistencia.
+  { email: 'ana.demo@soyudemedellin.edu.co',   slotId: NumberInt(2), hour: '08:00',
+    reserva_date: ayer, date: ayer, estado: 'COMPLETADA',
+    created_by: 'ana.demo@soyudemedellin.edu.co', created_at: ahora,
+    completed_at: ahora, registrada_por: 'diego.demo@udem.edu.co' },
+  { email: 'bruno.demo@soyudemedellin.edu.co', slotId: NumberInt(3), hour: '10:00',
+    reserva_date: ayer, date: ayer, estado: 'CANCELADA',
+    created_by: 'bruno.demo@soyudemedellin.edu.co', created_at: ahora, cancelled_at: ahora },
+  { email: 'clara.demo@soyudemedellin.edu.co', slotId: NumberInt(4), hour: '12:00',
+    reserva_date: ayer, date: ayer, estado: 'NO_SHOW',
+    created_by: 'clara.demo@soyudemedellin.edu.co', created_at: ahora }
 ]);
 
-// ============================================
-// RESUMEN
-// ============================================
-print("\n=== SEED DATA INSERTADO ===");
-print(`Usuarios: ${db.users.countDocuments()}`);
-print(`  - Estudiantes: ${db.users.countDocuments({ rol: "ESTUDIANTE" })}`);
-print(`  - Entrenadores: ${db.users.countDocuments({ rol: "ENTRENADOR" })}`);
-print(`  - Admins: ${db.users.countDocuments({ rol: "ADMIN" })}`);
-print(`\nHorarios: ${db.schedules.countDocuments()}`);
-print(`  - Disponibles: ${db.schedules.countDocuments({ estado: "DISPONIBLE" })}`);
-print(`  - Llenos: ${db.schedules.countDocuments({ estado: "LLENO" })}`);
-print(`\nReservas: ${db.reservations.countDocuments()}`);
-print(`  - Activas: ${db.reservations.countDocuments({ estado: "ACTIVA" })}`);
-print(`  - Canceladas: ${db.reservations.countDocuments({ estado: "CANCELADA" })}`);
-print(`  - Completadas: ${db.reservations.countDocuments({ estado: "COMPLETADA" })}`);
-print(`\nConfiguraciones: ${db.configuration.countDocuments()}`);
-print("===========================\n");
+// El aforo tiene que reflejar las reservas activas que se acaban de crear,
+// porque el backend descuenta el cupo al reservar (RN06). Si no se ajusta aqui,
+// el contador quedaria descuadrado.
+db.slots.updateOne({ slotId: 1 }, { $set: { available: NumberInt(18) } });
 
-// ============================================
-// EJEMPLOS DE QUERIES CON DATOS
-// ============================================
-print("\nEjemplos de queries con datos:");
+// ── Buzón de sugerencias ────────────────────────────────────────────────────
+db.suggestions.insertMany([
+  { autor_email: 'ana.demo@soyudemedellin.edu.co', autor_nombre: 'Ana Restrepo',
+    mensaje: 'Al cancelar una reserva desde el celular el boton queda tapado por el teclado.',
+    created_at: ahora },
+  { autor_email: 'bruno.demo@soyudemedellin.edu.co', autor_nombre: 'Bruno Cardona',
+    mensaje: 'Estaria bueno ver cuantos cupos quedan sin tener que entrar a cada bloque.',
+    created_at: new Date(ahora.getTime() - 3600 * 1000) }
+]);
 
-print("\n1. Horarios disponibles para el lunes 24 de marzo:");
-const horariosLunes = db.schedules.find(
-  { fecha: new Date("2025-03-24"), estado: "DISPONIBLE" },
-  { hora_inicio: 1, cupos_disponibles: 1, _id: 0 }
-).sort({ hora_inicio: 1 }).toArray();
-printjson(horariosLunes);
-
-print("\n2. Reservas activas de Ana López:");
-const reservasAna = db.reservations.find(
-  { usuario_id: usuarioAna, estado: "ACTIVA" },
-  { fecha_reserva: 1, hora_inicio: 1, estado: 1, _id: 0 }
-).toArray();
-printjson(reservasAna);
-
-print("\n3. Usuarios penalizados:");
-const penalizados = db.users.find(
-  { estado: "PENALIZADO" },
-  { nombre: 1, correo_institucional: 1, penalizacion_hasta: 1, _id: 0 }
-).toArray();
-printjson(penalizados);
-
-print("\nSeed data completado!");
+// ── Resumen ─────────────────────────────────────────────────────────────────
+print('');
+print('Datos de prueba cargados:');
+print('  cuentas ......... ' + db.users.countDocuments({ email: { $in: correosDemo } }));
+print('  bloques ......... ' + db.slots.countDocuments({}));
+print('  reservas ........ ' + db.reservations.countDocuments({ email: { $in: correosDemo } }));
+print('  sugerencias ..... ' + db.suggestions.countDocuments({ autor_email: { $in: correosDemo } }));
+print('');
+print('Credenciales de acceso (el documento es la contrasena):');
+PERSONAS.forEach(function (p) {
+  print('  ' + p.role.padEnd(11) + ' ' + p.email + '   documento: ' + p.documento);
+});

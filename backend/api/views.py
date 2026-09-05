@@ -93,7 +93,15 @@ def _leer_documento(data) -> str:
     }
 )
 @api_view(['POST'])
-def register(request):
+def registrar_cuenta(request):
+    """RF01 — Registrar una cuenta.
+
+    Crea la cuenta con nombre, correo institucional y documento de identidad.
+    El rol NO se recibe del cliente: lo determina el dominio del correo (RN01),
+    de modo que nadie pueda auto-asignarse permisos de entrenador o de
+    administrador. El documento se guarda normalizado, para que el entrenador
+    pueda buscarlo (RF10), y cifrado, para validar el inicio de sesión (RN02).
+    """
     # ╔══════════════════════════════════════════════════════════════════╗
     # ║ CASO DE USO CRÍTICO #1 — REGISTRO CON CORREO INSTITUCIONAL          ║
     # ║ Crítico porque es el control de acceso: solo miembros de la         ║

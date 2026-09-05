@@ -1,410 +1,189 @@
-// ============================================
-// SCRIPT DE INICIALIZACIÓN DE MONGODB
-// ============================================
-// Este script se ejecuta automáticamente al iniciar el contenedor
-// si la base de datos aún no existe o está vacía.
+// ============================================================================
+//  INICIALIZACIÓN DE LA BASE DE DATOS — Sistema de reservas del gimnasio UdeM
+// ----------------------------------------------------------------------------
+//  MongoDB ejecuta este script automáticamente al arrancar el contenedor sobre
+//  un volumen vacío. Crea las colecciones con su validación de esquema y sus
+//  índices.
+//
+//  RESPONSABILIDAD DE ESTA CAPA (RNF06):
+//  Aquí solo hay estructura: colecciones, validadores, índices y consultas de
+//  lectura. Ninguna función de este directorio crea, modifica ni decide sobre
+//  una reserva. Toda la lógica de negocio vive en el backend, en Python.
+//
+//  Los campos declarados aquí son EXACTAMENTE los que escribe el backend.
+// ============================================================================
 
-print("========================================");
-print("INICIANDO CONFIGURACIÓN DE BASE DE DATOS");
-print("========================================");
+db = db.getSiblingDB('gym_udem');
 
-// ============================================
-// CREAR BASE DE DATOS Y COLECCIONES
-// ============================================
+// Los tres dominios institucionales que reconoce el sistema (RN01).
+// El dominio decide el rol, por eso el patrón se valida también aquí.
+var PATRON_CORREO =
+  '^[A-Za-z0-9._%+-]+@(soyudemedellin\\.edu\\.co|udem\\.edu\\.co|udemedellin\\.edu\\.co)$';
 
-db = db.getSiblingDB('gym_reservas_universitario');
+// Los seis bloques de dos horas en horas pares (RN03).
+var HORAS_BLOQUE = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00'];
 
-// ============================================
-// CREAR COLECCIONES CON VALIDACIÓN DE ESQUEMA
-// ============================================
-
-// Colección: users
-db.createCollection("users", {
+// ============================================================================
+//  COLECCIÓN users — personas del sistema, sin importar su rol
+// ============================================================================
+db.createCollection('users', {
   validator: {
     $jsonSchema: {
-      bsonType: "object",
-      required: ["nombre", "correo_institucional", "rol", "estado", "fecha_creacion"],
+      bsonType: 'object',
+      required: ['name', 'email', 'documento', 'password', 'role', 'estado', 'created_at'],
       properties: {
-        nombre: {
-          bsonType: "string",
-          minLength: 2,
-          maxLength: 100,
-          description: "Nombre completo del usuario (2-100 caracteres)"
+        name: {
+          bsonType: 'string', minLength: 2, maxLength: 100,
+          description: 'Nombre completo (RF01).'
         },
-        correo_institucional: {
-          bsonType: "string",
-          pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.(edu|edu\\.[a-z]{2,})$",
-          description: "Correo institucional válido con dominio .edu"
+        email: {
+          bsonType: 'string', pattern: PATRON_CORREO,
+          description: 'Correo institucional. Su dominio determina el rol (RN01).'
         },
-        rol: {
-          enum: ["ESTUDIANTE", "ENTRENADOR", "ADMIN"],
-          description: "Rol debe ser ESTUDIANTE, ENTRENADOR o ADMIN"
+        documento: {
+          bsonType: 'string', minLength: 6, maxLength: 20, pattern: '^[A-Za-z0-9]+$',
+          description: 'Documento normalizado, sin puntos ni espacios. Es el dato de busqueda del entrenador (RN02).'
+        },
+        password: {
+          bsonType: 'string', pattern: '^[0-9a-f]{64}:[0-9a-f]{64}$',
+          description: 'Documento cifrado con PBKDF2, en formato sal:clave (RN02). Nunca en claro.'
+        },
+        role: {
+          enum: ['ESTUDIANTE', 'ENTRENADOR', 'ADMIN', 'SIN_ROL'],
+          description: 'SIN_ROL es una cuenta a la que se le retiro el rol de administrador (RF23).'
         },
         estado: {
-          enum: ["ACTIVO", "PENALIZADO", "INACTIVO"],
-          description: "Estado debe ser ACTIVO, PENALIZADO o INACTIVO"
+          enum: ['ACTIVO', 'PENALIZADO', 'INACTIVO'],
+          description: 'PENALIZADO impide reservar mientras dure la penalizacion (RN09).'
         },
-        fecha_creacion: {
-          bsonType: "date",
-          description: "Fecha de creación del usuario"
-        },
-        ultimo_acceso: {
-          bsonType: ["date", "null"],
-          description: "Último acceso del usuario"
-        },
-        penalizacion_hasta: {
-          bsonType: ["date", "null"],
-          description: "Fecha hasta la que está penalizado"
-        }
+        es_principal:     { bsonType: 'bool',   description: 'Cuenta del administrador principal (RF22 y RF23).' },
+        no_show_count:    { bsonType: 'int',    minimum: 0, description: 'Inasistencias acumuladas (RN08).' },
+        cancel_count:     { bsonType: 'int',    minimum: 0, description: 'Cancelaciones acumuladas. Se retira al eliminar la penalizacion por cancelaciones.' },
+        penalizado_hasta: { bsonType: ['date', 'null'], description: 'Fin de la penalizacion vigente (RN09).' },
+        created_at:       { bsonType: 'date',   description: 'Momento del registro.' },
+        created_by:       { bsonType: 'string', description: 'Correo del administrador que creo la cuenta (RF22).' },
+        // Perfil físico del estudiante (RF03). Se agrega despues del registro.
+        edad:   { bsonType: ['int', 'null'],            minimum: 10,  maximum: 100 },
+        peso:   { bsonType: ['int', 'double', 'null'],  minimum: 20,  maximum: 300 },
+        altura: { bsonType: ['int', 'double', 'null'],  minimum: 100, maximum: 250 },
+        meta:   { bsonType: ['string', 'null'], maxLength: 200, description: 'Objetivo de entrenamiento (RF03).' }
       }
     }
   },
-  validationLevel: "strict",
-  validationAction: "error"
+  validationLevel: 'strict',
+  validationAction: 'error'
 });
 
-// Colección: schedules
-db.createCollection("schedules", {
+// ============================================================================
+//  COLECCIÓN slots — catálogo de bloques horarios con su aforo
+// ============================================================================
+db.createCollection('slots', {
   validator: {
     $jsonSchema: {
-      bsonType: "object",
-      required: ["fecha", "hora_inicio", "hora_fin", "aforo_maximo", "cupos_disponibles", "estado", "fecha_creacion"],
+      bsonType: 'object',
+      required: ['slotId', 'hour', 'available', 'total'],
       properties: {
-        fecha: {
-          bsonType: "date",
-          description: "Fecha del horario (sin componente de hora)"
-        },
-        hora_inicio: {
-          bsonType: "string",
-          pattern: "^(06|08|10|12|14|16):00$",
-          description: "Hora de inicio debe ser: 06:00, 08:00, 10:00, 12:00, 14:00 o 16:00"
-        },
-        hora_fin: {
-          bsonType: "string",
-          pattern: "^(08|10|12|14|16|18):00$",
-          description: "Hora de fin debe ser 2 horas después del inicio"
-        },
-        aforo_maximo: {
-          bsonType: "int",
-          minimum: 1,
-          maximum: 500,
-          description: "Aforo máximo entre 1 y 500"
-        },
-        cupos_disponibles: {
-          bsonType: "int",
-          minimum: 0,
-          description: "Cupos disponibles no puede ser negativo"
-        },
-        estado: {
-          enum: ["DISPONIBLE", "LLENO", "CANCELADO"],
-          description: "Estado debe ser DISPONIBLE, LLENO o CANCELADO"
-        },
-        entrenador_id: {
-          bsonType: ["objectId", "null"],
-          description: "Referencia al entrenador (opcional)"
-        },
-        notas: {
-          bsonType: ["string", "null"],
-          maxLength: 500,
-          description: "Notas opcionales (máx 500 caracteres)"
-        },
-        fecha_creacion: {
-          bsonType: "date",
-          description: "Fecha de creación del horario"
-        },
-        ultima_actualizacion: {
-          bsonType: ["date", "null"],
-          description: "Última actualización"
-        }
+        slotId:    { bsonType: 'int', minimum: 1, maximum: 6, description: 'Identificador del bloque, del 1 al 6.' },
+        hour:      { enum: HORAS_BLOQUE, description: 'Hora par de inicio. No existen horas intermedias (RN03).' },
+        available: { bsonType: 'int', minimum: 0, description: 'Cupos libres. Es el campo del descuento condicionado (RN06).' },
+        total:     { bsonType: 'int', minimum: 1, description: 'Aforo maximo del bloque.' }
       }
     }
   },
-  validationLevel: "strict",
-  validationAction: "error"
+  validationLevel: 'strict',
+  validationAction: 'error'
 });
 
-// Colección: reservations
-db.createCollection("reservations", {
+// ============================================================================
+//  COLECCIÓN reservations — vincula a un estudiante con un bloque y una fecha
+// ============================================================================
+db.createCollection('reservations', {
   validator: {
     $jsonSchema: {
-      bsonType: "object",
-      required: ["usuario_id", "horario_id", "fecha_reserva", "hora_inicio", "hora_fin", "estado", "creada_por", "fecha_creacion"],
+      bsonType: 'object',
+      required: ['email', 'slotId', 'hour', 'reserva_date', 'estado', 'created_at'],
       properties: {
-        usuario_id: {
-          bsonType: "objectId",
-          description: "Referencia al usuario que reserva"
-        },
-        horario_id: {
-          bsonType: "objectId",
-          description: "Referencia al horario reservado"
-        },
-        fecha_reserva: {
-          bsonType: "date",
-          description: "Fecha del horario reservado"
-        },
-        hora_inicio: {
-          bsonType: "string",
-          pattern: "^(06|08|10|12|14|16):00$",
-          description: "Hora de inicio debe ser un bloque válido"
-        },
-        hora_fin: {
-          bsonType: "string",
-          pattern: "^(08|10|12|14|16|18):00$",
-          description: "Hora de fin correspondiente"
-        },
-        estado: {
-          enum: ["ACTIVA", "CANCELADA", "COMPLETADA", "NO_SHOW"],
-          description: "Estado debe ser ACTIVA, CANCELADA, COMPLETADA o NO_SHOW"
-        },
-        creada_por: {
-          bsonType: "objectId",
-          description: "Usuario que creó la reserva"
-        },
-        fecha_creacion: {
-          bsonType: "date",
-          description: "Timestamp de creación"
-        },
-        fecha_cancelacion: {
-          bsonType: ["date", "null"],
-          description: "Fecha de cancelación"
-        },
-        motivo_cancelacion: {
-          bsonType: ["string", "null"],
-          maxLength: 500,
-          description: "Motivo de la cancelación"
-        },
-        fecha_completacion: {
-          bsonType: ["date", "null"],
-          description: "Fecha cuando completó la asistencia"
-        }
+        email:        { bsonType: 'string', pattern: PATRON_CORREO, description: 'Estudiante que reservo.' },
+        slotId:       { bsonType: 'int', minimum: 1, maximum: 6 },
+        hour:         { enum: HORAS_BLOQUE, description: 'Hora de inicio del bloque reservado (RN03).' },
+        reserva_date: { bsonType: 'string', pattern: '^\\d{4}-\\d{2}-\\d{2}$', description: 'Jornada reservada, en formato ISO. Siempre es el dia siguiente (RN04).' },
+        date:         { bsonType: 'string', description: 'La misma fecha escrita en palabras, para la interfaz.' },
+        estado:       { enum: ['ACTIVA', 'CANCELADA', 'COMPLETADA', 'NO_SHOW'], description: 'Desenlace de la reserva.' },
+        created_by:   { bsonType: 'string' },
+        created_at:   { bsonType: 'date' },
+        cancelled_at: { bsonType: ['date', 'null'], description: 'Momento de la cancelacion (RF09).' },
+        completed_at: { bsonType: ['date', 'null'], description: 'Momento del registro de asistencia (RF11).' },
+        registrada_por: { bsonType: ['string', 'null'], description: 'Entrenador que registro la asistencia (RF11).' }
       }
     }
   },
-  validationLevel: "strict",
-  validationAction: "error"
+  validationLevel: 'strict',
+  validationAction: 'error'
 });
 
-// Colección: audit_log
-db.createCollection("audit_log", {
+// ============================================================================
+//  COLECCIÓN suggestions — buzón de sugerencias (RF20 y RF21)
+// ============================================================================
+db.createCollection('suggestions', {
   validator: {
     $jsonSchema: {
-      bsonType: "object",
-      required: ["tipo_operacion", "coleccion_afectada", "documento_id", "usuario_ejecutor", "timestamp"],
+      bsonType: 'object',
+      required: ['autor_email', 'autor_nombre', 'mensaje', 'created_at'],
       properties: {
-        tipo_operacion: {
-          enum: ["RESERVA_CREADA", "RESERVA_CANCELADA", "CUPO_LIBERADO", "CUPO_OCUPADO", "PENALIZACION_APLICADA", "HORARIO_CREADO", "HORARIO_MODIFICADO"],
-          description: "Tipo de operación auditada"
-        },
-        coleccion_afectada: {
-          bsonType: "string",
-          minLength: 1,
-          description: "Nombre de la colección afectada"
-        },
-        documento_id: {
-          bsonType: "objectId",
-          description: "ID del documento afectado"
-        },
-        usuario_ejecutor: {
-          bsonType: "objectId",
-          description: "Usuario que ejecutó la operación"
-        },
-        datos_anteriores: {
-          bsonType: ["object", "null"],
-          description: "Estado anterior del documento"
-        },
-        datos_nuevos: {
-          bsonType: ["object", "null"],
-          description: "Nuevo estado del documento"
-        },
-        timestamp: {
-          bsonType: "date",
-          description: "Timestamp de la operación"
-        }
+        autor_email:  { bsonType: 'string', pattern: PATRON_CORREO, description: 'Estudiante que envio el mensaje (RF20).' },
+        autor_nombre: { bsonType: 'string', minLength: 2, maxLength: 100 },
+        mensaje:      { bsonType: 'string', minLength: 1, maxLength: 2000, description: 'Reporte de falla o sugerencia de mejora.' },
+        created_at:   { bsonType: 'date', description: 'Momento del envio. Ordena la bandeja del administrador (RF21).' }
       }
     }
   },
-  validationLevel: "strict",
-  validationAction: "error"
+  validationLevel: 'strict',
+  validationAction: 'error'
 });
 
-// Colección: configuration
-db.createCollection("configuration", {
-  validator: {
-    $jsonSchema: {
-      bsonType: "object",
-      required: ["clave", "valor", "descripcion", "ultima_actualizacion", "actualizado_por"],
-      properties: {
-        clave: {
-          bsonType: "string",
-          minLength: 1,
-          maxLength: 50,
-          description: "Clave de configuración única"
-        },
-        valor: {
-          description: "Valor de la configuración (cualquier tipo)"
-        },
-        descripcion: {
-          bsonType: "string",
-          maxLength: 500,
-          description: "Descripción de la configuración"
-        },
-        ultima_actualizacion: {
-          bsonType: "date",
-          description: "Última fecha de actualización"
-        },
-        actualizado_por: {
-          bsonType: "objectId",
-          description: "Usuario que actualizó la configuración"
-        }
-      }
-    }
-  },
-  validationLevel: "strict",
-  validationAction: "error"
-});
+// ============================================================================
+//  ÍNDICES
+// ============================================================================
 
-print("Colecciones creadas con validaciones de esquema.");
+// users — el correo y el documento identifican a la persona y deben ser unicos.
+db.users.createIndex({ email: 1 },     { unique: true, name: 'idx_users_email_unico' });
+db.users.createIndex({ documento: 1 }, { unique: true, name: 'idx_users_documento_unico' });
+db.users.createIndex({ role: 1, estado: 1 }, { name: 'idx_users_rol_estado' });
 
-// ============================================
-// CREAR ÍNDICES
-// ============================================
+// slots — se consulta por el identificador del bloque.
+db.slots.createIndex({ slotId: 1 }, { unique: true, name: 'idx_slots_id_unico' });
 
-// Índices: users
-db.users.createIndex({ "correo_institucional": 1 }, { unique: true, name: "idx_users_email_unique" });
-db.users.createIndex({ "rol": 1 }, { name: "idx_users_rol" });
-db.users.createIndex({ "estado": 1, "rol": 1 }, { name: "idx_users_estado_rol" });
-db.users.createIndex({ "penalizacion_hasta": 1 }, { name: "idx_users_penalizacion", sparse: true });
-
-// Índices: schedules
-db.schedules.createIndex({ "fecha": 1, "hora_inicio": 1 }, { unique: true, name: "idx_schedules_unique_fecha_hora" });
-db.schedules.createIndex({ "fecha": 1, "estado": 1 }, { name: "idx_schedules_fecha_estado" });
-db.schedules.createIndex({ "entrenador_id": 1, "fecha": 1 }, { name: "idx_schedules_entrenador_fecha", sparse: true });
-db.schedules.createIndex({ "fecha": 1, "cupos_disponibles": 1, "estado": 1 }, { name: "idx_schedules_disponibilidad" });
-
-// Índices: reservations
-db.reservations.createIndex({ "usuario_id": 1, "estado": 1, "fecha_reserva": 1 }, { name: "idx_reservations_user_estado_fecha" });
-db.reservations.createIndex({ "horario_id": 1, "estado": 1 }, { name: "idx_reservations_horario_estado" });
+// reservations — una sola reserva ACTIVA por estudiante y fecha (RN05).
+// El indice parcial hace que la propia base de datos respalde la regla: aunque
+// el backend fallara, MongoDB rechazaria la segunda reserva activa del dia.
 db.reservations.createIndex(
-  { "usuario_id": 1, "horario_id": 1, "estado": 1 },
-  { unique: true, partialFilterExpression: { "estado": "ACTIVA" }, name: "idx_reservations_unique_user_horario_activa" }
+  { email: 1, reserva_date: 1 },
+  { unique: true, partialFilterExpression: { estado: 'ACTIVA' }, name: 'idx_reservas_una_activa_por_dia' }
 );
-db.reservations.createIndex({ "fecha_reserva": 1, "estado": 1 }, { name: "idx_reservations_fecha_estado" });
-db.reservations.createIndex({ "usuario_id": 1, "fecha_creacion": -1 }, { name: "idx_reservations_user_fecha_desc" });
+db.reservations.createIndex({ reserva_date: 1, estado: 1 }, { name: 'idx_reservas_jornada' });
+db.reservations.createIndex({ email: 1, created_at: -1 },   { name: 'idx_reservas_historial' });
+db.reservations.createIndex({ slotId: 1, estado: 1 },       { name: 'idx_reservas_bloque' });
 
-// Índices: audit_log
-db.audit_log.createIndex({ "tipo_operacion": 1, "timestamp": -1 }, { name: "idx_audit_tipo_timestamp" });
-db.audit_log.createIndex({ "coleccion_afectada": 1, "documento_id": 1, "timestamp": -1 }, { name: "idx_audit_documento" });
-db.audit_log.createIndex({ "timestamp": 1 }, { expireAfterSeconds: 63072000, name: "idx_audit_ttl" }); // 2 años TTL
+// suggestions — la bandeja se lee de la mas reciente a la mas antigua (RF21).
+db.suggestions.createIndex({ created_at: -1 }, { name: 'idx_sugerencias_recientes' });
 
-// Índices: configuration
-db.configuration.createIndex({ "clave": 1 }, { unique: true, name: "idx_config_clave_unique" });
+// ============================================================================
+//  DATOS INICIALES — los seis bloques horarios del gimnasio (RN03)
+// ============================================================================
+// NumberInt es obligatorio: mongosh guardaria un 20 suelto como decimal y el
+// validador exige enteros. El backend en Python ya escribe enteros de 32 bits,
+// asi que de este modo las dos capas guardan exactamente el mismo tipo.
+var AFORO = NumberInt(20);
 
-print("Índices creados exitosamente.");
+db.slots.insertMany(HORAS_BLOQUE.map(function (hora, i) {
+  return {
+    slotId:    NumberInt(i + 1),
+    hour:      hora,
+    available: AFORO,
+    total:     AFORO
+  };
+}));
 
-// ============================================
-// INSERTAR DATOS INICIALES
-// ============================================
-
-// Verificar si ya existen datos
-const existingUsers = db.users.countDocuments();
-if (existingUsers > 0) {
-  print("La base de datos ya contiene datos. Omitiendo inserción de seed data.");
-} else {
-  print("Insertando datos iniciales...");
-
-  // Usuarios de ejemplo
-  const adminId = ObjectId("65f8a2b3c4d5e6f7a8b9c000");
-
-  const usuarios = [
-    {
-      _id: ObjectId("65f8a2b3c4d5e6f7a8b9c001"),
-      nombre: "Ana María López",
-      correo_institucional: "ana.lopez@universidad.edu",
-      rol: "ESTUDIANTE",
-      estado: "ACTIVO",
-      fecha_creacion: new Date("2025-01-15T10:30:00Z"),
-      ultimo_acceso: new Date("2025-03-20T08:15:00Z")
-    },
-    {
-      _id: ObjectId("65f8a2b3c4d5e6f7a8b9c002"),
-      nombre: "Carlos Rodríguez Pérez",
-      correo_institucional: "carlos.rodriguez@universidad.edu",
-      rol: "ESTUDIANTE",
-      estado: "ACTIVO",
-      fecha_creacion: new Date("2025-01-16T09:00:00Z"),
-      ultimo_acceso: new Date("2025-03-19T18:30:00Z")
-    },
-    {
-      _id: ObjectId("65f8a2b3c4d5e6f7a8b9c003"),
-      nombre: "Pedro Sánchez Vega",
-      correo_institucional: "pedro.sanchez@universidad.edu",
-      rol: "ENTRENADOR",
-      estado: "ACTIVO",
-      fecha_creacion: new Date("2024-08-01T08:00:00Z"),
-      ultimo_acceso: new Date("2025-03-20T06:00:00Z")
-    },
-    {
-      _id: adminId,
-      nombre: "Administrador del Sistema",
-      correo_institucional: "admin@universidad.edu",
-      rol: "ADMIN",
-      estado: "ACTIVO",
-      fecha_creacion: new Date("2024-01-01T00:00:00Z"),
-      ultimo_acceso: new Date("2025-03-20T12:00:00Z")
-    }
-  ];
-  db.users.insertMany(usuarios);
-
-  // Configuración inicial
-  const config = [
-    {
-      clave: "AFORO_DEFAULT",
-      valor: 30,
-      descripcion: "Aforo máximo por defecto para nuevos horarios",
-      ultima_actualizacion: new Date(),
-      actualizado_por: adminId
-    },
-    {
-      clave: "BLOQUES_HORARIOS",
-      valor: ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00"],
-      descripcion: "Horarios de inicio de bloques disponibles",
-      ultima_actualizacion: new Date(),
-      actualizado_por: adminId
-    },
-    {
-      clave: "MAX_RESERVAS_ACTIVAS",
-      valor: 2,
-      descripcion: "Máximo de reservas activas por usuario",
-      ultima_actualizacion: new Date(),
-      actualizado_por: adminId
-    },
-    {
-      clave: "HORAS_CANCELLATION_WINDOW",
-      valor: 2,
-      descripcion: "Horas antes del horario para permitir cancelación",
-      ultima_actualizacion: new Date(),
-      actualizado_por: adminId
-    }
-  ];
-  db.configuration.insertMany(config);
-
-  print("Datos iniciales insertados exitosamente.");
-}
-
-// ============================================
-// VERIFICACIÓN FINAL
-// ============================================
-
-print("\n========================================");
-print("RESUMEN DE LA BASE DE DATOS");
-print("========================================");
-print(`Base de datos: gym_reservas_universitario`);
-print(`Colecciones creadas:`);
-print(`  - users: ${db.users.countDocuments()} documentos`);
-print(`  - schedules: ${db.schedules.countDocuments()} documentos`);
-print(`  - reservations: ${db.reservations.countDocuments()} documentos`);
-print(`  - audit_log: ${db.audit_log.countDocuments()} documentos`);
-print(`  - configuration: ${db.configuration.countDocuments()} documentos`);
-print("\n========================================");
-print("INICIALIZACIÓN COMPLETADA");
-print("========================================");
+print('Base de datos gym_udem inicializada.');
+print('Colecciones: users, slots, reservations, suggestions');
+print('Bloques horarios cargados: ' + db.slots.countDocuments({}));

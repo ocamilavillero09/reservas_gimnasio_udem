@@ -41,7 +41,7 @@ export default function Login({ onLogin }) {
     setSubmitting(true);
     try {
       if (tab === 'register') {
-        await authApi.register({ name, email, documento });
+        await authApi.registrarCuenta({ name, email, documento });
         setRegistered(true);
       } else {
         const user = await authApi.login({ email, documento });

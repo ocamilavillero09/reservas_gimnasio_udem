@@ -1,507 +1,198 @@
-// ============================================
-// QUERIES Y OPERACIONES PARA REGLAS DE NEGOCIO
-// ============================================
+// ============================================================================
+//  CONSULTAS DE INSPECCIÓN — SOLO LECTURA
+// ----------------------------------------------------------------------------
+//      mongosh mongodb://localhost:27017 database/queries.js
+//
+//  Este archivo sirve para mirar el estado de la base de datos durante el
+//  desarrollo y para verificar a mano lo que el backend reporta.
+//
+//  QUÉ NO HAY AQUÍ, Y POR QUÉ (RNF06):
+//  Ninguna función de este archivo escribe. No hay crear reserva, no hay
+//  cancelar, no hay decidir si alguien puede reservar. Esas son reglas de
+//  negocio y viven en un solo lugar, el backend en Python. Si estuvieran
+//  también aquí habría dos implementaciones de la misma regla y nada
+//  garantizaría que dijeran lo mismo. De hecho, la versión anterior de este
+//  archivo permitía dos reservas activas por persona, que contradice la RN05.
+//
+//  Todas las funciones devuelven datos. Ninguna los modifica.
+// ============================================================================
 
-use gym_reservas_universitario;
+db = db.getSiblingDB('gym_udem');
 
-// ============================================
-// REGLA 1: Verificar máximo 2 reservas activas
-// ============================================
-// Un usuario puede tener máximo 2 reservas activas:
-// - una para el día actual
-// - una para el día siguiente
-// Caso especial: los viernes se permite reservar para el lunes
+// ── Utilidades de fecha ─────────────────────────────────────────────────────
 
-// Query: Contar reservas activas de un usuario
-function contarReservasActivas(usuarioId, hoy, manana) {
-  return db.reservations.countDocuments({
-    usuario_id: usuarioId,
-    estado: "ACTIVA",
-    fecha_reserva: {
-      $gte: hoy,
-      $lte: manana
-    }
+/** Fecha de hoy en formato ISO, que es como se guarda reserva_date. */
+function hoyISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/** Fecha del día siguiente, que es la única para la que se reserva (RN04). */
+function mananaISO() {
+  var d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 10);
+}
+
+// ── Disponibilidad ──────────────────────────────────────────────────────────
+
+/** Los seis bloques con su aforo y sus cupos libres, ordenados por hora (RF06). */
+function verBloques() {
+  return db.slots.find({}, { _id: 0 }).sort({ slotId: 1 }).toArray();
+}
+
+/**
+ * Contraste entre el contador de cupos y las reservas activas que hay de verdad.
+ * Sirve para detectar si algún cupo quedó descuadrado: si `available` más las
+ * reservas activas no da el aforo total, hay una inconsistencia que revisar.
+ */
+function verificarAforo(fechaISO) {
+  var fecha = fechaISO || mananaISO();
+  return db.slots.find({}).sort({ slotId: 1 }).toArray().map(function (s) {
+    var activas = db.reservations.countDocuments({
+      slotId: s.slotId, reserva_date: fecha, estado: 'ACTIVA'
+    });
+    return {
+      bloque: s.hour,
+      aforo: s.total,
+      cupos_libres: s.available,
+      reservas_activas: activas,
+      cuadra: (s.available + activas) === s.total
+    };
   });
 }
 
-// Query: Verificar si usuario puede reservar (considerando caso viernes-lunes)
-function puedeReservar(usuarioId, fechaDeseada) {
-  const hoy = new Date();
-  hoy.setHours(0, 0, 0, 0);
+// ── Usuarios ────────────────────────────────────────────────────────────────
 
-  const diaSemanaHoy = hoy.getDay(); // 0=Domingo, 1=Lunes, ..., 6=Sábado, 5=Viernes
-  const fechaDeseadaNormalizada = new Date(fechaDeseada);
-  fechaDeseadaNormalizada.setHours(0, 0, 0, 0);
-
-  // Calcular fecha máxima permitida
-  let fechaMaxima = new Date(hoy);
-
-  if (diaSemanaHoy === 5) { // Viernes
-    // Permitir hasta el lunes siguiente
-    fechaMaxima.setDate(hoy.getDate() + 3);
-  } else {
-    // Normal: permitir hasta mañana
-    fechaMaxima.setDate(hoy.getDate() + 1);
-  }
-
-  // Verificar que la fecha deseada está en el rango permitido
-  if (fechaDeseadaNormalizada < hoy || fechaDeseadaNormalizada > fechaMaxima) {
-    return {
-      puede: false,
-      razon: "Solo puede reservar para hoy y mañana (o lunes si es viernes)"
-    };
-  }
-
-  // Contar reservas activas en el rango permitido
-  const reservasActivas = db.reservations.countDocuments({
-    usuario_id: usuarioId,
-    estado: "ACTIVA",
-    fecha_reserva: { $gte: hoy, $lte: fechaMaxima }
-  });
-
-  // Verificar que no tenga reserva activa para la misma fecha
-  const reservaMismaFecha = db.reservations.findOne({
-    usuario_id: usuarioId,
-    estado: "ACTIVA",
-    fecha_reserva: fechaDeseadaNormalizada
-  });
-
-  if (reservaMismaFecha) {
-    return {
-      puede: false,
-      razon: "Ya tiene una reserva activa para esta fecha"
-    };
-  }
-
-  // Verificar límite de reservas
-  const MAX_RESERVAS = 2;
-  if (reservasActivas >= MAX_RESERVAS) {
-    return {
-      puede: false,
-      razon: `Ya tiene ${MAX_RESERVAS} reservas activas (máximo permitido)`
-    };
-  }
-
-  return { puede: true };
+/** Cuántas cuentas hay de cada rol y en qué estado están. */
+function usuariosPorRol() {
+  return db.users.aggregate([
+    { $group: { _id: { rol: '$role', estado: '$estado' }, total: { $sum: 1 } } },
+    { $sort: { '_id.rol': 1, '_id.estado': 1 } }
+  ]).toArray();
 }
 
-// ============================================
-// REGLA 2: Verificar disponibilidad de cupos
-// ============================================
-
-// Query: Verificar si hay cupos disponibles
-function hayCuposDisponibles(horarioId) {
-  const horario = db.schedules.findOne(
-    { _id: horarioId },
-    { cupos_disponibles: 1, estado: 1, aforo_maximo: 1 }
+/** Ficha de una persona por su documento de identidad, sin la credencial (RF10). */
+function buscarPorDocumento(documento) {
+  return db.users.findOne(
+    { documento: String(documento) },
+    { password: 0 }
   );
-
-  if (!horario) {
-    return { disponible: false, razon: "Horario no existe" };
-  }
-
-  if (horario.estado === "LLENO") {
-    return { disponible: false, razon: "Horario está lleno" };
-  }
-
-  if (horario.estado === "CANCELADO") {
-    return { disponible: false, razon: "Horario fue cancelado" };
-  }
-
-  if (horario.cupos_disponibles <= 0) {
-    return { disponible: false, razon: "No hay cupos disponibles" };
-  }
-
-  return {
-    disponible: true,
-    cupos: horario.cupos_disponibles
-  };
 }
 
-// ============================================
-// REGLA 3: Verificar gimnasio opera lunes-viernes
-// ============================================
-
-function esDiaOperativo(fecha) {
-  const fechaObj = new Date(fecha);
-  const diaSemana = fechaObj.getDay(); // 0=Domingo, 6=Sábado
-
-  // 1=Lunes, 2=Martes, 3=Miércoles, 4=Jueves, 5=Viernes
-  if (diaSemana >= 1 && diaSemana <= 5) {
-    return { operativo: true };
-  }
-
-  return {
-    operativo: false,
-    razon: "El gimnasio solo opera de lunes a viernes"
-  };
+/** Estudiantes con la cuenta penalizada y hasta cuándo lo están (RN09). */
+function penalizados() {
+  return db.users.find(
+    { estado: 'PENALIZADO' },
+    { _id: 0, name: 1, email: 1, documento: 1, no_show_count: 1, penalizado_hasta: 1 }
+  ).sort({ penalizado_hasta: 1 }).toArray();
 }
 
-// Query: Obtener horarios disponibles para una fecha
-function getHorariosDisponibles(fecha) {
-  // Primero verificar si es día operativo
-  const check = esDiaOperativo(fecha);
-  if (!check.operativo) {
-    return [];
-  }
-
-  const fechaNormalizada = new Date(fecha);
-  fechaNormalizada.setHours(0, 0, 0, 0);
-
-  return db.schedules.find({
-    fecha: fechaNormalizada,
-    estado: "DISPONIBLE",
-    cupos_disponibles: { $gt: 0 }
-  }).sort({ hora_inicio: 1 }).toArray();
+/** Quiénes están cerca del límite de inasistencias, sin haberlo alcanzado (RN08). */
+function cercaDelLimite(limite) {
+  var tope = limite || 5;
+  return db.users.find(
+    { role: 'ESTUDIANTE', no_show_count: { $gte: tope - 2, $lt: tope } },
+    { _id: 0, name: 1, email: 1, no_show_count: 1 }
+  ).sort({ no_show_count: -1 }).toArray();
 }
 
-// ============================================
-// REGLA 4: Crear reserva con actualización atómica
-// ============================================
+// ── Reservas ────────────────────────────────────────────────────────────────
 
-// Transaction: Crear reserva y decrementar cupos atomically
-function crearReserva(datosReserva) {
-  const session = db.getMongo().startSession();
-
-  try {
-    session.startTransaction({
-      readConcern: { level: "snapshot" },
-      writeConcern: { w: "majority" }
-    });
-
-    const { usuario_id, horario_id, fecha_reserva, hora_inicio, hora_fin, creada_por } = datosReserva;
-
-    // 1. Verificar cupos disponibles (con lock implícito por la transacción)
-    const horario = session.getDatabase("gym_reservas_universitario")
-      .schedules.findOne({ _id: horario_id }, { session });
-
-    if (!horario || horario.cupos_disponibles <= 0) {
-      throw new Error("No hay cupos disponibles");
-    }
-
-    // 2. Verificar que usuario no tenga reserva activa para este horario
-    const reservaExistente = session.getDatabase("gym_reservas_universitario")
-      .reservations.findOne({
-        usuario_id: usuario_id,
-        horario_id: horario_id,
-        estado: "ACTIVA"
-      }, { session });
-
-    if (reservaExistente) {
-      throw new Error("Ya tiene una reserva activa para este horario");
-    }
-
-    // 3. Crear la reserva
-    const fechaHoraActual = new Date();
-    const resultadoReserva = session.getDatabase("gym_reservas_universitario")
-      .reservations.insertOne({
-        usuario_id: usuario_id,
-        horario_id: horario_id,
-        fecha_reserva: new Date(fecha_reserva),
-        hora_inicio: hora_inicio,
-        hora_fin: hora_fin,
-        estado: "ACTIVA",
-        creada_por: creada_por,
-        fecha_creacion: fechaHoraActual
-      }, { session });
-
-    // 4. Decrementar cupos disponibles
-    const nuevoCupos = horario.cupos_disponibles - 1;
-    const nuevoEstado = nuevoCupos === 0 ? "LLENO" : "DISPONIBLE";
-
-    session.getDatabase("gym_reservas_universitario")
-      .schedules.updateOne(
-        { _id: horario_id },
-        {
-          $set: {
-            cupos_disponibles: nuevoCupos,
-            estado: nuevoEstado,
-            ultima_actualizacion: fechaHoraActual
-          }
-        },
-        { session }
-      );
-
-    // 5. Registrar en audit_log
-    session.getDatabase("gym_reservas_universitario")
-      .audit_log.insertOne({
-        tipo_operacion: "RESERVA_CREADA",
-        coleccion_afectada: "reservations",
-        documento_id: resultadoReserva.insertedId,
-        usuario_ejecutor: creada_por,
-        datos_nuevos: {
-          usuario_id: usuario_id,
-          horario_id: horario_id,
-          estado: "ACTIVA"
-        },
-        timestamp: fechaHoraActual
-      }, { session });
-
-    session.commitTransaction();
-
-    return {
-      exito: true,
-      reserva_id: resultadoReserva.insertedId,
-      cupos_restantes: nuevoCupos
-    };
-
-  } catch (error) {
-    session.abortTransaction();
-    return {
-      exito: false,
-      error: error.message
-    };
-  } finally {
-    session.endSession();
-  }
+/** Reservas de una jornada, opcionalmente filtradas por estado. */
+function reservasDeLaJornada(fechaISO, estado) {
+  var filtro = { reserva_date: fechaISO || hoyISO() };
+  if (estado) filtro.estado = estado;
+  return db.reservations.find(filtro, { _id: 0 }).sort({ hour: 1, email: 1 }).toArray();
 }
 
-// ============================================
-// REGLA 5: Cancelar reserva y liberar cupo
-// ============================================
-
-function cancelarReserva(reservaId, usuarioId, motivo = null) {
-  const session = db.getMongo().startSession();
-
-  try {
-    session.startTransaction({
-      readConcern: { level: "snapshot" },
-      writeConcern: { w: "majority" }
-    });
-
-    const dbSession = session.getDatabase("gym_reservas_universitario");
-    const fechaHoraActual = new Date();
-
-    // 1. Obtener la reserva
-    const reserva = dbSession.reservations.findOne(
-      { _id: reservaId },
-      { session }
-    );
-
-    if (!reserva) {
-      throw new Error("Reserva no encontrada");
-    }
-
-    if (reserva.estado !== "ACTIVA") {
-      throw new Error("La reserva no está activa");
-    }
-
-    // Opcional: Verificar que el usuario que cancela sea el dueño o admin
-    // (lógica omitida, se maneja en el backend)
-
-    // 2. Actualizar estado de la reserva
-    const datosAnteriores = {
-      estado: reserva.estado,
-      // Agregar más campos si es necesario
-    };
-
-    dbSession.reservations.updateOne(
-      { _id: reservaId },
-      {
-        $set: {
-          estado: "CANCELADA",
-          fecha_cancelacion: fechaHoraActual,
-          motivo_cancelacion: motivo
-        }
-      },
-      { session }
-    );
-
-    // 3. Incrementar cupos disponibles
-    const horario = dbSession.schedules.findOne(
-      { _id: reserva.horario_id },
-      { session }
-    );
-
-    if (horario) {
-      const nuevoCupos = horario.cupos_disponibles + 1;
-      const nuevoEstado = horario.estado === "LLENO" ? "DISPONIBLE" : horario.estado;
-
-      dbSession.schedules.updateOne(
-        { _id: reserva.horario_id },
-        {
-          $set: {
-            cupos_disponibles: nuevoCupos,
-            estado: nuevoEstado,
-            ultima_actualizacion: fechaHoraActual
-          }
-        },
-        { session }
-      );
-    }
-
-    // 4. Registrar en audit_log
-    dbSession.audit_log.insertOne({
-      tipo_operacion: "RESERVA_CANCELADA",
-      coleccion_afectada: "reservations",
-      documento_id: reservaId,
-      usuario_ejecutor: usuarioId,
-      datos_anteriores: datosAnteriores,
-      datos_nuevos: { estado: "CANCELADA" },
-      timestamp: fechaHoraActual
-    }, { session });
-
-    session.commitTransaction();
-
-    return {
-      exito: true,
-      mensaje: "Reserva cancelada exitosamente"
-    };
-
-  } catch (error) {
-    session.abortTransaction();
-    return {
-      exito: false,
-      error: error.message
-    };
-  } finally {
-    session.endSession();
-  }
+/** Reservas de la jornada que siguen activas: nadie les registró asistencia (RF12). */
+function sinAsistenciaRegistrada(fechaISO) {
+  return reservasDeLaJornada(fechaISO, 'ACTIVA');
 }
 
-// ============================================
-// QUERIES ADICIONALES ÚTILES
-// ============================================
+/** Historial completo de un estudiante, de la más reciente a la más antigua (RF14). */
+function historialDe(email) {
+  return db.reservations.find({ email: email }, { _id: 0 })
+    .sort({ created_at: -1 }).toArray();
+}
 
-// Query: Obtener reservas de un usuario con detalles del horario
-function getReservasUsuario(usuarioId, estado = null) {
-  const matchStage = { usuario_id: usuarioId };
-  if (estado) {
-    matchStage.estado = estado;
-  }
+/** Totales de la jornada por estado: el mismo resumen del registro diario (RF16). */
+function resumenDelDia(fechaISO) {
+  var fecha = fechaISO || hoyISO();
+  var porEstado = db.reservations.aggregate([
+    { $match: { reserva_date: fecha } },
+    { $group: { _id: '$estado', total: { $sum: 1 } } }
+  ]).toArray();
+  var resumen = { fecha: fecha, ACTIVA: 0, COMPLETADA: 0, CANCELADA: 0, NO_SHOW: 0 };
+  porEstado.forEach(function (e) { resumen[e._id] = e.total; });
+  return resumen;
+}
 
+/** Ocupación por bloque en una jornada, para ver a qué horas se llena el gimnasio. */
+function ocupacionPorBloque(fechaISO) {
+  var fecha = fechaISO || hoyISO();
   return db.reservations.aggregate([
-    { $match: matchStage },
-    {
-      $lookup: {
-        from: "schedules",
-        localField: "horario_id",
-        foreignField: "_id",
-        as: "horario"
-      }
-    },
-    { $unwind: "$horario" },
-    {
-      $project: {
-        _id: 1,
-        fecha_reserva: 1,
-        hora_inicio: 1,
-        hora_fin: 1,
-        estado: 1,
-        fecha_creacion: 1,
-        "horario.aforo_maximo": 1,
-        "horario.estado": 1
-      }
-    },
-    { $sort: { fecha_reserva: 1, hora_inicio: 1 } }
+    { $match: { reserva_date: fecha, estado: { $in: ['ACTIVA', 'COMPLETADA', 'NO_SHOW'] } } },
+    { $group: { _id: '$hour', total: { $sum: 1 } } },
+    { $sort: { _id: 1 } }
   ]).toArray();
 }
 
-// Query: Estadísticas de ocupación por fecha
-function getEstadisticaOcupacion(fechaInicio, fechaFin) {
-  return db.schedules.aggregate([
-    {
-      $match: {
-        fecha: {
-          $gte: new Date(fechaInicio),
-          $lte: new Date(fechaFin)
-        }
-      }
-    },
-    {
-      $group: {
-        _id: "$fecha",
-        total_horarios: { $sum: 1 },
-        total_cupos: { $sum: "$aforo_maximo" },
-        cupos_disponibles: { $sum: "$cupos_disponibles" },
-        horarios_llenos: {
-          $sum: { $cond: [{ $eq: ["$estado", "LLENO"] }, 1, 0] }
-        }
-      }
-    },
-    {
-      $project: {
-        fecha: "$_id",
-        total_horarios: 1,
-        total_cupos: 1,
-        cupos_ocupados: { $subtract: ["$total_cupos", "$cupos_disponibles"] },
-        porcentaje_ocupacion: {
-          $multiply: [
-            { $divide: [
-              { $subtract: ["$total_cupos", "$cupos_disponibles"] },
-              "$total_cupos"
-            ]},
-            100
-          ]
-        },
-        horarios_llenos: 1
-      }
-    },
-    { $sort: { fecha: 1 } }
+// ── Comprobaciones de integridad ────────────────────────────────────────────
+
+/**
+ * Busca estudiantes con más de una reserva ACTIVA el mismo día. El resultado
+ * debe estar siempre vacío: lo impiden la regla RN05 en el backend y el índice
+ * único parcial de la base de datos. Si aparece algo, hay un problema serio.
+ */
+function reservasDuplicadas() {
+  return db.reservations.aggregate([
+    { $match: { estado: 'ACTIVA' } },
+    { $group: { _id: { email: '$email', fecha: '$reserva_date' }, total: { $sum: 1 } } },
+    { $match: { total: { $gt: 1 } } }
   ]).toArray();
 }
 
-// Query: Generar horarios para una semana (script de administrador)
-function generarHorariosSemana(fechaInicioSemana, aforoDefault = 30) {
-  const bloquesHorarios = ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00"];
-  const horariosGenerados = [];
-
-  const fecha = new Date(fechaInicioSemana);
-
-  // Ajustar al lunes si no es lunes
-  const diaSemana = fecha.getDay();
-  if (diaSemana !== 1) {
-    const diasHastaLunes = (diaSemana === 0) ? 1 : (8 - diaSemana);
-    fecha.setDate(fecha.getDate() + diasHastaLunes);
-  }
-
-  // Generar 5 días (lunes a viernes)
-  for (let dia = 0; dia < 5; dia++) {
-    const fechaActual = new Date(fecha);
-    fechaActual.setDate(fecha.getDate() + dia);
-    fechaActual.setHours(0, 0, 0, 0);
-
-    for (const horaInicio of bloquesHorarios) {
-      const [horas] = horaInicio.split(":");
-      const horaFin = `${parseInt(horas) + 2}:00`;
-
-      try {
-        db.schedules.insertOne({
-          fecha: fechaActual,
-          hora_inicio: horaInicio,
-          hora_fin: horaFin,
-          aforo_maximo: aforoDefault,
-          cupos_disponibles: aforoDefault,
-          estado: "DISPONIBLE",
-          entrenador_id: null,
-          notas: null,
-          fecha_creacion: new Date(),
-          ultima_actualizacion: new Date()
-        });
-
-        horariosGenerados.push({
-          fecha: fechaActual.toISOString().split("T")[0],
-          hora_inicio: horaInicio,
-          hora_fin: horaFin
-        });
-      } catch (e) {
-        // Horario duplicado, ignorar
-        print(`Horario duplicado ignorado: ${fechaActual.toDateString()} ${horaInicio}`);
-      }
-    }
-  }
-
-  return horariosGenerados;
+/** Reservas cuyo correo no corresponde a ninguna cuenta registrada. */
+function reservasHuerfanas() {
+  var correos = db.users.distinct('email');
+  return db.reservations.find({ email: { $nin: correos } }, { _id: 0 }).toArray();
 }
 
-// Exportar funciones para uso
-print("Funciones de queries cargadas:");
-print("  - puedeReservar(usuarioId, fechaDeseada)");
-print("  - hayCuposDisponibles(horarioId)");
-print("  - esDiaOperativo(fecha)");
-print("  - getHorariosDisponibles(fecha)");
-print("  - crearReserva(datosReserva)");
-print("  - cancelarReserva(reservaId, usuarioId, motivo)");
-print("  - getReservasUsuario(usuarioId, estado)");
-print("  - getEstadisticaOcupacion(fechaInicio, fechaFin)");
-print("  - generarHorariosSemana(fechaInicioSemana, aforoDefault)");
+// ── Buzón de sugerencias ────────────────────────────────────────────────────
+
+/** Mensajes del buzón, del más reciente al más antiguo (RF21). */
+function verBuzon(limite) {
+  return db.suggestions.find({}, { _id: 0 })
+    .sort({ created_at: -1 }).limit(limite || 20).toArray();
+}
+
+// ── Resumen al ejecutar el archivo ──────────────────────────────────────────
+
+print('Consultas de inspeccion disponibles (solo lectura):');
+print('');
+print('  Disponibilidad');
+print('    verBloques()                     los seis bloques con sus cupos');
+print('    verificarAforo(fecha)            contrasta el contador con las reservas reales');
+print('');
+print('  Usuarios');
+print('    usuariosPorRol()                 cuentas por rol y estado');
+print('    buscarPorDocumento(documento)    ficha de una persona, sin la credencial');
+print('    penalizados()                    cuentas penalizadas y hasta cuando');
+print('    cercaDelLimite(limite)           quienes estan por alcanzar el limite');
+print('');
+print('  Reservas');
+print('    reservasDeLaJornada(fecha, est)  reservas de un dia');
+print('    sinAsistenciaRegistrada(fecha)   las que siguen activas');
+print('    historialDe(correo)              historial de un estudiante');
+print('    resumenDelDia(fecha)             totales por estado');
+print('    ocupacionPorBloque(fecha)        a que horas se llena el gimnasio');
+print('');
+print('  Integridad');
+print('    reservasDuplicadas()             debe devolver siempre una lista vacia');
+print('    reservasHuerfanas()              reservas sin cuenta asociada');
+print('');
+print('  Buzon');
+print('    verBuzon(limite)                 mensajes del mas reciente al mas antiguo');
+print('');
+print('Estado actual: ' + JSON.stringify(resumenDelDia()));
