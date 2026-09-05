@@ -29,3 +29,6 @@ playwright-report/
 # Claude Code local
 .config/settings.local.json
 .claude/settings.local.json
+
+# Copias locales de Pages
+*.pages

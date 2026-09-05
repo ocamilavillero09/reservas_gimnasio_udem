@@ -4,6 +4,33 @@ Sistema de gestión de reservas para el gimnasio de la Universidad de Medellín.
 
 ---
 
+## Documentación del proyecto
+
+| Documento | Contenido |
+|---|---|
+| `Especificacion-de-Requisitos.docx` | Los 23 requisitos funcionales por módulo, las 12 reglas de negocio y los 6 requisitos no funcionales, cada uno con actor, precondiciones, flujo, postcondiciones y flujos alternos. |
+| `Modelo-de-Analisis-Sistema-Reservas-Gimnasio.docx` | Modelo de análisis v2.0: justificación, usuarios, alcance, casos de uso, historias de usuario, modelo de datos y arquitectura. |
+| `PROYECTO GESTION DE RESERVAS GIMNASIO.pdf` | Modelo de análisis v1.0, de marzo de 2026. Se conserva como antecedente; sus reglas fueron reemplazadas por las de la v2.0. |
+
+### Reglas de negocio vigentes
+
+| Código | Regla |
+|---|---|
+| RN01 | El dominio del correo determina el rol, que se asigna una sola vez en el registro |
+| RN02 | El documento de identidad es la credencial y el identificador de búsqueda |
+| RN03 | Seis bloques de dos horas en horas pares, de 06:00 a 18:00 |
+| RN04 | Las reservas son siempre para el día siguiente |
+| RN05 | Una reserva por estudiante por día |
+| RN06 | El cupo se descuenta en una sola operación, sin sobrecupo |
+| RN07 | Cancelar libera el cupo de inmediato |
+| RN08 | Cinco inasistencias penalizan la cuenta |
+| RN09 | Una cuenta penalizada no puede reservar |
+| RN10 | Entrenadores y administradores no reservan |
+| RN11 | Toda confirmación se muestra dentro de la aplicación; no se envía correo |
+| RN12 | La asistencia se registra el día del bloque y no antes de su hora |
+
+---
+
 ## Tecnologías y Versiones
 
 ### Frontend
@@ -33,8 +60,8 @@ Sistema de gestión de reservas para el gimnasio de la Universidad de Medellín.
 ## Cómo Clonar el Repositorio
 
 ```bash
-git clone https://github.com/ocamilavillero09/gym-reserva-project.git
-cd gym-reserva-project
+git clone https://github.com/ocamilavillero09/reservas_gimnasio_udem.git
+cd reservas_gimnasio_udem
 ```
 
 ---
@@ -112,8 +139,8 @@ docker-compose -f docker-compose-hub.yml up
 
 1. **Clonar el repositorio:**
    ```bash
-   git clone https://github.com/ocamilavillero09/gym-reserva-project.git
-   cd gym-reserva-project
+   git clone https://github.com/ocamilavillero09/reservas_gimnasio_udem.git
+   cd reservas_gimnasio_udem
    ```
 
 2. **Construir y levantar los servicios:**
@@ -163,8 +190,8 @@ docker-compose -f docker-compose-hub.yml up
 Sigue estos pasos para verificar que frontend, backend y base de datos se comunican correctamente:
 
 1. **Abrir el frontend** en http://localhost:5173/index.html
-2. **Registrarse** con **nombre, correo institucional y documento de identidad** (RF01).
-   El **dominio del correo define el rol** (RF03):
+2. **Registrarse** con nombre, correo institucional y documento de identidad (RF01).
+   El dominio del correo define el rol (RN01):
 
    | Dominio | Rol |
    |---|---|
@@ -172,56 +199,69 @@ Sigue estos pasos para verificar que frontend, backend y base de datos se comuni
    | `@udem.edu.co` | Entrenador |
    | `@udemedellin.edu.co` | Administrador |
 
-3. **Iniciar sesión** con el correo y el **documento de identidad como contraseña** (RF02)
-4. **Perfil** — el estudiante gestiona edad, peso, altura y objetivo (RF04); el entrenador y
-   el administrador consultan su nombre, documento y rol (RF05)
-5. **Ver bloques horarios y cupos** en el Dashboard — la reserva es **para el día siguiente**
-   y se muestra la fecha exacta (RF06/RF07/RF08)
-6. **Crear una reserva** — llega la notificación de confirmación (RF23); si intentas una
-   segunda para el mismo día, el sistema lo impide y avisa (RF09/RF24)
+3. **Iniciar sesión** con el correo y el documento de identidad como contraseña (RF02)
+4. **Perfil** — el estudiante gestiona edad, peso, altura y objetivo (RF03); el entrenador (RF04)
+   y el administrador (RF05) consultan su nombre, documento y rol
+5. **Ver bloques horarios y cupos** en el Dashboard. La reserva es para el día siguiente
+   y el sistema muestra la fecha exacta (RF06, RN03, RN04)
+6. **Crear una reserva** — llega la confirmación en la aplicación. Si intentas una segunda
+   para el mismo día, el sistema lo impide y avisa (RF07, RN05, RN11)
 7. **Recargar la página (F5)** — la sesión se mantiene abierta
-8. **"Mis Reservas" → cancelar** — el cupo se libera al instante y llega la notificación
-   de cancelación (RF10/RF25)
-9. **Entrar como entrenador o administrador** — se ve el **panel**, sin interfaz de reserva (RF12):
-   - Buscar al estudiante **por su documento de identidad** y **registrar su asistencia** (RF11/RF13)
-   - Ver los **estudiantes sin asistencia registrada** de la jornada (RF14)
-   - **Procesar de forma general las inasistencias**: se penaliza a quien llegue a
-     **5 inasistencias** (RF15/RF16)
-   - Consultar el **reporte general diario** e **imprimirlo en PDF** (RF19/RF20)
-10. **Como estudiante**, revisar el **historial** (RF17) y el **reporte personal** de
-    inasistencias y penalizaciones en el Perfil (RF18)
-11. **Como administrador principal** (el primer ADMIN registrado), crear otras cuentas de
-    administrador y **retirarles el rol** en "Usuarios" (RF21/RF22)
-12. **Verificar en Swagger UI** (`http://localhost:8000/swagger/`) que todos los endpoints
+8. **"Mis Reservas" → cancelar** — el cupo se libera al instante y llega la confirmación
+   (RF08, RF09, RN07)
+9. **Entrar como entrenador** — se ve el panel, sin interfaz de reserva (RN10):
+   - Buscar al estudiante por su documento de identidad (RF10)
+   - Registrar su asistencia, solo el día del bloque y a partir de su hora (RF11, RN12)
+   - Ver los estudiantes sin asistencia registrada de la jornada (RF12)
+   - Cerrar la jornada procesando las inasistencias: se penaliza a quien llegue a
+     5 inasistencias (RF13, RN08)
+   - Consultar el registro diario e imprimirlo en PDF (RF16, RF18)
+10. **Como estudiante**, revisar el historial (RF14) y el reporte de inasistencias en el
+    Perfil (RF15), y enviar un reporte de falla al buzón (RF20)
+11. **Como administrador**, consultar el registro diario y su PDF (RF17, RF19) y leer el
+    buzón de sugerencias (RF21)
+12. **Como administrador principal** (el primer ADMIN registrado), crear otras cuentas de
+    administrador y retirarles el rol en "Usuarios" (RF22, RF23)
+13. **Verificar en Swagger UI** (`http://localhost:8000/swagger/`) que todos los endpoints
     responden con los códigos esperados
 
 ### Trazabilidad: requisito → endpoint
 
+Estado del código a la fecha. Las filas marcadas como pendiente corresponden a requisitos
+aprobados que aún no están implementados; se resuelven durante la refactorización.
+
 | Requisito | Endpoint |
 |---|---|
-| RF01 Registro con nombre, correo y documento | `POST /api/auth/register/` |
-| RF02 Login con documento como contraseña | `POST /api/auth/login/` |
-| RF03 Rol automático según el dominio | `POST /api/auth/register/` (campo `role` de la respuesta) |
-| RF04 Perfil del estudiante (edad, peso, altura, objetivo) | `GET/PUT /api/users/profile/` |
-| RF05 Perfil de entrenador/administrador | `GET /api/users/profile/` |
-| RF06 Bloques horarios disponibles | `GET /api/slots/` |
-| RF07 Cupos ocupados y disponibles | `GET /api/slots/` · `GET /api/reports/occupancy/` |
-| RF08 Reserva para el día siguiente | `POST /api/reservations/` |
-| RF09 Una sola reserva por día | `POST /api/reservations/` (409) |
-| RF10 Consultar y cancelar la reserva | `GET /api/reservations/` · `DELETE /api/reservations/<id>/` |
-| RF11 Buscar la reserva por documento | `GET /api/students/lookup/?documento=&actor_email=` |
-| RF12 Staff visualiza sin reservar | `GET /api/reports/occupancy/` · `POST /api/reservations/` (403) |
-| RF13 Registrar asistencia | `POST /api/attendance/register/` |
-| RF14 Estudiantes sin asistencia registrada | `GET /api/attendance/pending/?actor_email=` |
-| RF15 Procesar inasistencias en general | `POST /api/attendance/process/` |
-| RF16 Penalización a las 5 inasistencias | `POST /api/attendance/process/` (`total_penalizados`) |
-| RF17 Historial del estudiante | `GET /api/reservations/history/?email=` |
-| RF18 Reporte personal | `GET /api/reports/personal/?email=` |
-| RF19 Reporte general diario | `GET /api/reports/daily/?actor_email=` |
-| RF20 Reporte general diario en PDF | `GET /api/reports/daily.pdf?actor_email=` |
-| RF21 Crear cuentas de administrador | `POST /api/admin/users/` (solo el principal) |
-| RF22 Retirar el rol de administrador | `PATCH /api/admin/users/<correo>/` con `accion: retirar` |
-| RF23/RF24/RF25 Notificaciones | campo `notificacion` de `POST /api/reservations/` y `DELETE /api/reservations/<id>/` |
+| RF01 Registrar una cuenta | `POST /api/auth/register/` |
+| RF02 Iniciar sesión | `POST /api/auth/login/` |
+| RF03 Perfil del estudiante | `GET/PUT /api/users/profile/` |
+| RF04 Perfil del entrenador | `GET /api/users/profile/` |
+| RF05 Perfil del administrador | `GET /api/users/profile/` |
+| RF06 Bloques horarios con sus cupos | `GET /api/slots/` |
+| RF07 Reservar para el día siguiente | `POST /api/reservations/` |
+| RF08 Consultar mis reservas | `GET /api/reservations/` |
+| RF09 Cancelar mi reserva | `DELETE /api/reservations/<id>/` |
+| RF10 Buscar la reserva por documento | `GET /api/students/lookup/` |
+| RF11 Registrar asistencia | `POST /api/attendance/register/` — falta la ventana de RN12 |
+| RF12 Reservas sin asistencia registrada | `GET /api/attendance/pending/` |
+| RF13 Procesar inasistencias | `POST /api/attendance/process/` — falta restringirlo al entrenador |
+| RF14 Historial del estudiante | `GET /api/reservations/history/` |
+| RF15 Reporte de inasistencias | `GET /api/reports/personal/` |
+| RF16 Registro diario (entrenador) | `GET /api/reports/daily/` |
+| RF17 Registro diario (administrador) | `GET /api/reports/daily/` |
+| RF18 Registro diario en PDF (entrenador) | `GET /api/reports/daily.pdf` |
+| RF19 Registro diario en PDF (administrador) | `GET /api/reports/daily.pdf` |
+| RF20 Enviar una sugerencia | Pendiente |
+| RF21 Consultar el buzón | Pendiente |
+| RF22 Crear cuentas de administrador | `POST /api/admin/users/` |
+| RF23 Retirar el rol de administrador | `PATCH /api/admin/users/<correo>/` |
+
+### Funcionalidad que sale del código
+
+Estas rutas existen hoy pero no corresponden a ningún requisito aprobado y se retiran
+durante la refactorización: lista de espera, catálogo de máquinas, reporte de ocupación,
+exportación en CSV y la penalización por acumular cancelaciones. Las calificaciones se
+transforman en el buzón de sugerencias (RF20 y RF21).
 
 ### Verificación rápida con curl
 
@@ -242,50 +282,50 @@ curl -X POST http://localhost:8000/api/auth/register/ -H "Content-Type: applicat
 curl -X POST http://localhost:8000/api/auth/login/ -H "Content-Type: application/json" \
   -d "{\"email\":\"$EST\",\"documento\":\"$DOC_EST\"}"
 
-# RF04 — Edad, peso, altura y objetivo de entrenamiento
+# RF03 — Edad, peso, altura y objetivo de entrenamiento
 curl -X PUT http://localhost:8000/api/users/profile/ -H "Content-Type: application/json" \
   -d "{\"email\":\"$EST\",\"edad\":21,\"peso\":72,\"altura\":178,\"meta\":\"Ganar resistencia\"}"
 
-# RF06/RF07 — Bloques horarios y cupos (la fecha es la de mañana)
+# RF06 — Bloques horarios y cupos (la fecha es la de mañana)
 curl http://localhost:8000/api/slots/
 FECHA=$(curl -s http://localhost:8000/api/slots/ | python3 -c 'import json,sys;print(json.load(sys.stdin)["fecha"])')
 
-# RF08/RF23 — Reserva del día siguiente y su notificación
+# RF07 — Reserva del día siguiente y su confirmación
 curl -X POST http://localhost:8000/api/reservations/ -H "Content-Type: application/json" \
   -d "{\"email\":\"$EST\",\"slotId\":1}"
 
-# RF09/RF24 — Segunda reserva del mismo día: rechazada y notificada
+# RN05 — Segunda reserva del mismo día: rechazada y notificada
 curl -X POST http://localhost:8000/api/reservations/ -H "Content-Type: application/json" \
   -d "{\"email\":\"$EST\",\"slotId\":2}"
 
-# RF11 — El entrenador busca al estudiante por su documento
+# RF10 — El entrenador busca al estudiante por su documento
 curl "http://localhost:8000/api/students/lookup/?documento=$DOC_EST&actor_email=$COACH"
 
-# RF14 — Estudiantes con reserva y sin asistencia registrada
+# RF12 — Estudiantes con reserva y sin asistencia registrada
 curl "http://localhost:8000/api/attendance/pending/?actor_email=$COACH&fecha=$FECHA"
 
-# RF13 — Registrar la asistencia
+# RF11 — Registrar la asistencia
 curl -X POST http://localhost:8000/api/attendance/register/ -H "Content-Type: application/json" \
   -d "{\"actor_email\":\"$COACH\",\"documento\":\"$DOC_EST\",\"fecha\":\"$FECHA\"}"
 
-# RF15/RF16 — Procesar las inasistencias de la jornada (penaliza a las 5)
+# RF13 — Cerrar la jornada procesando las inasistencias (penaliza a las 5)
 curl -X POST http://localhost:8000/api/attendance/process/ -H "Content-Type: application/json" \
   -d "{\"actor_email\":\"$COACH\",\"fecha\":\"$FECHA\"}"
 
-# RF17 — Historial · RF18 — Reporte personal del estudiante
+# RF14 — Historial · RF15 — Reporte de inasistencias del estudiante
 curl "http://localhost:8000/api/reservations/history/?email=$EST"
 curl "http://localhost:8000/api/reports/personal/?email=$EST"
 
-# RF19/RF20 — Reporte general diario y su PDF
+# RF16 a RF19 — Registro diario y su PDF
 curl "http://localhost:8000/api/reports/daily/?actor_email=$COACH&fecha=$FECHA"
-curl -o reporte_diario.pdf "http://localhost:8000/api/reports/daily.pdf?actor_email=$COACH&fecha=$FECHA"
+curl -o registro_diario.pdf "http://localhost:8000/api/reports/daily.pdf?actor_email=$COACH&fecha=$FECHA"
 
-# RF21 — El administrador principal crea otra cuenta de administrador
+# RF22 — El administrador principal crea otra cuenta de administrador
 curl -X POST http://localhost:8000/api/admin/users/ -H "Content-Type: application/json" \
   -d "{\"actor_email\":\"$JEFA\",\"name\":\"Nueva Admin\",
        \"email\":\"nueva@udemedellin.edu.co\",\"documento\":\"3001112223\"}"
 
-# RF22 — Retirarle el rol de administrador
+# RF23 — Retirarle el rol de administrador
 curl -X PATCH http://localhost:8000/api/admin/users/nueva@udemedellin.edu.co/ \
   -H "Content-Type: application/json" -d "{\"actor_email\":\"$JEFA\",\"accion\":\"retirar\"}"
 ```
@@ -293,7 +333,7 @@ curl -X PATCH http://localhost:8000/api/admin/users/nueva@udemedellin.edu.co/ \
 ### Pruebas automatizadas
 
 ```bash
-# Backend: 98 pruebas (reglas de negocio y RF01–RF25)
+# Backend: pruebas de las reglas de negocio y de los requisitos funcionales
 cd backend && python manage.py test api
 
 # Frontend: pruebas unitarias de componentes y del cliente HTTP
@@ -308,7 +348,9 @@ cd frontend && npx playwright test
 ## Estructura del Proyecto
 
 ```
-gym-reserva-project/
+reservas_gimnasio_udem/
+├── Especificacion-de-Requisitos.docx
+├── Modelo-de-Analisis-Sistema-Reservas-Gimnasio.docx
 ├── frontend/          # React 18 + Vite
 │   ├── dockerfile
 │   ├── src/
