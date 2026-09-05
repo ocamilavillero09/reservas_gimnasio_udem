@@ -188,7 +188,20 @@ def registrar_cuenta(request):
     }
 )
 @api_view(['POST'])
-def login(request):
+def iniciar_sesion(request):
+    """RF02 — Iniciar sesión.
+
+    Autentica con el correo institucional y el documento de identidad como
+    contraseña (RN02), y devuelve el rol ALMACENADO en la cuenta para que la
+    interfaz muestre las herramientas de ese perfil.
+
+    El rol no se recalcula a partir del dominio del correo en cada entrada: si
+    se recalculara, una cuenta a la que el administrador principal le retiró el
+    rol (RF23) lo recuperaría sola en el siguiente inicio de sesión.
+
+    Una cuenta penalizada entra con normalidad y ve su estado: la penalización
+    limita reservar, no entrar (RN09).
+    """
     # ╔══════════════════════════════════════════════════════════════════╗
     # ║ CASO DE USO CRÍTICO #2 — INICIO DE SESIÓN                          ║
     # ║ Crítico por seguridad: la verificación compara el hash PBKDF2       ║

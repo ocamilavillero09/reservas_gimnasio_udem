@@ -44,7 +44,7 @@ export default function Login({ onLogin }) {
         await authApi.registrarCuenta({ name, email, documento });
         setRegistered(true);
       } else {
-        const user = await authApi.login({ email, documento });
+        const user = await authApi.iniciarSesion({ email, documento });
         onLogin(user);
       }
     } catch (err) {

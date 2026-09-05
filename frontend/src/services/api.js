@@ -15,7 +15,8 @@ async function request(path, options = {}) {
 export const authApi = {
   // RF01 — Registrar una cuenta (backend: registrar_cuenta)
   registrarCuenta: (body) => request('/auth/register/', { method: 'POST', body: JSON.stringify(body) }),
-  login:    (body) => request('/auth/login/',    { method: 'POST', body: JSON.stringify(body) }),
+  // RF02 — Iniciar sesión (backend: iniciar_sesion)
+  iniciarSesion: (body) => request('/auth/login/', { method: 'POST', body: JSON.stringify(body) }),
   // Rehidrata la sesión al recargar la página (la sesión no se pierde con F5).
   session:  (email) => request(`/auth/session/?email=${encodeURIComponent(email)}`),
 };

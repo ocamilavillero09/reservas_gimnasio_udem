@@ -12,7 +12,7 @@ describe('api service', () => {
 
   it('login hace POST a /auth/login/ con el correo y el documento (RF02)', async () => {
     mockFetch({ name: 'Juan', email: 'j@soyudemedellin.edu.co', role: 'ESTUDIANTE' });
-    const res = await authApi.login({ email: 'j@soyudemedellin.edu.co', documento: '1001234567' });
+    const res = await authApi.iniciarSesion({ email: 'j@soyudemedellin.edu.co', documento: '1001234567' });
     expect(res.role).toBe('ESTUDIANTE');
     const [url, opts] = global.fetch.mock.calls[0];
     expect(url).toContain('/auth/login/');

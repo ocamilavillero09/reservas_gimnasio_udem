@@ -5,7 +5,8 @@ urlpatterns = [
     # Auth
     # RF01 — Registrar una cuenta
     path('auth/register/',              views.registrar_cuenta,    name='register'),
-    path('auth/login/',                 views.login,               name='login'),
+    # RF02 — Iniciar sesión
+    path('auth/login/',                 views.iniciar_sesion,      name='login'),
     path('auth/session/',               views.session,             name='session'),
 
     # RF21 — Gestión de usuarios (solo el administrador principal crea ADMIN)
