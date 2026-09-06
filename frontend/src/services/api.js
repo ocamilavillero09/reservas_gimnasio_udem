@@ -71,9 +71,14 @@ export const waitlistApi = {
 
 // RF13 — Perfil y metas.
 export const profileApi = {
-  // RF03 — Consultar y actualizar el perfil (backend: consultar_actualizar_perfil)
+  // RF03 — Consultar y actualizar el perfil del estudiante
+  //        (backend: consultar_actualizar_perfil)
   consultarPerfil:  (email) => request(`/users/profile/?email=${encodeURIComponent(email)}`),
   actualizarPerfil: (body)  => request('/users/profile/', { method: 'PUT', body: JSON.stringify(body) }),
+  // RF04 — Perfil del entrenador (backend: consultar_entrenador)
+  consultarEntrenador:    (email) => request(`/users/entrenador/?email=${encodeURIComponent(email)}`),
+  // RF05 — Perfil del administrador (backend: consultar_administrador)
+  consultarAdministrador: (email) => request(`/users/administrador/?email=${encodeURIComponent(email)}`),
 };
 
 // RF15 — Calificación del servicio.

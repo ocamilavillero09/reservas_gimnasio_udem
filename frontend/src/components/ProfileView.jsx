@@ -13,14 +13,15 @@ const ROLE_LABEL = {
 };
 
 /**
- * Mi perfil.
+ * Mi perfil. La pantalla es una sola, pero detrás hay tres requisitos distintos
+ * porque son tres actores distintos:
  *
- *   RF05 — Entrenadores y administradores consultan su nombre, DOCUMENTO DE
- *          IDENTIDAD y rol asignado.
- *   RF04 — El estudiante consulta y gestiona su edad, peso, altura y objetivo
+ *   RF03 — El estudiante consulta y actualiza su edad, peso, altura y objetivo
  *          de entrenamiento.
- *   RF18 — El estudiante consulta su reporte personal de inasistencias y
- *          penalizaciones, y cuántas inasistencias le faltan para el límite.
+ *   RF04 — El entrenador consulta su nombre, documento y rol. Solo lectura.
+ *   RF05 — El administrador consulta lo mismo, más si es el principal. Solo
+ *          lectura.
+ *   RF15 — El estudiante consulta su reporte de inasistencias y penalizaciones.
  */
 export default function ProfileView({ user, showToast }) {
   const [edad, setEdad] = useState('');
@@ -30,15 +31,22 @@ export default function ProfileView({ user, showToast }) {
   const [datos, setDatos] = useState(null);
   const [reporte, setReporte] = useState(null);
 
+  // Cada rol tiene su propio requisito y su propia consulta: RF03 para el
+  // estudiante, RF04 para el entrenador y RF05 para el administrador.
   const cargar = useCallback(() => {
-    profileApi.consultarPerfil(user.email).then((p) => {
+    const consulta =
+      user.role === 'ENTRENADOR' ? profileApi.consultarEntrenador
+      : user.role === 'ADMIN'    ? profileApi.consultarAdministrador
+      : profileApi.consultarPerfil;
+
+    consulta(user.email).then((p) => {
       setDatos(p);
       setEdad(p.edad ?? '');
       setPeso(p.peso ?? '');
       setAltura(p.altura ?? '');
       setMeta(p.meta ?? '');
     }).catch(() => {});
-  }, [user.email]);
+  }, [user.email, user.role]);
 
   useEffect(cargar, [cargar]);
 

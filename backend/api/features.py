@@ -4,6 +4,8 @@ Funcionalidades complementarias del documento de análisis (RF11–RF18):
   RF11  Historial de entrenamiento          (reservation_history)
   RF12  Lista de espera                      (waitlist + pop_next_in_waitlist)
   RF03  Consultar y actualizar el perfil     (consultar_actualizar_perfil)
+  RF04  Perfil del entrenador                 (consultar_entrenador)
+  RF05  Perfil del administrador              (consultar_administrador)
   RF15  Calificación del servicio            (ratings)
   RF16  Dashboard de aforo proyectado        (occupancy_report)
   RF17  Reporte POR ESTUDIANTE               (students_report, complete_reservation)
@@ -119,14 +121,80 @@ def pop_next_in_waitlist(slot_id: int):
 CAMPOS_PERFIL = ('edad', 'peso', 'altura', 'meta')
 
 
-def _respuesta_perfil(user: dict) -> dict:
-    """Perfil completo tal como lo consume la interfaz."""
+def _identidad(user: dict) -> dict:
+    """Datos que identifican a la persona. Son de solo lectura para todos los
+    roles: el nombre, el correo, el documento y el rol no se editan desde el
+    perfil porque son los que la identifican en el sistema."""
     return {
-        # Datos de identidad, de solo lectura para todos los roles.
-        'name': user['name'], 'email': user['email'],
+        'name': user['name'],
+        'email': user['email'],
         'documento': user.get('documento', ''),
         'role': user.get('role'),
         'estado': user.get('estado'),
+    }
+
+
+def _perfil_de_rol(request, rol_esperado, etiqueta):
+    """Consulta de solo lectura del perfil propio, para RF04 y RF05.
+
+    Comprueba que la cuenta consultada tenga el rol que le corresponde a este
+    requisito. Un entrenador y un administrador tienen requisitos separados
+    porque son actores distintos, aunque hoy consulten los mismos campos: el
+    administrador ve además si es el administrador principal.
+    """
+    email = request.query_params.get('email', '').strip().lower()
+    if not email:
+        return Response({'error': 'email requerido.'}, status=400), None
+
+    user = get_db().users.find_one({'email': email})
+    if not user:
+        return Response({'error': 'Usuario no encontrado.'}, status=404), None
+
+    if user.get('role') != rol_esperado:
+        return Response(
+            {'error': f'Esta consulta es del perfil de {etiqueta}.'},
+            status=403,
+        ), None
+
+    return None, user
+
+
+@api_view(['GET'])
+def consultar_entrenador(request):
+    """RF04 — Consultar el perfil del entrenador.
+
+    Devuelve el nombre, el correo institucional, el documento de identidad y el
+    rol asignado. Es de solo lectura: este perfil no tiene datos físicos ni
+    objetivo de entrenamiento, porque el entrenador no reserva ni entrena dentro
+    del sistema.
+    """
+    error, user = _perfil_de_rol(request, 'ENTRENADOR', 'un entrenador')
+    if error is not None:
+        return error
+    return Response(_identidad(user))
+
+
+@api_view(['GET'])
+def consultar_administrador(request):
+    """RF05 — Consultar el perfil del administrador.
+
+    Devuelve el nombre, el correo institucional, el documento de identidad y el
+    rol asignado, e indica además si esta cuenta es la del administrador
+    principal, que es la única que puede crear y retirar cuentas de
+    administrador (RF22 y RF23). Es de solo lectura.
+    """
+    error, user = _perfil_de_rol(request, 'ADMIN', 'un administrador')
+    if error is not None:
+        return error
+    datos = _identidad(user)
+    datos['es_principal'] = bool(user.get('es_principal'))
+    return Response(datos)
+
+
+def _respuesta_perfil(user: dict) -> dict:
+    """Perfil completo tal como lo consume la interfaz."""
+    return {
+        **_identidad(user),
         'es_principal': bool(user.get('es_principal')),
         # Inasistencias y cuántas faltan para la penalización (RN08).
         'no_show_count': user.get('no_show_count', 0),
@@ -159,9 +227,8 @@ def consultar_actualizar_perfil(request):
     Flujo alterno A1: si algún campo está fuera de rango no se guarda NINGUNO,
     para que el perfil no quede a medio actualizar.
 
-    Nota: este endpoint sirve hoy también a RF04 y RF05, la consulta del perfil
-    del entrenador y del administrador. Se separan al implementar esos dos
-    requisitos.
+    El actor es el estudiante. El entrenador y el administrador tienen sus
+    propias consultas, RF04 y RF05, que son de solo lectura.
     """
     db = get_db()
     if request.method == 'GET':
@@ -175,15 +242,16 @@ def consultar_actualizar_perfil(request):
     if not user:
         return Response({'error': 'Usuario no encontrado.'}, status=404)
 
-    if request.method == 'PUT':
-        # Solo el estudiante tiene perfil físico que editar (RF03). El
-        # entrenador y el administrador consultan, no editan (RF04 y RF05).
-        if user.get('role') != 'ESTUDIANTE':
-            return Response(
-                {'error': 'Solo los estudiantes pueden editar su perfil de entrenamiento.'},
-                status=403,
-            )
+    # RF03 es del estudiante. El entrenador consulta por RF04 y el
+    # administrador por RF05, que devuelven solo los datos de identidad.
+    if user.get('role') != 'ESTUDIANTE':
+        return Response(
+            {'error': 'Este perfil es el del estudiante. '
+                      'El entrenador y el administrador tienen su propia consulta.'},
+            status=403,
+        )
 
+    if request.method == 'PUT':
         # Primero se validan TODOS los campos recibidos; solo si no hay ningún
         # error se escribe. Así el flujo alterno A1 no deja el perfil a medias.
         errores = {}

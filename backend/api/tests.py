@@ -507,14 +507,14 @@ class FeaturesTests(GymApiTestCase):
 # ══════════════════════════════════════════════════════════════════════════
 
 class PerfilTests(GymApiTestCase):
-    """RF04 — Perfil del estudiante · RF05 — Perfil de entrenador/admin."""
+    """RF03 — Perfil del estudiante · RF04 — Entrenador · RF05 — Administrador."""
 
     def setUp(self):
         super().setUp()
         self._register()
         self._register(email=PROFESOR, name='Coach')
 
-    def test_rf04_el_estudiante_gestiona_edad_peso_altura_y_objetivo(self):
+    def test_rf03_el_estudiante_gestiona_edad_peso_altura_y_objetivo(self):
         resp = self.client.put('/api/users/profile/', {
             'email': ESTUDIANTE, 'edad': 21, 'peso': 70, 'altura': 175,
             'meta': 'Ganar resistencia',
@@ -525,16 +525,49 @@ class PerfilTests(GymApiTestCase):
         self.assertEqual(resp.data['altura'], 175)
         self.assertEqual(resp.data['meta'], 'Ganar resistencia')
 
-    def test_rf04_el_estudiante_consulta_su_informacion_personal(self):
+    def test_rf03_el_estudiante_consulta_su_informacion_personal(self):
         self.client.put('/api/users/profile/', {'email': ESTUDIANTE, 'edad': 22}, format='json')
         resp = self.client.get(f'/api/users/profile/?email={ESTUDIANTE}')
         self.assertEqual(resp.data['edad'], 22)
 
-    def test_rf05_el_profesor_consulta_nombre_documento_y_rol(self):
+    def test_rf03_rechaza_un_valor_fuera_de_rango(self):
+        resp = self.client.put('/api/users/profile/',
+                               {'email': ESTUDIANTE, 'altura': 500}, format='json')
+        self.assertEqual(resp.status_code, 400)
+
+    def test_rf03_un_campo_invalido_impide_guardar_el_valido(self):
+        self.client.put('/api/users/profile/', {'email': ESTUDIANTE, 'peso': 60}, format='json')
+        self.client.put('/api/users/profile/',
+                        {'email': ESTUDIANTE, 'peso': 70, 'altura': 999}, format='json')
+        resp = self.client.get(f'/api/users/profile/?email={ESTUDIANTE}')
+        self.assertEqual(resp.data['peso'], 60)
+
+    def test_rf03_el_perfil_del_estudiante_no_lo_consulta_el_profesor(self):
         resp = self.client.get(f'/api/users/profile/?email={PROFESOR}')
+        self.assertEqual(resp.status_code, 403)
+
+    def test_rf04_el_entrenador_consulta_nombre_documento_y_rol(self):
+        resp = self.client.get(f'/api/users/entrenador/?email={PROFESOR}')
+        self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data['name'], 'Coach')
         self.assertEqual(resp.data['documento'], DOCUMENTOS[PROFESOR])
         self.assertEqual(resp.data['role'], 'ENTRENADOR')
+
+    def test_rf04_el_perfil_del_entrenador_es_solo_para_entrenadores(self):
+        resp = self.client.get(f'/api/users/entrenador/?email={ESTUDIANTE}')
+        self.assertEqual(resp.status_code, 403)
+
+    def test_rf05_el_administrador_consulta_su_perfil_y_si_es_principal(self):
+        self._register(email=ADMIN, name='Jefa')
+        resp = self.client.get(f'/api/users/administrador/?email={ADMIN}')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data['role'], 'ADMIN')
+        self.assertEqual(resp.data['documento'], DOCUMENTOS[ADMIN])
+        self.assertTrue(resp.data['es_principal'])
+
+    def test_rf05_el_perfil_del_administrador_es_solo_para_administradores(self):
+        resp = self.client.get(f'/api/users/administrador/?email={PROFESOR}')
+        self.assertEqual(resp.status_code, 403)
 
 
 class AsistenciaTests(GymApiTestCase):
