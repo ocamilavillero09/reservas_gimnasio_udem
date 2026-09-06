@@ -13,8 +13,6 @@ la lista de espera, el reporte de ocupación y el catálogo de máquinas. Tambi�
 se retiró complete_reservation, que duplicaba el registro de asistencia (RF11) y
 además devolvía el cupo al bloque, algo que ya no tiene sentido ahora que la
 disponibilidad es de cada jornada.
-
-Pendiente: `students_report` no corresponde a ningún requisito aprobado.
 """
 from datetime import datetime
 from bson import ObjectId
@@ -298,37 +296,3 @@ def consultar_buzon(request):
     } for m in db.suggestions.find().sort('created_at', -1).limit(200)]
 
     return Response({'total': db.suggestions.count_documents({}), 'mensajes': mensajes})
-
-
-# ── RF17 — REPORTE POR ESTUDIANTE ───────────────────────────────────────────
-def build_student_rows():
-    """Una fila por ESTUDIANTE con su actividad y sus contadores.
-
-    El reporte del sistema es por persona, no por bloque horario: para cada
-    estudiante se muestran sus reservas activas, asistencias, cancelaciones e
-    inasistencias, además de su estado (ACTIVO / PENALIZADO).
-    """
-    db = get_db()
-    rows = []
-    for u in db.users.find({'role': 'ESTUDIANTE'}).sort('name', 1):
-        email = u['email']
-        canceladas = db.reservations.count_documents({'email': email, 'estado': 'CANCELADA'})
-        rows.append({
-            'name': u.get('name'),
-            'email': email,
-            'estado': u.get('estado', 'ACTIVO'),
-            'activas': db.reservations.count_documents({'email': email, 'estado': 'ACTIVA'}),
-            'completadas': db.reservations.count_documents({'email': email, 'estado': 'COMPLETADA'}),
-            'canceladas': canceladas,
-            'no_show': db.reservations.count_documents({'email': email, 'estado': 'NO_SHOW'}),
-            'no_show_count': u.get('no_show_count', 0),
-        })
-    return rows
-
-
-@api_view(['GET'])
-def students_report(request):
-    return Response({
-        'no_show_limite': NO_SHOW_LIMITE,
-        'estudiantes': build_student_rows(),
-    })

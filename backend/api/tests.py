@@ -393,9 +393,13 @@ class DisponibilidadPorJornadaTests(GymApiTestCase):
         """Es el caso que dejaba el gimnasio lleno para siempre."""
         manana = self._fecha_reserva()
         pasado = (db_module.hoy_local() + timedelta(days=2)).isoformat()
-        rid = self._reserve(ESTUDIANTE, 1).data['id']
-        self.client.post(f'/api/reservations/{rid}/no-show/',
-                         {'actor_email': PROFESOR}, format='json')
+        self._reserve(ESTUDIANTE, 1)
+        # El entrenador cierra la jornada reservada y la reserva queda como
+        # inasistencia (RF13). Antes, ese cupo se perdía para siempre.
+        self.client.post('/api/attendance/process/',
+                         {'actor_email': PROFESOR, 'fecha': manana}, format='json')
+        self.assertEqual(
+            db_module.get_db().reservations.find_one({'email': ESTUDIANTE})['estado'], 'NO_SHOW')
         # La jornada siguiente sigue con su aforo intacto.
         self.assertEqual(self._cupos(pasado, 1), 20)
 
@@ -479,30 +483,45 @@ class CancelTests(GymApiTestCase):
 
 
 # ── RN09: NO-SHOW Y PENALIZACIÓN ────────────────────────────────────────────
-class NoShowTests(GymApiTestCase):
+class PenalizacionTests(GymApiTestCase):
+    """RN08 — Cinco inasistencias penalizan · RN09 — La cuenta penalizada no reserva.
+
+    Las inasistencias se registran al cerrar la jornada (RF13), que es la única
+    vía del sistema: no existe una acción suelta para marcar una inasistencia.
+    """
+
     def setUp(self):
         super().setUp()
         self._register(email=PROFESOR, name='Coach')
         self._register(email=ESTUDIANTE, name='Estudiante')
         self.client.get('/api/slots/')
+        self.hoy = self._jornada_en_curso()
 
-    def _no_show(self, rid):
-        return self.client.post(f'/api/reservations/{rid}/no-show/',
-                                {'actor_email': PROFESOR}, format='json')
+    def _reserve(self, email, slot_id):
+        resp = super()._reserve(email, slot_id)
+        self._traer_a_hoy(email)
+        return resp
 
-    def test_solo_el_profesor_marca_no_show(self):
-        rid = self._reserve(ESTUDIANTE, 1).data['id']
-        resp = self.client.post(f'/api/reservations/{rid}/no-show/',
-                                {'actor_email': ESTUDIANTE}, format='json')
-        self.assertEqual(resp.status_code, 403)
+    def _cerrar_jornada(self, actor=PROFESOR):
+        return self.client.post('/api/attendance/process/',
+                                {'actor_email': actor, 'fecha': self.hoy}, format='json')
 
-    def test_rf16_cinco_no_show_penaliza_y_bloquea_reserva(self):
+    def test_rn08_la_quinta_inasistencia_penaliza_y_bloquea_la_reserva(self):
         for _ in range(db_module.NO_SHOW_LIMITE):
-            rid = self._reserve(ESTUDIANTE, 1).data['id']
-            self._no_show(rid)
+            self._reserve(ESTUDIANTE, 1)
+            self._cerrar_jornada()
         self.assertEqual(self._user(ESTUDIANTE)['estado'], 'PENALIZADO')
-        resp = self._reserve(ESTUDIANTE, 2)
-        self.assertEqual(resp.status_code, 403)
+        # RN09 — penalizado, ya no puede reservar.
+        self.assertEqual(self._reserve(ESTUDIANTE, 2).status_code, 403)
+
+    def test_rn08_asistir_no_suma_inasistencia(self):
+        self._reserve(ESTUDIANTE, 1)
+        self.client.post('/api/attendance/register/', {
+            'actor_email': PROFESOR, 'documento': DOCUMENTOS[ESTUDIANTE],
+        }, format='json')
+        self._cerrar_jornada()
+        self.assertEqual(self._user(ESTUDIANTE)['no_show_count'], 0)
+        self.assertEqual(self._user(ESTUDIANTE)['estado'], 'ACTIVO')
 
 
 # ── RF14 historial · perfil físico · calificaciones · reporte por estudiante ─
@@ -564,27 +583,6 @@ class FeaturesTests(GymApiTestCase):
         self.assertEqual(
             self.client.get(f'/api/suggestions/inbox/?actor_email={PROFESOR}').status_code, 403)
 
-    def test_rf17_reporte_por_estudiante(self):
-        """El reporte sale por persona: solo estudiantes, con sus contadores."""
-        rid = self._reserve(self.ANA, 1).data['id']
-        self.client.delete(f'/api/reservations/{rid}/')
-        resp = self.client.get('/api/reports/students/')
-        self.assertEqual(resp.status_code, 200)
-        estudiantes = resp.data['estudiantes']
-        # El profesor NO aparece: el reporte es de estudiantes.
-        self.assertEqual([e['email'] for e in estudiantes], [self.ANA])
-        fila = estudiantes[0]
-        self.assertEqual(fila['canceladas'], 1)
-        # Las cancelaciones se cuentan, pero ya no penalizan: el contador de
-        # cancelaciones salió del alcance y solo penalizan las inasistencias.
-        self.assertEqual(fila['no_show_count'], 0)
-
-    def test_rf17_el_reporte_cuenta_las_cancelaciones_sin_penalizar(self):
-        self.client.delete(f"/api/reservations/{self._reserve(self.ANA, 1).data['id']}/")
-        self.client.delete(f"/api/reservations/{self._reserve(self.ANA, 1).data['id']}/")
-        fila = self.client.get('/api/reports/students/').data['estudiantes'][0]
-        self.assertEqual(fila['canceladas'], 2)
-        self.assertEqual(self._user(self.ANA)['estado'], 'ACTIVO')
 
 class PerfilTests(GymApiTestCase):
     """RF03 — Perfil del estudiante · RF04 — Entrenador · RF05 — Administrador."""

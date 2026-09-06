@@ -7,7 +7,7 @@ from drf_yasg import openapi
 from .db import (
     get_db, seed_slots, hash_password, verify_password, serialize,
     asegurar_disponibilidad, tomar_cupo, devolver_cupo,
-    add_business_days, ROLES, DOMINIOS_ROL, role_for_email,
+    ROLES, DOMINIOS_ROL, role_for_email,
     fecha_reserva, formato_fecha_es,
     normalizar_documento, inasistencias_restantes, alerta_inasistencias,
     MAX_RESERVAS_POR_DIA, NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
@@ -421,7 +421,7 @@ def _es_principal(actor: dict) -> bool:
     },
 )
 @api_view(['PATCH'])
-def eliminar_administrador(request, user_email):
+def retirar_administrador(request, user_email):
     """RF23 — Retirar el rol de administrador.
 
     Solo el administrador principal puede quitarle el rol a otro administrador.
@@ -769,63 +769,4 @@ def cancelar_reserva(request, reservation_id):
                          f"del {reservation.get('date', '')}. El cupo quedó liberado "
                          'para otro compañero.'),
         'tipo': 'RESERVA_CANCELADA',
-    })
-
-
-@swagger_auto_schema(
-    method='post',
-    operation_description="El entrenador/admin marca una inasistencia (No-Show). Suma al contador y, al llegar al límite, penaliza al usuario (RN09).",
-    manual_parameters=[
-        openapi.Parameter('reservation_id', openapi.IN_PATH, description="ID de la reserva (ObjectId)", type=openapi.TYPE_STRING, required=True),
-    ],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        required=['actor_email'],
-        properties={'actor_email': openapi.Schema(type=openapi.TYPE_STRING, example='profesor@udem.edu.co')},
-    ),
-    responses={
-        200: openapi.Response('No-Show registrado.', openapi.Schema(type=openapi.TYPE_OBJECT)),
-        403: openapi.Response('Sin permisos.', openapi.Schema(type=openapi.TYPE_OBJECT)),
-        404: openapi.Response('Reserva no encontrada.', openapi.Schema(type=openapi.TYPE_OBJECT)),
-    }
-)
-@api_view(['POST'])
-def mark_no_show(request, reservation_id):
-    # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO — RN09: POLÍTICA DE INASISTENCIA Y PENALIZACIÓN         ║
-    # ║ Solo ENTRENADOR/ADMIN. Marca la reserva como NO_SHOW, incrementa el  ║
-    # ║ contador del usuario y, al alcanzar NO_SHOW_LIMITE inasistencias,    ║
-    # ║ cambia su estado a PENALIZADO por N días hábiles.                    ║
-    # ╚══════════════════════════════════════════════════════════════════╝
-    db = get_db()
-    actor_email = request.data.get('actor_email', '').strip().lower()
-    actor = db.users.find_one({'email': actor_email})
-    if not actor or actor.get('role') not in ('ENTRENADOR', 'ADMIN'):
-        return Response({'error': 'Solo un profesor o administrador puede registrar inasistencias.'}, status=403)
-
-    try:
-        oid = ObjectId(reservation_id)
-    except Exception:
-        return Response({'error': 'ID de reserva inválido.'}, status=400)
-
-    # ACTIVA -> NO_SHOW de forma atómica (no se devuelve el cupo: se desperdició).
-    reservation = db.reservations.find_one_and_update(
-        {'_id': oid, 'estado': 'ACTIVA'},
-        {'$set': {'estado': 'NO_SHOW', 'no_show_at': datetime.utcnow()}},
-    )
-    if reservation is None:
-        return Response({'error': 'Reserva no encontrada o ya no está activa.'}, status=404)
-
-    # RF16 — Suma la inasistencia y penaliza al llegar a CINCO (5).
-    # La lógica vive en attendance.py para que el registro individual y el
-    # procesamiento general de la jornada apliquen exactamente la misma regla.
-    from .attendance import aplicar_inasistencia
-    owner, penalizado = aplicar_inasistencia(reservation['email'])
-
-    return Response({
-        'message': 'Inasistencia registrada.',
-        'no_show_count': (owner or {}).get('no_show_count', 0),
-        'no_show_limite': NO_SHOW_LIMITE,
-        'inasistencias_restantes': inasistencias_restantes(owner),
-        'penalizado': penalizado,
     })

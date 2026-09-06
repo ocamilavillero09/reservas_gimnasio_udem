@@ -26,9 +26,9 @@ export const adminApi = {
   listarUsuarios: (actorEmail) => request(`/admin/users/?actor_email=${encodeURIComponent(actorEmail)}`),
   // RF22 — Crear una cuenta de administrador (backend: crear_administrador).
   crearAdministrador: (body) => request('/admin/users/', { method: 'POST', body: JSON.stringify(body) }),
-  // RF23 — Retirar el rol de administrador (backend: eliminar_administrador).
+  // RF23 — Retirar el rol de administrador (backend: retirar_administrador).
   // La cuenta NO se borra: queda sin rol. accion: 'retirar' | 'restaurar'.
-  eliminarAdministrador: (email, accion, actorEmail) =>
+  retirarAdministrador: (email, accion, actorEmail) =>
     request(`/admin/users/${encodeURIComponent(email)}/`, {
       method: 'PATCH',
       body: JSON.stringify({ accion, actor_email: actorEmail }),
@@ -64,9 +64,6 @@ export const reservationsApi = {
   reservarMañana:   (body)  => request('/reservations/', { method: 'POST', body: JSON.stringify(body) }),
   // RF09 — Cancelar mi reserva (backend: cancelar_reserva).
   cancelarReserva:  (id)    => request(`/reservations/${id}/`, { method: 'DELETE' }),
-  // El entrenador marca una inasistencia suelta.
-  noShow: (id, actorEmail) =>
-    request(`/reservations/${id}/no-show/`, { method: 'POST', body: JSON.stringify({ actor_email: actorEmail }) }),
   // RF14 — Ver mi historial (backend: ver_historial).
   verHistorial: (email) => request(`/reservations/history/?email=${encodeURIComponent(email)}`),
 };
@@ -109,8 +106,6 @@ export const reportsApi = {
   // RF19 — Descargar el registro en PDF, administrador (backend: descargar_registro_administrador).
   descargarRegistroAdministrador: (actorEmail, fecha = '') =>
     `${BASE}/reports/daily/administrador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
-  // Pendiente de decisión: no corresponde a ningún requisito aprobado.
-  students: () => request('/reports/students/'),
 };
 
 // RF18 — Máquinas.

@@ -27,7 +27,6 @@ urlpatterns = [
     path('reservations/history/',       features.ver_historial,     name='history'),
     # RF09 — Cancelar mi reserva
     path('reservations/<str:reservation_id>/',         views.cancelar_reserva, name='cancel-reservation'),
-    path('reservations/<str:reservation_id>/no-show/', views.mark_no_show,     name='mark-no-show'),
     # RF10 — Buscar la reserva de un estudiante por su documento
     path('students/lookup/',            attendance.buscar_reserva,  name='student-lookup'),
 
@@ -61,9 +60,5 @@ urlpatterns = [
     # RF22 — Crear cuentas con rol de administrador
     path('admin/users/',                views.crear_administrador,  name='admin-users'),
     # RF23 — Retirar el rol de administrador
-    path('admin/users/<str:user_email>/', views.eliminar_administrador, name='admin-user-detail'),
-
-    # Pendiente de decisión: no corresponde a ningún requisito aprobado.
-    path('reports/students/',           features.students_report,   name='students-report'),
-    path('reports/usage.pdf',           reports.usage_pdf,          name='usage-pdf'),
+    path('admin/users/<str:user_email>/', views.retirar_administrador, name='admin-user-detail'),
 ]

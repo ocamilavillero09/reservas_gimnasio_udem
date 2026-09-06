@@ -48,14 +48,6 @@ describe('api service', () => {
     expect(global.fetch.mock.calls[0][0]).toContain('/slots/');
   });
 
-  it('noShow envía actor_email al endpoint correcto', async () => {
-    mockFetch({ message: 'ok', penalizado: false });
-    await reservationsApi.noShow('abc123', 'profe@udem.edu.co');
-    const [url, opts] = global.fetch.mock.calls[0];
-    expect(url).toContain('/reservations/abc123/no-show/');
-    expect(JSON.parse(opts.body).actor_email).toBe('profe@udem.edu.co');
-  });
-
   it('el admin crea usuarios con POST a /admin/users/', async () => {
     mockFetch({ message: 'Usuario creado con rol ADMIN.', role: 'ADMIN' }, true);
     const res = await adminApi.crearAdministrador({
@@ -121,7 +113,7 @@ describe('api service', () => {
 
   it('setAdminRole retira el rol de administrador (RF22)', async () => {
     mockFetch({ message: 'Se retiró el rol.', role: 'SIN_ROL' });
-    await adminApi.eliminarAdministrador('otra@udemedellin.edu.co', 'retirar', 'jefe@udemedellin.edu.co');
+    await adminApi.retirarAdministrador('otra@udemedellin.edu.co', 'retirar', 'jefe@udemedellin.edu.co');
     const [url, opts] = global.fetch.mock.calls[0];
     expect(url).toContain('/admin/users/otra%40udemedellin.edu.co/');
     expect(opts.method).toBe('PATCH');

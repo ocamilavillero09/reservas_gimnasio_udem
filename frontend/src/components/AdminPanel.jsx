@@ -72,7 +72,7 @@ export default function AdminPanel({ user, showToast }) {
     const verbo = accion === 'retirar' ? 'retirar el rol de administrador a' : 'restaurar el rol de administrador a';
     if (!window.confirm(`¿Seguro que deseas ${verbo} ${objetivo.name}?`)) return;
     try {
-      const r = await adminApi.eliminarAdministrador(objetivo.email, accion, user.email);
+      const r = await adminApi.retirarAdministrador(objetivo.email, accion, user.email);
       showToast(r.message, accion === 'retirar' ? 'warning' : 'success');
       cargar();
     } catch (err) {

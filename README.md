@@ -254,10 +254,10 @@ que las pruebas y los diagramas de flujo calcen con el código.
 | RF20 Reportar una falla | `fallo_sugerencia` | `falloSugerencia` | `POST /api/suggestions/` |
 | RF21 Consultar el buzón | `consultar_buzon` | `consultarBuzon` | `GET /api/suggestions/inbox/` |
 | RF22 Crear administrador | `crear_administrador` | `crearAdministrador` | `POST /api/admin/users/` |
-| RF23 Retirar el rol de administrador | `eliminar_administrador` | `eliminarAdministrador` | `PATCH /api/admin/users/<correo>/` |
+| RF23 Retirar el rol de administrador | `retirar_administrador` | `retirarAdministrador` | `PATCH /api/admin/users/<correo>/` |
 
-Quedan dos rutas sin requisito aprobado, pendientes de decisión: el reporte por
-estudiante y su PDF.
+El sistema no expone ninguna ruta más. La única que no corresponde a un requisito
+es la que rehidrata la sesión al recargar la página, que da apoyo a RF02.
 
 ### Verificación rápida con curl
 
