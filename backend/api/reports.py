@@ -1,12 +1,11 @@
 """
-RF19/RF20 — Exportación de reportes (CSV/Excel y PDF).
+Generación de reportes en PDF.
 
-RF20 — `daily_pdf` genera el REPORTE GENERAL DIARIO imprimible con el total de
-asistencias, cancelaciones e inasistencias y los estudiantes penalizados.
+  RF18  Descargar el registro diario en PDF — entrenador   (descargar_registro_entrenador)
+  RF19  Descargar el registro diario en PDF — administrador (descargar_registro_administrador)
 
-El reporte es POR ESTUDIANTE (por persona, no por bloque horario): una fila por
-estudiante con sus reservas, asistencias, cancelaciones e inasistencias.
-CSV se abre en Excel; el PDF usa reportlab.
+`usage_pdf` es el reporte por estudiante. No corresponde a ningún requisito
+aprobado y está pendiente de decisión.
 """
 import io
 from django.http import HttpResponse, JsonResponse
@@ -14,8 +13,7 @@ from rest_framework.decorators import api_view
 
 from .features import build_student_rows
 
-HEADERS = ['name', 'email', 'estado', 'activas', 'completadas',
-           'canceladas', 'no_show', 'cancelaciones_restantes']
+HEADERS = ['name', 'email', 'estado', 'activas', 'completadas', 'canceladas', 'no_show']
 
 
 @api_view(['GET'])
@@ -36,7 +34,7 @@ def usage_pdf(request):
                'Canceladas', 'No-Show', 'Cancel. restantes']
     data = [headers] + [
         [r['name'], r['email'], r['estado'], r['activas'], r['completadas'],
-         r['canceladas'], r['no_show'], r['cancelaciones_restantes']]
+         r['canceladas'], r['no_show']]
         for r in rows
     ]
     table = Table(data, repeatRows=1)
@@ -57,14 +55,15 @@ def usage_pdf(request):
     return resp
 
 
-# ── RF20 / P20 / HU19-HU20 — REPORTE GENERAL DIARIO EN PDF ─────────────────
-@api_view(['GET'])
-def daily_pdf(request):
-    """Genera el reporte general diario en PDF para imprimirlo.
+# ── RF18 y RF19 — EL REGISTRO DIARIO EN PDF ─────────────────────────────────
+def _generar_pdf_diario(request, rol, etiqueta):
+    """Arma el PDF del registro diario y comprueba el rol de quien lo pide.
 
-    Incluye el total de asistencias, cancelaciones e inasistencias del día y
-    el listado de estudiantes penalizados. Solo entrenadores y administradores.
-    Parámetros: ?actor_email=coach@udem.edu.co&fecha=2026-08-18 (fecha opcional).
+    RF18 y RF19 son dos requisitos porque son dos actores distintos: el
+    entrenador imprime el registro para dejar constancia física de su turno y el
+    administrador lo descarga para archivarlo. El documento es el mismo.
+
+    Parámetros: ?actor_email=...&fecha=AAAA-MM-DD (la fecha es opcional).
     """
     from reportlab.lib.pagesizes import A4
     from reportlab.lib import colors
@@ -72,14 +71,13 @@ def daily_pdf(request):
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
     from reportlab.lib.styles import getSampleStyleSheet
 
-    from .attendance import _actor_staff, build_daily_report
-    from .db import hoy_local
+    from .attendance import build_daily_report
+    from .db import get_db, hoy_local
 
-    if not _actor_staff(request.query_params.get('actor_email')):
-        return JsonResponse(
-            {'error': 'Solo un entrenador o administrador puede generar el reporte general.'},
-            status=403,
-        )
+    actor = get_db().users.find_one(
+        {'email': (request.query_params.get('actor_email') or '').strip().lower()})
+    if not actor or actor.get('role') != rol:
+        return JsonResponse({'error': f'Este registro es el de {etiqueta}.'}, status=403)
 
     fecha = (request.query_params.get('fecha') or '').strip() or hoy_local().isoformat()
     rep = build_daily_report(fecha)
@@ -143,3 +141,23 @@ def daily_pdf(request):
     resp = HttpResponse(buf.getvalue(), content_type='application/pdf')
     resp['Content-Disposition'] = f"inline; filename=\"reporte_diario_{rep['fecha']}.pdf\""
     return resp
+
+
+@api_view(['GET'])
+def descargar_registro_entrenador(request):
+    """RF18 — Descargar el registro diario en PDF (entrenador).
+
+    El mismo registro que muestra RF16, en un archivo imprimible para dejar
+    constancia física de la actividad del gimnasio.
+    """
+    return _generar_pdf_diario(request, 'ENTRENADOR', 'un entrenador')
+
+
+@api_view(['GET'])
+def descargar_registro_administrador(request):
+    """RF19 — Descargar el registro diario en PDF (administrador).
+
+    El mismo registro que muestra RF17, para archivarlo o presentarlo ante las
+    instancias que lo soliciten.
+    """
+    return _generar_pdf_diario(request, 'ADMIN', 'un administrador')

@@ -1,13 +1,13 @@
 """
-Asistencia, inasistencias, penalizaciones y reportes del sistema.
+Asistencia, inasistencias y penalizaciones.
 
-  RF11 / P11 / HU11  Buscar la reserva de un estudiante por su DOCUMENTO
-  RF13 / P13 / HU12  Registrar la asistencia del estudiante
-  RF14 / P14 / HU13-HU15  Estudiantes con reserva y sin asistencia registrada
-  RF15 / P15 / HU14-HU16  Procesar de forma GENERAL las inasistencias
-  RF16 / P16         Penalización al alcanzar CINCO (5) inasistencias
-  RF18 / P18 / HU08  Reporte personal de inasistencias y penalizaciones
-  RF19 / P19 / HU17-HU18  Reporte GENERAL DIARIO del gimnasio
+  RF10  Buscar la reserva de un estudiante por su documento  (buscar_reserva)
+  RF11  Registrar la asistencia de un estudiante             (registrar_asistencia)
+  RF12  Consultar las reservas sin asistencia registrada     (consultar_reservas)
+  RF13  Procesar las inasistencias al cerrar la jornada      (procesar_inasistencia)
+  RF15  Ver mi reporte de inasistencias                      (ver_inasistencias)
+  RF16  Ver el registro diario — entrenador                  (ver_registro_entrenador)
+  RF17  Ver el registro diario — administrador               (ver_registro_administrador)
 """
 from datetime import datetime
 
@@ -17,8 +17,8 @@ from rest_framework.response import Response
 
 from .db import (
     get_db, add_business_days, hoy_local, formato_fecha_es, normalizar_documento,
-    inasistencias_restantes, alerta_inasistencias, cancelaciones_restantes,
-    NO_SHOW_LIMITE, CANCELACION_LIMITE, PENALIZACION_DIAS_HABILES,
+    inasistencias_restantes, alerta_inasistencias, ventana_asistencia,
+    NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
 )
 
 ROLES_STAFF = ('ENTRENADOR', 'ADMIN')
@@ -84,7 +84,7 @@ def _fila_estudiante(user: dict) -> dict:
 
 # ── RF11 / HU11 — BUSCAR AL ESTUDIANTE POR SU DOCUMENTO DE IDENTIDAD ────────
 @api_view(['GET'])
-def student_lookup(request):
+def buscar_reserva(request):
     """El entrenador busca a un estudiante por su documento y ve su reserva.
 
     Parámetros: ?documento=1001234567&actor_email=coach@udem.edu.co
@@ -127,11 +127,16 @@ def student_lookup(request):
 
 # ── RF13 / HU12 — REGISTRAR LA ASISTENCIA DEL ESTUDIANTE ───────────────────
 @api_view(['POST'])
-def register_attendance(request):
-    """Registra la asistencia de un estudiante que TIENE una reserva.
+def registrar_asistencia(request):
+    """RF11 — Registrar la asistencia de un estudiante.
+
+    Deja constancia de que el estudiante con reserva se presentó a su bloque.
+
+    Solo se puede registrar el MISMO día de la reserva y a partir de la hora en
+    que empieza el bloque (RN12): antes de esa hora el estudiante todavía no ha
+    tenido la oportunidad de presentarse.
 
     Cuerpo: {actor_email, documento} o {actor_email, reservation_id}.
-    Con documento se toma su reserva activa de la jornada de hoy.
     """
     actor = _actor_staff(request.data.get('actor_email'))
     if not actor:
@@ -165,16 +170,27 @@ def register_attendance(request):
         filtro['email'] = student['email']
         filtro['reserva_date'] = _fecha_jornada(request)
 
-    reserva = db.reservations.find_one_and_update(
-        filtro,
-        {'$set': {'estado': 'COMPLETADA', 'completed_at': datetime.utcnow(),
-                  'asistencia_registrada_por': actor['email']}},
-    )
+    # RN12 — La ventana se comprueba ANTES de tocar la reserva, para que un
+    # intento fuera de hora no deje la reserva a medio cambiar.
+    reserva = db.reservations.find_one(filtro)
     if reserva is None:
         return Response(
             {'error': 'El estudiante no tiene una reserva activa para registrar asistencia.'},
             status=404,
         )
+
+    abierta, motivo = ventana_asistencia(reserva)
+    if not abierta:
+        return Response({'error': motivo}, status=409)
+
+    reserva = db.reservations.find_one_and_update(
+        {'_id': reserva['_id'], 'estado': 'ACTIVA'},
+        {'$set': {'estado': 'COMPLETADA', 'completed_at': datetime.utcnow(),
+                  'registrada_por': actor['email']}},
+    )
+    if reserva is None:
+        # Otro entrenador la registró entre la comprobación y este punto.
+        return Response({'error': 'La asistencia ya fue registrada.'}, status=409)
 
     return Response({
         'message': 'Asistencia registrada.',
@@ -187,7 +203,7 @@ def register_attendance(request):
 
 # ── RF14 / HU13 / HU15 — ESTUDIANTES SIN ASISTENCIA REGISTRADA ─────────────
 @api_view(['GET'])
-def pending_attendance(request):
+def consultar_reservas(request):
     """Reservas de la jornada que siguen ACTIVAS: nadie les registró asistencia.
 
     Se incluyen las de la fecha consultada y las de días anteriores que
@@ -231,17 +247,24 @@ def pending_attendance(request):
 
 # ── RF15 / HU14 / HU16 — PROCESAR DE FORMA GENERAL LAS INASISTENCIAS ───────
 @api_view(['POST'])
-def process_no_shows(request):
-    """Cierra la jornada: toda reserva sin asistencia queda como inasistencia.
+def procesar_inasistencia(request):
+    """RF13 — Procesar las inasistencias al cerrar la jornada.
 
-    Cuerpo: {actor_email, fecha?}. Marca NO_SHOW cada reserva ACTIVA de la
-    jornada, suma la inasistencia a cada estudiante y aplica la penalización
-    a quienes lleguen a CINCO (5) inasistencias (RF16).
+    En una sola operación, toda reserva que quedó sin asistencia se marca como
+    inasistencia, se actualiza el contador de cada estudiante y se penaliza a
+    quien llegue al límite (RN08).
+
+    Cerrar la jornada es responsabilidad EXCLUSIVA del entrenador, que es quien
+    estuvo en el gimnasio y puede dar fe de quién asistió. El administrador
+    consulta las pendientes (RF12) pero no cierra el día.
+
+    Cuerpo: {actor_email, fecha?}.
     """
-    actor = _actor_staff(request.data.get('actor_email'))
-    if not actor:
+    actor = get_db().users.find_one(
+        {'email': (request.data.get('actor_email') or '').strip().lower()})
+    if not actor or actor.get('role') != 'ENTRENADOR':
         return Response(
-            {'error': 'Solo un entrenador o administrador puede procesar las inasistencias.'},
+            {'error': 'Solo el entrenador puede cerrar la jornada y procesar las inasistencias.'},
             status=403,
         )
 
@@ -294,8 +317,14 @@ def process_no_shows(request):
 
 # ── RF18 / HU08 — REPORTE PERSONAL DE INASISTENCIAS Y PENALIZACIONES ───────
 @api_view(['GET'])
-def personal_report(request):
-    """Lo que el estudiante ve de sí mismo: inasistencias y penalizaciones."""
+def ver_inasistencias(request):
+    """RF15 — Ver mi reporte de inasistencias.
+
+    El estudiante ve cuántas veces no fue al gimnasio teniendo reserva, cuántas
+    le faltan para llegar al límite y si su cuenta está penalizada. El límite
+    que se muestra es el mismo valor que aplica el sistema (RN08), no un número
+    escrito en la interfaz.
+    """
     email = request.query_params.get('email', '').strip().lower()
     if not email:
         return Response({'error': 'Parámetro email requerido.'}, status=400)
@@ -316,17 +345,13 @@ def personal_report(request):
         'email': email,
         'documento': user.get('documento', ''),
         'estado': user.get('estado', 'ACTIVO'),
-        # RF16/RF18 — inasistencias y cuántas faltan para la penalización.
+        # RN08 — inasistencias y cuántas faltan para la penalización.
         'no_show_count': user.get('no_show_count', 0),
         'no_show_limite': NO_SHOW_LIMITE,
         'inasistencias_restantes': inasistencias_restantes(user),
         'alerta_inasistencias': alerta_inasistencias(user),
         'penalizado': user.get('estado') == 'PENALIZADO',
         'penalizado_hasta': penalizado_hasta.isoformat() if penalizado_hasta else None,
-        # Contexto de cancelaciones (RN10).
-        'cancel_count': user.get('cancel_count', 0),
-        'cancelacion_limite': CANCELACION_LIMITE,
-        'cancelaciones_restantes': cancelaciones_restantes(user),
         'inasistencias': inasistencias,
         'total_asistencias': db.reservations.count_documents({'email': email, 'estado': 'COMPLETADA'}),
         'total_cancelaciones': db.reservations.count_documents({'email': email, 'estado': 'CANCELADA'}),
@@ -361,7 +386,6 @@ def build_daily_report(fecha_iso: str) -> dict:
         'name': u.get('name'), 'email': u['email'],
         'documento': u.get('documento', ''),
         'no_show_count': u.get('no_show_count', 0),
-        'cancel_count': u.get('cancel_count', 0),
         'penalizado_hasta': (u['penalizado_hasta'].date().isoformat()
                              if u.get('penalizado_hasta') else None),
     } for u in db.users.find({'role': 'ESTUDIANTE', 'estado': 'PENALIZADO'}).sort('name', 1)]
@@ -400,12 +424,36 @@ def build_daily_report(fecha_iso: str) -> dict:
     }
 
 
-@api_view(['GET'])
-def daily_report(request):
-    """Reporte general diario para entrenadores y administradores (RF19)."""
-    if not _actor_staff(request.query_params.get('actor_email')):
-        return Response(
-            {'error': 'Solo un entrenador o administrador puede consultar el reporte general.'},
-            status=403,
-        )
+def _registro_diario_para(request, rol, etiqueta):
+    """Registro de la jornada, comprobando que el rol sea el del requisito.
+
+    RF16 y RF17 son dos requisitos porque son dos actores distintos: el
+    entrenador cierra su turno con este registro y el administrador supervisa
+    la operación. El contenido es el mismo.
+    """
+    actor = get_db().users.find_one(
+        {'email': (request.query_params.get('actor_email') or '').strip().lower()})
+    if not actor or actor.get('role') != rol:
+        return Response({'error': f'Este registro es el de {etiqueta}.'}, status=403)
     return Response(build_daily_report(_fecha_jornada(request)))
+
+
+@api_view(['GET'])
+def ver_registro_entrenador(request):
+    """RF16 — Ver el registro diario del gimnasio (entrenador).
+
+    Asistencias, cancelaciones, inasistencias y estudiantes penalizados de la
+    jornada, con el detalle bloque por bloque. Es el resumen con el que el
+    entrenador cierra su turno.
+    """
+    return _registro_diario_para(request, 'ENTRENADOR', 'un entrenador')
+
+
+@api_view(['GET'])
+def ver_registro_administrador(request):
+    """RF17 — Ver el registro diario del gimnasio (administrador).
+
+    El mismo registro de la jornada, con el propósito de supervisar la
+    operación del gimnasio.
+    """
+    return _registro_diario_para(request, 'ADMIN', 'un administrador')

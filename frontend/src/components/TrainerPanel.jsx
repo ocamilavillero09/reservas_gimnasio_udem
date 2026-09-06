@@ -33,9 +33,13 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
     // RF06 — Es la MISMA consulta que hace el estudiante. Lo único que cambia
     // es que aquí no se ofrece la acción de reservar (RN10).
     slotsApi.consultarHorarios().then((r) => setBloques(r.slots ?? [])).catch(() => {});
-    attendanceApi.pending(user.email).then(setPendientes).catch(() => {});
-    reportsApi.daily(user.email).then(setDiario).catch(() => {});
-  }, [user.email]);
+    attendanceApi.consultarReservas(user.email).then(setPendientes).catch(() => {});
+    // RF16 para el entrenador, RF17 para el administrador: son dos requisitos
+    // distintos porque son dos actores distintos.
+    const verRegistro = esAdmin ? reportsApi.verRegistroAdministrador
+                                : reportsApi.verRegistroEntrenador;
+    verRegistro(user.email).then(setDiario).catch(() => {});
+  }, [user.email, esAdmin]);
 
   useEffect(refrescar, [refrescar]);
 
@@ -44,7 +48,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
     e.preventDefault();
     setBusqueda(null);
     try {
-      setBusqueda(await attendanceApi.lookup(documento.trim(), user.email));
+      setBusqueda(await attendanceApi.buscarReserva(documento.trim(), user.email));
     } catch (err) {
       showToast(err.message, 'error');
     }
@@ -53,7 +57,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
   // ── RF13 / HU12 — Registrar la asistencia del estudiante ────────────────
   const registrarAsistencia = async (reservationId) => {
     try {
-      const r = await attendanceApi.register({
+      const r = await attendanceApi.registrarAsistencia({
         actor_email: user.email,
         reservation_id: reservationId,
       });
@@ -65,7 +69,8 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
     } catch (err) { showToast(err.message, 'error'); }
   };
 
-  // ── RF15 / HU14 / HU16 — Procesar de forma general las inasistencias ────
+  // ── RF13 — Cerrar la jornada. Solo el entrenador, que es quien estuvo en
+  //           el gimnasio y puede dar fe de quién asistió.
   const procesarInasistencias = async () => {
     const total = pendientes?.total ?? 0;
     if (total === 0) { showToast('No hay inasistencias pendientes por procesar.', 'info'); return; }
@@ -74,7 +79,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
     )) return;
     setProcesando(true);
     try {
-      const r = await attendanceApi.process(user.email);
+      const r = await attendanceApi.procesarInasistencia(user.email);
       showToast(r.message, r.total_penalizados > 0 ? 'warning' : 'success');
       onChanged?.();
       refrescar();
@@ -206,13 +211,18 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
               {pendientes?.fecha_label ? ` · ${pendientes.fecha_label}` : ''}.
             </p>
           </div>
-          <button onClick={procesarInasistencias} disabled={procesando} style={{ ...btn, opacity: procesando ? 0.6 : 1 }}>
-            {procesando ? 'Procesando...' : 'Procesar inasistencias'}
-          </button>
+          {/* RF13 — Cerrar la jornada es del entrenador. El administrador
+              consulta las pendientes (RF12) pero no las procesa. */}
+          {!esAdmin && (
+            <button onClick={procesarInasistencias} disabled={procesando} style={{ ...btn, opacity: procesando ? 0.6 : 1 }}>
+              {procesando ? 'Procesando...' : 'Cerrar jornada'}
+            </button>
+          )}
         </div>
         <p style={{ fontSize: 12, color: '#999', marginBottom: 16 }}>
-          Al procesar se registra la inasistencia de cada uno y se penaliza a quien llegue
-          a {pendientes?.no_show_limite ?? 5} inasistencias.
+          {esAdmin
+            ? 'Solo el entrenador cierra la jornada. Aquí puedes supervisar quiénes quedan pendientes.'
+            : `Al cerrar la jornada se registra la inasistencia de cada uno y se penaliza a quien llegue a ${pendientes?.no_show_limite ?? 5} inasistencias.`}
         </p>
 
         {!pendientes || pendientes.total === 0 ? (
@@ -269,7 +279,8 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
             </p>
           </div>
           <a
-            href={reportsApi.dailyPdfUrl(user.email)}
+            href={(esAdmin ? reportsApi.descargarRegistroAdministrador
+                           : reportsApi.descargarRegistroEntrenador)(user.email)}
             target="_blank"
             rel="noreferrer"
             style={{ ...btn, textDecoration: 'none', display: 'inline-block' }}

@@ -29,9 +29,7 @@ DOMINIOS_ROL = {
 # Reglas de negocio configurables.
 MAX_RESERVAS_POR_DIA = 1      # RN05: una única reserva activa por día
 NO_SHOW_LIMITE = 5            # RF16: 5 inasistencias -> PENALIZADO
-CANCELACION_LIMITE = 5        # RN10: 5 cancelaciones -> PENALIZADO
-CANCELACION_ALERTA = 2        # RN10: avisar cuando falten 2 para la penalización
-PENALIZACION_DIAS_HABILES = 5  # RN09/RN10: penalización de 5 días hábiles
+PENALIZACION_DIAS_HABILES = 5  # RN08/RN09: la penalización dura 5 días hábiles
 
 # RN03 — Los seis bloques de dos horas en horas pares. El gimnasio cierra a las
 # 18:00, por eso el último bloque empieza a las 16:00.
@@ -164,31 +162,47 @@ def fecha_reserva() -> date:
     return hoy_local() + timedelta(days=1)
 
 
+def hora_local() -> datetime:
+    """Momento actual en la zona horaria del gimnasio (America/Bogota)."""
+    return timezone.localtime()
+
+
+def ventana_asistencia(reserva: dict):
+    """RN12 — ¿Se puede registrar ya la asistencia de esta reserva?
+
+    La asistencia solo se registra el MISMO día de la reserva y a partir de la
+    hora en que empieza el bloque. Antes de esa hora el estudiante todavía no ha
+    tenido la oportunidad de presentarse, así que darla por cierta sería
+    registrar un hecho que aún no ha ocurrido.
+
+    Devuelve (True, None) si la ventana está abierta, o (False, motivo) con el
+    texto que explica desde cuándo se habilita.
+    """
+    fecha_iso = (reserva or {}).get('reserva_date', '')
+    hoy = hoy_local().isoformat()
+
+    if fecha_iso != hoy:
+        cuando = 'ya pasó' if fecha_iso < hoy else 'todavía no llega'
+        return False, (f'La reserva es del {fecha_iso} y esa jornada {cuando}. '
+                       'La asistencia solo se registra el mismo día del bloque.')
+
+    hora_bloque = (reserva or {}).get('hour', '')
+    try:
+        h, m = (int(x) for x in hora_bloque.split(':'))
+    except (ValueError, AttributeError):
+        return True, None      # sin hora legible no se puede acotar la ventana
+
+    ahora = hora_local()
+    if (ahora.hour, ahora.minute) < (h, m):
+        return False, (f'El bloque de las {hora_bloque} todavía no empieza. '
+                       f'Podrás registrar la asistencia a partir de las {hora_bloque}.')
+
+    return True, None
+
+
 def formato_fecha_es(d: date) -> str:
     """'martes 18 de agosto de 2026' — etiqueta legible para la interfaz."""
     return f'{_DIAS[d.weekday()]} {d.day} de {_MESES[d.month - 1]} de {d.year}'
-
-
-def cancelaciones_restantes(user: dict) -> int:
-    """Cuántas cancelaciones le faltan al usuario para ser penalizado."""
-    usadas = (user or {}).get('cancel_count', 0)
-    return max(CANCELACION_LIMITE - usadas, 0)
-
-
-def alerta_cancelaciones(user: dict):
-    """Mensaje de alerta in-app cuando quedan pocas cancelaciones (RN10).
-
-    Devuelve None si todavía no hay motivo de alerta.
-    """
-    restantes = cancelaciones_restantes(user)
-    if restantes == 0:
-        return (f'Alcanzaste el límite de {CANCELACION_LIMITE} cancelaciones. '
-                'Tu cuenta quedó penalizada y no puedes reservar por ahora.')
-    if restantes <= CANCELACION_ALERTA:
-        veces = 'cancelación' if restantes == 1 else 'cancelaciones'
-        return (f'Atención: llevas {(user or {}).get("cancel_count", 0)} cancelaciones. '
-                f'Estás a {restantes} {veces} de ser penalizado.')
-    return None
 
 
 def add_business_days(start: datetime, days: int) -> datetime:

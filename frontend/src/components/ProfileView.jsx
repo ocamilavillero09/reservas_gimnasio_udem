@@ -55,7 +55,7 @@ export default function ProfileView({ user, showToast }) {
   // RF18 — Reporte personal de inasistencias y penalizaciones.
   useEffect(() => {
     if (!esEstudiante) return;
-    reportsApi.personal(user.email).then(setReporte).catch(() => {});
+    reportsApi.verInasistencias(user.email).then(setReporte).catch(() => {});
   }, [user.email, esEstudiante, datos]);
 
   const save = async (e) => {
@@ -73,8 +73,6 @@ export default function ProfileView({ user, showToast }) {
     } catch (err) { showToast(err.message, 'error'); }
   };
 
-  const restantes = datos?.cancelaciones_restantes ?? 0;
-  const enAlerta = esEstudiante && restantes <= 2;
   const inasistenciasRestantes = reporte?.inasistencias_restantes ?? datos?.inasistencias_restantes ?? 0;
   const penalizado = (reporte?.estado ?? datos?.estado) === 'PENALIZADO';
 
@@ -159,39 +157,7 @@ export default function ProfileView({ user, showToast }) {
         </div>
       )}
 
-      {/* RN10 — Cancelaciones acumuladas del estudiante */}
-      {esEstudiante && datos && (
-        <div style={{ ...card, border: enAlerta ? '1.5px solid #F59E0B' : '1.5px solid transparent' }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>📊 Mis cancelaciones</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 14 }}>
-            <Contador
-              label="Veces que he cancelado"
-              value={datos.cancel_count}
-              sub={`de ${datos.cancelacion_limite} permitidas`}
-              alerta={enAlerta}
-            />
-            <Contador
-              label="Cancelaciones restantes"
-              value={restantes}
-              sub="antes de la penalización"
-              alerta={enAlerta}
-            />
-          </div>
-          {datos.alerta && (
-            <div style={{
-              marginTop: 18, backgroundColor: restantes === 0 ? '#FEE2E2' : '#FFF7ED',
-              border: `1.5px solid ${restantes === 0 ? '#DC2626' : '#F59E0B'}`,
-              borderRadius: 12, padding: '14px 16px',
-            }}>
-              <p style={{ fontSize: 13, lineHeight: 1.6, color: restantes === 0 ? '#991B1B' : '#78350F', margin: 0 }}>
-                ⚠️ {datos.alerta}
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* RF04 / HU03 — Información personal de entrenamiento (solo estudiantes) */}
+      {/* RF03 — Información personal de entrenamiento (solo estudiantes) */}
       {esEstudiante ? (
         <form onSubmit={save} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>

@@ -23,10 +23,12 @@ export const authApi = {
 
 // RF21/RF22 — Gestión de usuarios por el ADMINISTRADOR PRINCIPAL.
 export const adminApi = {
-  listUsers:  (actorEmail) => request(`/admin/users/?actor_email=${encodeURIComponent(actorEmail)}`),
-  createUser: (body)       => request('/admin/users/', { method: 'POST', body: JSON.stringify(body) }),
-  // RF22 — accion: 'retirar' | 'restaurar' el rol de administrador.
-  setAdminRole: (email, accion, actorEmail) =>
+  listarUsuarios: (actorEmail) => request(`/admin/users/?actor_email=${encodeURIComponent(actorEmail)}`),
+  // RF22 — Crear una cuenta de administrador (backend: crear_administrador).
+  crearAdministrador: (body) => request('/admin/users/', { method: 'POST', body: JSON.stringify(body) }),
+  // RF23 — Retirar el rol de administrador (backend: eliminar_administrador).
+  // La cuenta NO se borra: queda sin rol. accion: 'retirar' | 'restaurar'.
+  eliminarAdministrador: (email, accion, actorEmail) =>
     request(`/admin/users/${encodeURIComponent(email)}/`, {
       method: 'PATCH',
       body: JSON.stringify({ accion, actor_email: actorEmail }),
@@ -36,12 +38,16 @@ export const adminApi = {
 // RF11/RF13 — El entrenador busca al estudiante por su DOCUMENTO y le registra
 // la asistencia. RF14/RF15 — Inasistencias pendientes y su procesamiento general.
 export const attendanceApi = {
-  lookup: (documento, actorEmail) =>
+  // RF10 — Buscar la reserva de un estudiante por su documento (backend: buscar_reserva).
+  buscarReserva: (documento, actorEmail) =>
     request(`/students/lookup/?documento=${encodeURIComponent(documento)}&actor_email=${encodeURIComponent(actorEmail)}`),
-  register: (body) => request('/attendance/register/', { method: 'POST', body: JSON.stringify(body) }),
-  pending:  (actorEmail, fecha = '') =>
+  // RF11 — Registrar la asistencia (backend: registrar_asistencia).
+  registrarAsistencia: (body) => request('/attendance/register/', { method: 'POST', body: JSON.stringify(body) }),
+  // RF12 — Reservas sin asistencia registrada (backend: consultar_reservas).
+  consultarReservas: (actorEmail, fecha = '') =>
     request(`/attendance/pending/?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
-  process:  (actorEmail, fecha = '') =>
+  // RF13 — Cerrar la jornada (backend: procesar_inasistencia). Solo el entrenador.
+  procesarInasistencia: (actorEmail, fecha = '') =>
     request('/attendance/process/', { method: 'POST', body: JSON.stringify({ actor_email: actorEmail, fecha }) }),
 };
 
@@ -61,8 +67,8 @@ export const reservationsApi = {
   // El entrenador marca una inasistencia suelta.
   noShow: (id, actorEmail) =>
     request(`/reservations/${id}/no-show/`, { method: 'POST', body: JSON.stringify({ actor_email: actorEmail }) }),
-  // RF14 — Ver mi historial.
-  history: (email) => request(`/reservations/history/?email=${encodeURIComponent(email)}`),
+  // RF14 — Ver mi historial (backend: ver_historial).
+  verHistorial: (email) => request(`/reservations/history/?email=${encodeURIComponent(email)}`),
 };
 
 // RF12 — Lista de espera.
@@ -79,23 +85,32 @@ export const profileApi = {
 };
 
 // RF15 — Calificación del servicio.
-export const ratingsApi = {
-  list:   ()     => request('/ratings/'),
-  create: (body) => request('/ratings/', { method: 'POST', body: JSON.stringify(body) }),
+export const buzonApi = {
+  // RF20 — Reportar una falla o enviar una sugerencia (backend: fallo_sugerencia).
+  falloSugerencia: (body) => request('/suggestions/', { method: 'POST', body: JSON.stringify(body) }),
+  // RF21 — Consultar el buzón (backend: consultar_buzon). Solo el administrador.
+  consultarBuzon: (actorEmail) =>
+    request(`/suggestions/inbox/?actor_email=${encodeURIComponent(actorEmail)}`),
 };
 
 // Reportes: aforo, por estudiante, personal (RF18) y general diario (RF19/RF20).
 export const reportsApi = {
-  students:  () => request('/reports/students/'),
-  // RF18 — Reporte personal del estudiante: inasistencias y penalizaciones.
-  personal:  (email) => request(`/reports/personal/?email=${encodeURIComponent(email)}`),
-  // RF19 — Reporte general diario del gimnasio.
-  daily:     (actorEmail, fecha = '') =>
-    request(`/reports/daily/?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
-  // RF20 — El mismo reporte diario en PDF, listo para imprimir.
-  dailyPdfUrl: (actorEmail, fecha = '') =>
-    `${BASE}/reports/daily.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
-  pdfUrl:    `${BASE}/reports/usage.pdf`,
+  // RF15 — Ver mi reporte de inasistencias (backend: ver_inasistencias).
+  verInasistencias: (email) => request(`/reports/personal/?email=${encodeURIComponent(email)}`),
+  // RF16 — Ver el registro diario, entrenador (backend: ver_registro_entrenador).
+  verRegistroEntrenador: (actorEmail, fecha = '') =>
+    request(`/reports/daily/entrenador/?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
+  // RF17 — Ver el registro diario, administrador (backend: ver_registro_administrador).
+  verRegistroAdministrador: (actorEmail, fecha = '') =>
+    request(`/reports/daily/administrador/?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
+  // RF18 — Descargar el registro en PDF, entrenador (backend: descargar_registro_entrenador).
+  descargarRegistroEntrenador: (actorEmail, fecha = '') =>
+    `${BASE}/reports/daily/entrenador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
+  // RF19 — Descargar el registro en PDF, administrador (backend: descargar_registro_administrador).
+  descargarRegistroAdministrador: (actorEmail, fecha = '') =>
+    `${BASE}/reports/daily/administrador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
+  // Pendiente de decisión: no corresponde a ningún requisito aprobado.
+  students: () => request('/reports/students/'),
 };
 
 // RF18 — Máquinas.

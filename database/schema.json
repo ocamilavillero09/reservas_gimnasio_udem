@@ -65,11 +65,6 @@
           "obligatorio": false,
           "descripcion": "Inasistencias acumuladas. A las cinco se penaliza (RN08)."
         },
-        "cancel_count": {
-          "tipo": "int",
-          "obligatorio": false,
-          "descripcion": "Cancelaciones acumuladas. Campo heredado: se retira al eliminar la penalizacion por cancelaciones."
-        },
         "penalizado_hasta": {
           "tipo": "date|null",
           "obligatorio": false,

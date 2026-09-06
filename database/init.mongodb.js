@@ -59,7 +59,6 @@ db.createCollection('users', {
         },
         es_principal:     { bsonType: 'bool',   description: 'Cuenta del administrador principal (RF22 y RF23).' },
         no_show_count:    { bsonType: 'int',    minimum: 0, description: 'Inasistencias acumuladas (RN08).' },
-        cancel_count:     { bsonType: 'int',    minimum: 0, description: 'Cancelaciones acumuladas. Se retira al eliminar la penalizacion por cancelaciones.' },
         penalizado_hasta: { bsonType: ['date', 'null'], description: 'Fin de la penalizacion vigente (RN09).' },
         created_at:       { bsonType: 'date',   description: 'Momento del registro.' },
         created_by:       { bsonType: 'string', description: 'Correo del administrador que creo la cuenta (RF22).' },

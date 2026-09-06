@@ -32,7 +32,6 @@ var VALIDADORES = {
       estado:    { enum: ['ACTIVO', 'PENALIZADO', 'INACTIVO'] },
       es_principal:     { bsonType: 'bool' },
       no_show_count:    { bsonType: 'int', minimum: 0 },
-      cancel_count:     { bsonType: 'int', minimum: 0 },
       penalizado_hasta: { bsonType: ['date', 'null'] },
       created_at:       { bsonType: 'date' },
       created_by:       { bsonType: 'string' },

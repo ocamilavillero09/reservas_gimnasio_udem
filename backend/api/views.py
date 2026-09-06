@@ -8,9 +8,9 @@ from .db import (
     get_db, seed_slots, hash_password, verify_password, serialize,
     asegurar_disponibilidad, tomar_cupo, devolver_cupo,
     add_business_days, ROLES, DOMINIOS_ROL, role_for_email,
-    fecha_reserva, formato_fecha_es, cancelaciones_restantes, alerta_cancelaciones,
+    fecha_reserva, formato_fecha_es,
     normalizar_documento, inasistencias_restantes, alerta_inasistencias,
-    MAX_RESERVAS_POR_DIA, NO_SHOW_LIMITE, CANCELACION_LIMITE, PENALIZACION_DIAS_HABILES,
+    MAX_RESERVAS_POR_DIA, NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
     DOCUMENTO_MIN,
 )
 
@@ -50,15 +50,11 @@ def _perfil_sesion(user: dict) -> dict:
         'role':      user.get('role', 'ESTUDIANTE'),
         'estado':    user.get('estado', 'ACTIVO'),
         'es_principal': bool(user.get('es_principal')),
-        'cancel_count':  user.get('cancel_count', 0),
+        # RN08 — inasistencias acumuladas y cuántas faltan para la penalización.
         'no_show_count': user.get('no_show_count', 0),
-        'cancelaciones_restantes': cancelaciones_restantes(user),
-        'cancelacion_limite': CANCELACION_LIMITE,
-        # RF16/RF18 — inasistencias acumuladas y cuántas faltan para la penalización.
         'inasistencias_restantes': inasistencias_restantes(user),
         'no_show_limite': NO_SHOW_LIMITE,
         'alerta_inasistencias': alerta_inasistencias(user),
-        'alerta': alerta_cancelaciones(user),
     }
 
 
@@ -159,7 +155,6 @@ def registrar_cuenta(request):
         'estado':     'ACTIVO',          # RN09: ACTIVO | PENALIZADO | INACTIVO
         'es_principal': es_principal,    # RF21/RF22 — administrador principal
         'no_show_count': 0,
-        'cancel_count':  0,              # RN10: cancelaciones acumuladas
         'penalizado_hasta': None,
         'created_at': datetime.utcnow(),
     })
@@ -289,7 +284,16 @@ def session(request):
     }
 )
 @api_view(['GET', 'POST'])
-def admin_users(request):
+def crear_administrador(request):
+    """RF22 — Crear cuentas con rol de administrador.
+
+    GET lista las cuentas del sistema. POST da de alta una cuenta nueva: es la
+    única vía para que exista un administrador además del principal.
+
+    El rol sigue amarrado al dominio del correo (RN01), de modo que ni siquiera
+    un administrador puede crear una cuenta de administrador con un correo de
+    estudiante.
+    """
     # ╔══════════════════════════════════════════════════════════════════╗
     # ║ CASO DE USO — GESTIÓN DE USUARIOS POR EL ADMINISTRADOR              ║
     # ║ Solo un ADMIN autenticado puede dar de alta cuentas, y es la única   ║
@@ -308,7 +312,7 @@ def admin_users(request):
         rows = [{
             'name': u.get('name'), 'email': u['email'], 'role': u.get('role'),
             'documento': u.get('documento', ''),          # RF05
-            'estado': u.get('estado'), 'cancel_count': u.get('cancel_count', 0),
+            'estado': u.get('estado'),
             'no_show_count': u.get('no_show_count', 0),
             'es_principal': bool(u.get('es_principal')),  # RF21/RF22
         } for u in db.users.find().sort('role', 1)]
@@ -366,7 +370,6 @@ def admin_users(request):
         'estado':     'ACTIVO',
         'es_principal': False,
         'no_show_count': 0,
-        'cancel_count':  0,
         'penalizado_hasta': None,
         'created_at': datetime.utcnow(),
         'created_by': actor['email'],
@@ -418,9 +421,23 @@ def _es_principal(actor: dict) -> bool:
     },
 )
 @api_view(['PATCH'])
-def admin_user_detail(request, user_email):
+def eliminar_administrador(request, user_email):
+    """RF23 — Retirar el rol de administrador.
+
+    Solo el administrador principal puede quitarle el rol a otro administrador.
+
+    Importante: la cuenta NO se borra. Queda con rol SIN_ROL y sin acceso a las
+    funciones administrativas, conservando sus datos y su historial. El cambio
+    persiste aunque la persona vuelva a iniciar sesión, porque el rol se lee de
+    la cuenta y no se deduce del dominio del correo en cada entrada (RF02).
+
+    El propio administrador principal no puede quedarse sin rol: el sistema
+    nunca se queda sin administrador.
+
+    Cuerpo: {actor_email, accion} con accion 'retirar' o 'restaurar'.
+    """
     # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ RF22 — GESTIÓN DE LAS CUENTAS DE OTROS ADMINISTRADORES             ║
+    # ║ RF23 — RETIRAR EL ROL DE ADMINISTRADOR                             ║
     # ║ Solo el ADMINISTRADOR PRINCIPAL puede retirar (o devolver) el rol   ║
     # ║ de administrador. Retirar el rol deja la cuenta con rol SIN_ROL y   ║
     # ║ estado INACTIVO, de modo que ya no puede iniciar sesión.            ║

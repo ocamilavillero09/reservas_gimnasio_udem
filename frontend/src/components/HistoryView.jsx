@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { reservationsApi, ratingsApi } from '../services/api';
+import { reservationsApi, buzonApi } from '../services/api';
 
 const RED = '#CC0000';
 
@@ -9,23 +9,26 @@ const BADGE = {
   NO_SHOW:    { bg: '#fee2e2', fg: '#991b1b', label: 'No asistió' },
 };
 
-// RF11 — Historial de entrenamiento + RF15 — calificación del servicio.
+// RF14 — Ver mi historial · RF20 — Reportar una falla o enviar una sugerencia.
 export default function HistoryView({ user, showToast }) {
   const [history, setHistory] = useState([]);
-  const [stars, setStars] = useState(5);
-  const [comment, setComment] = useState('');
+  const [mensaje, setMensaje] = useState('');
+  const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
-    reservationsApi.history(user.email).then(setHistory).catch(() => setHistory([]));
+    reservationsApi.verHistorial(user.email).then(setHistory).catch(() => setHistory([]));
   }, [user.email]);
 
-  const sendRating = async (e) => {
+  // RF20 — El mensaje llega al administrador, que es el único que lee el buzón.
+  const enviarReporte = async (e) => {
     e.preventDefault();
+    setEnviando(true);
     try {
-      await ratingsApi.create({ email: user.email, stars: Number(stars), comment });
-      showToast('¡Gracias por tu calificación!', 'success');
-      setComment('');
+      const r = await buzonApi.falloSugerencia({ email: user.email, mensaje });
+      showToast(r.notificacion || 'Mensaje enviado.', 'success');
+      setMensaje('');
     } catch (err) { showToast(err.message, 'error'); }
+    finally { setEnviando(false); }
   };
 
   return (
@@ -52,22 +55,34 @@ export default function HistoryView({ user, showToast }) {
         </div>
       )}
 
-      {/* RF15 — Calificación */}
+      {/* RF20 — Reportar una falla o enviar una sugerencia al administrador */}
       <div style={{ background: 'white', borderRadius: 18, padding: 26, boxShadow: '0 2px 14px rgba(0,0,0,0.07)' }}>
-        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>⭐ Califica el servicio</h3>
-        <form onSubmit={sendRating} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <button type="button" key={n} onClick={() => setStars(n)} aria-label={`${n} estrellas`} style={{
-                fontSize: 28, border: 'none', background: 'none', cursor: 'pointer',
-                color: n <= stars ? '#f59e0b' : '#d1d5db',
-              }}>★</button>
-            ))}
-          </div>
-          <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Comentario (opcional)"
-                    rows={3} style={{ padding: 12, border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, fontFamily: 'inherit' }} />
-          <button type="submit" style={{ padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
-            Enviar calificación
+        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>💬 Reportar una falla</h3>
+        <p style={{ fontSize: 13, color: '#777', marginBottom: 16 }}>
+          ¿Encontraste un problema en la aplicación o se te ocurre una mejora? Escríbelo aquí
+          y le llegará al administrador del sistema.
+        </p>
+        <form onSubmit={enviarReporte} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <textarea
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            placeholder="Cuéntanos qué pasó o qué mejorarías"
+            rows={4}
+            maxLength={2000}
+            required
+            style={{ padding: 12, border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, fontFamily: 'inherit' }}
+          />
+          <button
+            type="submit"
+            disabled={enviando || mensaje.trim() === ''}
+            style={{
+              padding: 13, border: 'none', borderRadius: 12,
+              background: enviando || mensaje.trim() === '' ? '#F5F5F5' : RED,
+              color: enviando || mensaje.trim() === '' ? '#999' : 'white',
+              fontWeight: 800, cursor: enviando || mensaje.trim() === '' ? 'not-allowed' : 'pointer',
+            }}
+          >
+            {enviando ? 'Enviando…' : 'Enviar al administrador'}
           </button>
         </form>
       </div>

@@ -1,55 +1,69 @@
 from django.urls import path
 from . import views, features, reports, attendance
 
+# Una ruta por requisito. El nombre de la función es el del requisito, de modo
+# que la trazabilidad entre el documento y el código sea directa.
 urlpatterns = [
-    # Auth
+    # ── Módulo 1 — Autenticación y perfiles ─────────────────────────────────
     # RF01 — Registrar una cuenta
-    path('auth/register/',              views.registrar_cuenta,    name='register'),
+    path('auth/register/',              views.registrar_cuenta,     name='register'),
     # RF02 — Iniciar sesión
-    path('auth/login/',                 views.iniciar_sesion,      name='login'),
-    path('auth/session/',               views.session,             name='session'),
-
-    # RF21 — Gestión de usuarios (solo el administrador principal crea ADMIN)
-    path('admin/users/',                views.admin_users,         name='admin-users'),
-    # RF22 — Retirar / restaurar el rol de administrador
-    path('admin/users/<str:user_email>/', views.admin_user_detail, name='admin-user-detail'),
-
-    # RF06 — Consultar los bloques horarios con sus cupos
-    path('slots/',                      views.consultar_horarios,  name='slots'),
-    # RF08 (GET) y RF07 (POST) — Consultar mis reservas y reservar el día siguiente
-    path('reservations/',               views.reservations,        name='reservations'),
-
-    # RF11 — Historial (antes de las rutas con <reservation_id> para no colisionar)
-    path('reservations/history/',       features.reservation_history, name='history'),
-
-    # RF09 — Cancelar mi reserva
-    path('reservations/<str:reservation_id>/',          views.cancelar_reserva,      name='cancel-reservation'),
-    path('reservations/<str:reservation_id>/no-show/',  views.mark_no_show,          name='mark-no-show'),
-
+    path('auth/login/',                 views.iniciar_sesion,       name='login'),
+    # Rehidratación de la sesión al recargar la página (apoya a RF02)
+    path('auth/session/',               views.session,              name='session'),
     # RF03 — Consultar y actualizar el perfil del estudiante
     path('users/profile/',              features.consultar_actualizar_perfil, name='profile'),
-    # RF04 — Perfil del entrenador · RF05 — Perfil del administrador
-    path('users/entrenador/',           features.consultar_entrenador,     name='perfil-entrenador'),
-    path('users/administrador/',        features.consultar_administrador,  name='perfil-administrador'),
+    # RF04 — Perfil del entrenador
+    path('users/entrenador/',           features.consultar_entrenador,        name='perfil-entrenador'),
+    # RF05 — Perfil del administrador
+    path('users/administrador/',        features.consultar_administrador,     name='perfil-administrador'),
 
-    # RF15 — Calificaciones
-    path('ratings/',                    features.ratings,           name='ratings'),
+    # ── Módulo 2 — Gestión de reservas ──────────────────────────────────────
+    # RF06 — Consultar los bloques horarios con sus cupos
+    path('slots/',                      views.consultar_horarios,   name='slots'),
+    # RF08 (GET) y RF07 (POST) — Consultar mis reservas y reservar el día siguiente
+    path('reservations/',               views.reservations,         name='reservations'),
+    # RF14 — Ver mi historial (antes de las rutas con <id> para no colisionar)
+    path('reservations/history/',       features.ver_historial,     name='history'),
+    # RF09 — Cancelar mi reserva
+    path('reservations/<str:reservation_id>/',         views.cancelar_reserva, name='cancel-reservation'),
+    path('reservations/<str:reservation_id>/no-show/', views.mark_no_show,     name='mark-no-show'),
+    # RF10 — Buscar la reserva de un estudiante por su documento
+    path('students/lookup/',            attendance.buscar_reserva,  name='student-lookup'),
+
+    # ── Módulo 3 — Asistencia e inasistencia ────────────────────────────────
+    # RF11 — Registrar la asistencia de un estudiante
+    path('attendance/register/',        attendance.registrar_asistencia,  name='attendance-register'),
+    # RF12 — Consultar las reservas sin asistencia registrada
+    path('attendance/pending/',         attendance.consultar_reservas,    name='attendance-pending'),
+    # RF13 — Procesar las inasistencias al cerrar la jornada
+    path('attendance/process/',         attendance.procesar_inasistencia, name='attendance-process'),
+
+    # ── Módulo 4 — Historial y reportes ─────────────────────────────────────
+    # RF15 — Ver mi reporte de inasistencias
+    path('reports/personal/',           attendance.ver_inasistencias,           name='personal-report'),
+    # RF16 — Ver el registro diario (entrenador)
+    path('reports/daily/entrenador/',   attendance.ver_registro_entrenador,     name='registro-entrenador'),
+    # RF17 — Ver el registro diario (administrador)
+    path('reports/daily/administrador/', attendance.ver_registro_administrador, name='registro-administrador'),
+    # RF18 — Descargar el registro diario en PDF (entrenador)
+    path('reports/daily/entrenador.pdf', reports.descargar_registro_entrenador,     name='registro-entrenador-pdf'),
+    # RF19 — Descargar el registro diario en PDF (administrador)
+    path('reports/daily/administrador.pdf', reports.descargar_registro_administrador, name='registro-administrador-pdf'),
+
+    # ── Módulo 5 — Buzón de sugerencias ─────────────────────────────────────
+    # RF20 — Reportar una falla o enviar una sugerencia
+    path('suggestions/',                features.fallo_sugerencia,  name='suggestion-create'),
+    # RF21 — Consultar el buzón de sugerencias
+    path('suggestions/inbox/',          features.consultar_buzon,   name='suggestion-inbox'),
+
+    # ── Módulo 6 — Administración de usuarios ───────────────────────────────
+    # RF22 — Crear cuentas con rol de administrador
+    path('admin/users/',                views.crear_administrador,  name='admin-users'),
+    # RF23 — Retirar el rol de administrador
+    path('admin/users/<str:user_email>/', views.eliminar_administrador, name='admin-user-detail'),
+
+    # Pendiente de decisión: no corresponde a ningún requisito aprobado.
     path('reports/students/',           features.students_report,   name='students-report'),
     path('reports/usage.pdf',           reports.usage_pdf,          name='usage-pdf'),
-
-    # ── Asistencia, inasistencias y penalizaciones ────────────────────────
-    # RF11 — El entrenador busca al estudiante por su DOCUMENTO de identidad
-    path('students/lookup/',            attendance.student_lookup,     name='student-lookup'),
-    # RF13 — Registrar la asistencia del estudiante
-    path('attendance/register/',        attendance.register_attendance, name='attendance-register'),
-    # RF14 — Estudiantes con reserva y sin asistencia registrada
-    path('attendance/pending/',         attendance.pending_attendance,  name='attendance-pending'),
-    # RF15/RF16 — Procesar de forma general las inasistencias de la jornada
-    path('attendance/process/',         attendance.process_no_shows,    name='attendance-process'),
-
-    # RF18 — Reporte personal del estudiante (inasistencias y penalizaciones)
-    path('reports/personal/',           attendance.personal_report,     name='personal-report'),
-    # RF19 — Reporte general diario · RF20 — el mismo reporte en PDF
-    path('reports/daily/',              attendance.daily_report,        name='daily-report'),
-    path('reports/daily.pdf',           reports.daily_pdf,              name='daily-pdf'),
 ]

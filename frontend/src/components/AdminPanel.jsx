@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { adminApi } from '../services/api';
+import { adminApi, buzonApi } from '../services/api';
 
 const RED = '#CC0000';
 const inputStyle = { width: '100%', padding: '12px 16px', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, backgroundColor: '#FAFAFA' };
@@ -23,12 +23,13 @@ const rolDeCorreo = (email) =>
   DOMINIOS.find((d) => email.trim().toLowerCase().endsWith(d.dominio))?.rol ?? null;
 
 /**
- * Panel del ADMINISTRADOR — gestión de usuarios.
+ * Panel del ADMINISTRADOR.
  *
- *   RF21 / HU21 — El ADMINISTRADOR PRINCIPAL crea cuentas con rol de
- *                 administrador (el rol se deduce del dominio del correo).
- *   RF22 / HU22 — El administrador principal gestiona esas cuentas y puede
- *                 RETIRARLES el rol de administrador.
+ *   RF21 — Consultar el buzón de sugerencias. Es el único rol con acceso.
+ *   RF22 — El administrador principal crea cuentas con rol de administrador.
+ *          El rol se deduce del dominio del correo (RN01).
+ *   RF23 — El administrador principal retira el rol. La cuenta NO se borra:
+ *          queda sin rol y conserva su historial.
  */
 export default function AdminPanel({ user, showToast }) {
   const [users, setUsers] = useState([]);
@@ -36,9 +37,12 @@ export default function AdminPanel({ user, showToast }) {
   const [email, setEmail] = useState('');
   const [documento, setDocumento] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [buzon, setBuzon] = useState(null);   // RF21
 
   const cargar = useCallback(() => {
-    adminApi.listUsers(user.email).then(setUsers).catch(() => setUsers([]));
+    adminApi.listarUsuarios(user.email).then(setUsers).catch(() => setUsers([]));
+    // RF21 — La bandeja de reportes que envían los estudiantes.
+    buzonApi.consultarBuzon(user.email).then(setBuzon).catch(() => setBuzon(null));
   }, [user.email]);
 
   useEffect(cargar, [cargar]);
@@ -47,7 +51,7 @@ export default function AdminPanel({ user, showToast }) {
     e.preventDefault();
     setEnviando(true);
     try {
-      const r = await adminApi.createUser({
+      const r = await adminApi.crearAdministrador({
         actor_email: user.email,
         name: name.trim(),
         email: email.trim().toLowerCase(),
@@ -68,7 +72,7 @@ export default function AdminPanel({ user, showToast }) {
     const verbo = accion === 'retirar' ? 'retirar el rol de administrador a' : 'restaurar el rol de administrador a';
     if (!window.confirm(`¿Seguro que deseas ${verbo} ${objetivo.name}?`)) return;
     try {
-      const r = await adminApi.setAdminRole(objetivo.email, accion, user.email);
+      const r = await adminApi.eliminarAdministrador(objetivo.email, accion, user.email);
       showToast(r.message, accion === 'retirar' ? 'warning' : 'success');
       cargar();
     } catch (err) {
@@ -212,6 +216,39 @@ export default function AdminPanel({ user, showToast }) {
             </div>
           );
         })}
+      </div>
+
+      {/* RF21 — Buzón de sugerencias. Solo el administrador lo ve. */}
+      <div style={{ ...card, marginTop: 24 }}>
+        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
+          💬 Buzón de sugerencias
+          {buzon?.total ? (
+            <span style={{
+              marginLeft: 10, background: '#FEE2E2', color: RED, fontSize: 12,
+              fontWeight: 800, padding: '4px 10px', borderRadius: 20,
+            }}>{buzon.total}</span>
+          ) : null}
+        </h3>
+        <p style={{ fontSize: 13, color: '#777', marginBottom: 16 }}>
+          Fallas y mejoras que reportan los estudiantes desde su historial.
+        </p>
+
+        {!buzon || buzon.mensajes.length === 0 ? (
+          <p style={{ color: '#999', fontSize: 14 }}>Todavía no hay mensajes.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {buzon.mensajes.map((m, i) => (
+              <div key={i} style={{ border: '1px solid #eee', borderRadius: 12, padding: 16 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 700, fontSize: 14 }}>{m.autor_nombre}</span>
+                  <span style={{ fontSize: 12, color: '#999' }}>{m.fecha.slice(0, 16).replace('T', ' ')}</span>
+                </div>
+                <p style={{ fontSize: 12, color: '#999', margin: '2px 0 10px' }}>{m.autor_email}</p>
+                <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{m.mensaje}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -49,17 +49,14 @@ function Toast({ message, type, onClose }) {
 }
 
 /**
- * RN10 — Alerta permanente dentro de la app: avisa al estudiante que está a
- * pocas cancelaciones de ser penalizado. El texto lo calcula el backend.
+ * RN08 y RN09 — Aviso permanente dentro de la aplicación: le dice al estudiante
+ * cuántas inasistencias le faltan para que su cuenta quede penalizada. El texto
+ * lo produce el backend (RN11), la interfaz solo lo muestra.
  */
 function PenaltyAlert({ user }) {
-  // RN10 (cancelaciones) y RF16/RF18 (inasistencias): se muestra el aviso más
-  // urgente que tenga el estudiante en ese momento.
-  const aviso = user?.alerta_inasistencias || user?.alerta;
+  const aviso = user?.alerta_inasistencias;
   if (!aviso) return null;
-  const bloqueado = user.estado === 'PENALIZADO'
-    || user.cancelaciones_restantes === 0
-    || user.inasistencias_restantes === 0;
+  const bloqueado = user.estado === 'PENALIZADO' || user.inasistencias_restantes === 0;
   return (
     <div style={{
       backgroundColor: bloqueado ? '#FEE2E2' : '#FFF7ED',
@@ -229,7 +226,7 @@ export default function App() {
             onLogout={handleLogout}
           />
 
-          {/* RN10 — alerta de cancelaciones, siempre visible para el estudiante */}
+          {/* RN08 — aviso de inasistencias, siempre visible para el estudiante */}
           {!staff && <PenaltyAlert user={user} />}
 
           {/* Los profesores y administradores NO reservan: solo ven el aforo. */}

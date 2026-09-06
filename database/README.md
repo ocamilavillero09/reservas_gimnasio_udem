@@ -97,9 +97,6 @@ capas guardan exactamente el mismo tipo.
 
 ## Pendiente
 
-- `cancel_count` es un campo heredado de la penalización por cancelaciones, que
-  el equipo retiró. El backend ya no lo incrementa; el campo sale del esquema
-  cuando se limpie el resto de sus rastros en la interfaz.
 - Las colecciones `slots` y `disponibilidad` se llaman `bloques` y
   `disponibilidad` en el modelo de análisis v2.0. El nombre de la primera queda
   pendiente de unificar.

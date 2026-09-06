@@ -67,7 +67,6 @@ db.users.insertMany(PERSONAS.map(function (p) {
     estado: p.estado,
     es_principal: p.es_principal === true,
     no_show_count: NumberInt(p.no_show_count),
-    cancel_count: NumberInt(0),
     penalizado_hasta: p.estado === 'PENALIZADO'
       ? new Date(ahora.getTime() + 5 * 24 * 60 * 60 * 1000)
       : null,

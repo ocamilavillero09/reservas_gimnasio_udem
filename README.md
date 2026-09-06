@@ -225,43 +225,39 @@ Sigue estos pasos para verificar que frontend, backend y base de datos se comuni
 13. **Verificar en Swagger UI** (`http://localhost:8000/swagger/`) que todos los endpoints
     responden con los códigos esperados
 
-### Trazabilidad: requisito → endpoint
+### Trazabilidad: requisito → función → endpoint
 
-Estado del código a la fecha. Las filas marcadas como pendiente corresponden a requisitos
-aprobados que aún no están implementados; se resuelven durante la refactorización.
+El nombre de la función es el del requisito, en el backend y en el frontend, para
+que las pruebas y los diagramas de flujo calcen con el código.
 
-| Requisito | Endpoint |
-|---|---|
-| RF01 Registrar una cuenta | `POST /api/auth/register/` |
-| RF02 Iniciar sesión | `POST /api/auth/login/` |
-| RF03 Perfil del estudiante | `GET/PUT /api/users/profile/` |
-| RF04 Perfil del entrenador | `GET /api/users/profile/` |
-| RF05 Perfil del administrador | `GET /api/users/profile/` |
-| RF06 Bloques horarios con sus cupos | `GET /api/slots/` |
-| RF07 Reservar para el día siguiente | `POST /api/reservations/` |
-| RF08 Consultar mis reservas | `GET /api/reservations/` |
-| RF09 Cancelar mi reserva | `DELETE /api/reservations/<id>/` |
-| RF10 Buscar la reserva por documento | `GET /api/students/lookup/` |
-| RF11 Registrar asistencia | `POST /api/attendance/register/` — falta la ventana de RN12 |
-| RF12 Reservas sin asistencia registrada | `GET /api/attendance/pending/` |
-| RF13 Procesar inasistencias | `POST /api/attendance/process/` — falta restringirlo al entrenador |
-| RF14 Historial del estudiante | `GET /api/reservations/history/` |
-| RF15 Reporte de inasistencias | `GET /api/reports/personal/` |
-| RF16 Registro diario (entrenador) | `GET /api/reports/daily/` |
-| RF17 Registro diario (administrador) | `GET /api/reports/daily/` |
-| RF18 Registro diario en PDF (entrenador) | `GET /api/reports/daily.pdf` |
-| RF19 Registro diario en PDF (administrador) | `GET /api/reports/daily.pdf` |
-| RF20 Enviar una sugerencia | Pendiente |
-| RF21 Consultar el buzón | Pendiente |
-| RF22 Crear cuentas de administrador | `POST /api/admin/users/` |
-| RF23 Retirar el rol de administrador | `PATCH /api/admin/users/<correo>/` |
+| Requisito | Backend | Frontend | Endpoint |
+|---|---|---|---|
+| RF01 Registrar una cuenta | `registrar_cuenta` | `registrarCuenta` | `POST /api/auth/register/` |
+| RF02 Iniciar sesión | `iniciar_sesion` | `iniciarSesion` | `POST /api/auth/login/` |
+| RF03 Consultar y actualizar mi perfil | `consultar_actualizar_perfil` | `consultarPerfil`, `actualizarPerfil` | `GET/PUT /api/users/profile/` |
+| RF04 Perfil del entrenador | `consultar_entrenador` | `consultarEntrenador` | `GET /api/users/entrenador/` |
+| RF05 Perfil del administrador | `consultar_administrador` | `consultarAdministrador` | `GET /api/users/administrador/` |
+| RF06 Bloques horarios con sus cupos | `consultar_horarios` | `consultarHorarios` | `GET /api/slots/` |
+| RF07 Reservar el día siguiente | `reservar_mañana` | `reservarMañana` | `POST /api/reservations/` |
+| RF08 Consultar mis reservas | `consultar_reserva` | `consultarReserva` | `GET /api/reservations/` |
+| RF09 Cancelar mi reserva | `cancelar_reserva` | `cancelarReserva` | `DELETE /api/reservations/<id>/` |
+| RF10 Buscar la reserva por documento | `buscar_reserva` | `buscarReserva` | `GET /api/students/lookup/` |
+| RF11 Registrar la asistencia | `registrar_asistencia` | `registrarAsistencia` | `POST /api/attendance/register/` |
+| RF12 Reservas sin asistencia | `consultar_reservas` | `consultarReservas` | `GET /api/attendance/pending/` |
+| RF13 Cerrar la jornada | `procesar_inasistencia` | `procesarInasistencia` | `POST /api/attendance/process/` |
+| RF14 Ver mi historial | `ver_historial` | `verHistorial` | `GET /api/reservations/history/` |
+| RF15 Ver mis inasistencias | `ver_inasistencias` | `verInasistencias` | `GET /api/reports/personal/` |
+| RF16 Registro diario, entrenador | `ver_registro_entrenador` | `verRegistroEntrenador` | `GET /api/reports/daily/entrenador/` |
+| RF17 Registro diario, administrador | `ver_registro_administrador` | `verRegistroAdministrador` | `GET /api/reports/daily/administrador/` |
+| RF18 Registro en PDF, entrenador | `descargar_registro_entrenador` | `descargarRegistroEntrenador` | `GET /api/reports/daily/entrenador.pdf` |
+| RF19 Registro en PDF, administrador | `descargar_registro_administrador` | `descargarRegistroAdministrador` | `GET /api/reports/daily/administrador.pdf` |
+| RF20 Reportar una falla | `fallo_sugerencia` | `falloSugerencia` | `POST /api/suggestions/` |
+| RF21 Consultar el buzón | `consultar_buzon` | `consultarBuzon` | `GET /api/suggestions/inbox/` |
+| RF22 Crear administrador | `crear_administrador` | `crearAdministrador` | `POST /api/admin/users/` |
+| RF23 Retirar el rol de administrador | `eliminar_administrador` | `eliminarAdministrador` | `PATCH /api/admin/users/<correo>/` |
 
-### Funcionalidad que sale del código
-
-Estas rutas existen hoy pero no corresponden a ningún requisito aprobado y se retiran
-durante la refactorización: lista de espera, catálogo de máquinas, reporte de ocupación,
-exportación en CSV y la penalización por acumular cancelaciones. Las calificaciones se
-transforman en el buzón de sugerencias (RF20 y RF21).
+Quedan dos rutas sin requisito aprobado, pendientes de decisión: el reporte por
+estudiante y su PDF.
 
 ### Verificación rápida con curl
 

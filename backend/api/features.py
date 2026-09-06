@@ -4,7 +4,9 @@ Requisitos que atiende este módulo:
   RF03  Consultar y actualizar el perfil     (consultar_actualizar_perfil)
   RF04  Perfil del entrenador                 (consultar_entrenador)
   RF05  Perfil del administrador              (consultar_administrador)
-  RF14  Historial del estudiante              (reservation_history)
+  RF14  Ver mi historial                      (ver_historial)
+  RF20  Reportar una falla o sugerencia        (fallo_sugerencia)
+  RF21  Consultar el buzón de sugerencias      (consultar_buzon)
 
 Se retiraron por decisión del equipo, porque no corresponden a ningún requisito:
 la lista de espera, el reporte de ocupación y el catálogo de máquinas. También
@@ -12,8 +14,7 @@ se retiró complete_reservation, que duplicaba el registro de asistencia (RF11) 
 además devolvía el cupo al bloque, algo que ya no tiene sentido ahora que la
 disponibilidad es de cada jornada.
 
-Pendientes: `ratings` se conserva porque se transforma en el buzón de sugerencias
-(RF20 y RF21); `students_report` no corresponde a ningún requisito aprobado.
+Pendiente: `students_report` no corresponde a ningún requisito aprobado.
 """
 from datetime import datetime
 from bson import ObjectId
@@ -21,11 +22,11 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .db import (
-    get_db, cancelaciones_restantes, alerta_cancelaciones,
+    get_db,
     inasistencias_restantes, alerta_inasistencias, normalizar_documento,
     add_business_days, hoy_local, formato_fecha_es,
     validar_campo_perfil, normalizar_campo_perfil,
-    CANCELACION_LIMITE, NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
+    NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
 )
 
 
@@ -37,7 +38,7 @@ def _is_staff(email: str) -> bool:
 
 # ── RF11 — HISTORIAL DE ENTRENAMIENTO ───────────────────────────────────────
 @api_view(['GET'])
-def reservation_history(request):
+def ver_historial(request):
     """RF17 — Historial completo del estudiante.
 
     Incluye TODOS sus movimientos: reservas vigentes, cancelaciones,
@@ -149,11 +150,6 @@ def _respuesta_perfil(user: dict) -> dict:
         'inasistencias_restantes': inasistencias_restantes(user),
         'no_show_limite': NO_SHOW_LIMITE,
         'alerta_inasistencias': alerta_inasistencias(user),
-        # Contadores de cancelaciones. Campo heredado: sale al refactorizar RF09.
-        'cancel_count': user.get('cancel_count', 0),
-        'cancelaciones_restantes': cancelaciones_restantes(user),
-        'cancelacion_limite': CANCELACION_LIMITE,
-        'alerta': alerta_cancelaciones(user),
         # RF03 — perfil físico y objetivo de entrenamiento.
         'edad': user.get('edad'), 'peso': user.get('peso'),
         'altura': user.get('altura'), 'meta': user.get('meta'),
@@ -227,32 +223,81 @@ def consultar_actualizar_perfil(request):
     return Response(_respuesta_perfil(user))
 
 
-# ── RF15 — CALIFICACIÓN DEL SERVICIO ────────────────────────────────────────
-@api_view(['GET', 'POST'])
-def ratings(request):
-    db = get_db()
-    if request.method == 'GET':
-        docs = [{'email': r['email'], 'stars': r['stars'], 'comment': r.get('comment', ''),
-                 'created_at': r['created_at']}
-                for r in db.ratings.find().sort('created_at', -1).limit(50)]
-        avg = None
-        if docs:
-            all_stars = [r['stars'] for r in db.ratings.find({}, {'stars': 1})]
-            avg = round(sum(all_stars) / len(all_stars), 2)
-        return Response({'promedio': avg, 'total': db.ratings.count_documents({}), 'comentarios': docs})
+# ── RF20 y RF21 — BUZÓN DE SUGERENCIAS ──────────────────────────────────────
+MENSAJE_MAX = 2000
 
+
+@api_view(['POST'])
+def fallo_sugerencia(request):
+    """RF20 — Reportar una falla o enviar una sugerencia.
+
+    El estudiante escribe un mensaje contando una falla que encontró en la
+    aplicación o proponiendo una mejora, y lo envía al administrador.
+    """
+    db = get_db()
     email = request.data.get('email', '').strip().lower()
-    try:
-        stars = int(request.data.get('stars'))
-    except (TypeError, ValueError):
-        return Response({'error': 'stars debe ser un entero 1-5.'}, status=400)
-    if not email or not (1 <= stars <= 5):
-        return Response({'error': 'email y stars (1-5) son obligatorios.'}, status=400)
-    db.ratings.insert_one({
-        'email': email, 'stars': stars, 'comment': request.data.get('comment', '').strip(),
-        'slotId': request.data.get('slotId'), 'created_at': datetime.utcnow(),
+    mensaje = (request.data.get('mensaje') or '').strip()
+
+    if not email:
+        return Response({'error': 'email requerido.'}, status=400)
+    if not mensaje:
+        return Response({'error': 'Escribe el mensaje antes de enviarlo.'}, status=400)
+    if len(mensaje) > MENSAJE_MAX:
+        return Response(
+            {'error': f'El mensaje no puede superar los {MENSAJE_MAX} caracteres.'},
+            status=400,
+        )
+
+    autor = db.users.find_one({'email': email})
+    if not autor:
+        return Response({'error': 'Usuario no encontrado.'}, status=404)
+    if autor.get('role') != 'ESTUDIANTE':
+        return Response(
+            {'error': 'El buzón es el canal por el que los estudiantes reportan fallas.'},
+            status=403,
+        )
+
+    # Se guarda el nombre junto al mensaje para que el administrador no tenga
+    # que cruzarlo con la colección de usuarios al leer la bandeja.
+    db.suggestions.insert_one({
+        'autor_email': email,
+        'autor_nombre': autor['name'],
+        'mensaje': mensaje,
+        'created_at': datetime.utcnow(),
     })
-    return Response({'message': '¡Gracias por tu calificación!'}, status=201)
+    # RN11 — la confirmación la produce el backend.
+    return Response({
+        'message': 'Mensaje enviado.',
+        'notificacion': 'Tu reporte llegó al administrador. Gracias por avisar.',
+        'tipo': 'SUGERENCIA_ENVIADA',
+    }, status=201)
+
+
+@api_view(['GET'])
+def consultar_buzon(request):
+    """RF21 — Consultar el buzón de sugerencias.
+
+    El administrador lee los mensajes que enviaron los estudiantes, del más
+    reciente al más antiguo. Es el único rol con acceso: ni el estudiante ve los
+    mensajes de otros ni el entrenador entra a esta bandeja.
+    """
+    db = get_db()
+    actor = db.users.find_one(
+        {'email': (request.query_params.get('actor_email') or '').strip().lower()})
+    if not actor or actor.get('role') != 'ADMIN':
+        return Response(
+            {'error': 'Solo el administrador puede consultar el buzón de sugerencias.'},
+            status=403,
+        )
+
+    mensajes = [{
+        'autor_nombre': m['autor_nombre'],
+        'autor_email': m['autor_email'],
+        'mensaje': m['mensaje'],
+        'fecha': m['created_at'].isoformat(),
+    } for m in db.suggestions.find().sort('created_at', -1).limit(200)]
+
+    return Response({'total': db.suggestions.count_documents({}), 'mensajes': mensajes})
 
 
 # ── RF17 — REPORTE POR ESTUDIANTE ───────────────────────────────────────────
@@ -275,11 +320,8 @@ def build_student_rows():
             'activas': db.reservations.count_documents({'email': email, 'estado': 'ACTIVA'}),
             'completadas': db.reservations.count_documents({'email': email, 'estado': 'COMPLETADA'}),
             'canceladas': canceladas,
-            'cancel_count': u.get('cancel_count', 0),
-            'cancelaciones_restantes': cancelaciones_restantes(u),
             'no_show': db.reservations.count_documents({'email': email, 'estado': 'NO_SHOW'}),
             'no_show_count': u.get('no_show_count', 0),
-            'en_alerta': alerta_cancelaciones(u) is not None,
         })
     return rows
 
@@ -287,7 +329,6 @@ def build_student_rows():
 @api_view(['GET'])
 def students_report(request):
     return Response({
-        'cancelacion_limite': CANCELACION_LIMITE,
         'no_show_limite': NO_SHOW_LIMITE,
         'estudiantes': build_student_rows(),
     })

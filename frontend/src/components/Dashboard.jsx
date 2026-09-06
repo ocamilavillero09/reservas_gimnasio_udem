@@ -218,11 +218,12 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 28 }}>
         <StatCard icon="✅" label="Cupos disponibles" value={totalAvailable} />
         <StatCard icon="📌" label="Mi reserva de mañana" value={`${reservations.length}/1`} />
+        {/* RN08 — Cancelar no penaliza; lo que penaliza es no presentarse. */}
         <StatCard
           icon="🚫"
-          label={`Cancelaciones (límite ${user?.cancelacion_limite ?? 5})`}
-          value={user?.cancel_count ?? 0}
-          highlight={(user?.cancelaciones_restantes ?? 99) <= 2}
+          label={`Inasistencias (límite ${user?.no_show_limite ?? 5})`}
+          value={user?.no_show_count ?? 0}
+          highlight={(user?.inasistencias_restantes ?? 99) <= 2}
         />
       </div>
 
