@@ -50,9 +50,21 @@ mongosh mongodb://localhost:27017 database/queries.js
 | Colección | Contenido |
 |---|---|
 | `users` | Personas del sistema, sin importar su rol |
-| `slots` | Los seis bloques horarios con su aforo y sus cupos libres |
+| `slots` | Catálogo de los seis bloques horarios. Es fijo y no guarda cupos |
+| `disponibilidad` | Cupos libres de cada bloque en cada jornada |
 | `reservations` | Reservas, con su fecha, su bloque y su desenlace |
 | `suggestions` | Buzón de sugerencias (RF20 y RF21) |
+
+### Por qué la disponibilidad está separada del catálogo
+
+Los cupos vivían antes en el propio bloque, con un solo contador para todos los
+días. Como solo se descontaba al reservar y solo se reponía al cancelar, una
+asistencia o una inasistencia consumían el cupo de forma permanente. Tras veinte
+reservas ese bloque quedaba lleno para siempre y nadie podía volver a reservarlo
+ningún día.
+
+Ahora hay un documento por cada fecha y bloque. Cada jornada arranca con su
+aforo completo y se crea la primera vez que alguien la consulta o reserva.
 
 Los campos declarados son exactamente los que escribe el backend. Antes no era
 así: el script creaba `users` con nombres en español y un validador que exigía
@@ -72,8 +84,9 @@ llegue a corromper los datos.
 | RN01 El dominio del correo determina el rol | El patrón del campo `email` solo admite los tres dominios institucionales |
 | RN02 El documento es la credencial | `documento` es único y el patrón de `password` exige el formato cifrado, de modo que no se pueda guardar en claro |
 | RN03 Bloques de dos horas en horas pares | `hour` es una enumeración con las seis horas; no admite ninguna otra |
+| RN04 Reserva para el día siguiente | La disponibilidad se guarda por fecha, así que el aforo de una jornada no se mezcla con el de otra |
 | RN05 Una reserva por estudiante por día | Índice único parcial sobre correo y fecha, limitado a las reservas en estado `ACTIVA` |
-| RN06 Sin sobrecupo | `available` no admite valores negativos, así que un descuento de más es rechazado |
+| RN06 Sin sobrecupo | `cupos_disponibles` no admite valores negativos, así que un descuento de más es rechazado. Un índice único sobre fecha y bloque impide crear dos veces la misma jornada |
 
 ## Tipos numéricos
 
@@ -84,8 +97,9 @@ capas guardan exactamente el mismo tipo.
 
 ## Pendiente
 
-- El contador de cupos vive en `slots` y es global: no distingue la fecha. Al
-  implementar RF06 y RF07 se separa en un catálogo de bloques y una colección de
-  disponibilidad por fecha, como describe el modelo de análisis v2.0.
 - `cancel_count` es un campo heredado de la penalización por cancelaciones, que
-  el equipo decidió retirar. Sale cuando se refactorice la cancelación (RF09).
+  el equipo retiró. El backend ya no lo incrementa; el campo sale del esquema
+  cuando se limpie el resto de sus rastros en la interfaz.
+- Las colecciones `slots` y `disponibilidad` se llaman `bloques` y
+  `disponibilidad` en el modelo de análisis v2.0. El nombre de la primera queda
+  pendiente de unificar.

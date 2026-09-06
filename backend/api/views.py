@@ -6,6 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .db import (
     get_db, seed_slots, hash_password, verify_password, serialize,
+    asegurar_disponibilidad, tomar_cupo, devolver_cupo,
     add_business_days, ROLES, DOMINIOS_ROL, role_for_email,
     fecha_reserva, formato_fecha_es, cancelaciones_restantes, alerta_cancelaciones,
     normalizar_documento, inasistencias_restantes, alerta_inasistencias,
@@ -497,24 +498,43 @@ def admin_user_detail(request, user_email):
     }
 )
 @api_view(['GET'])
-def get_slots(request):
+def consultar_horarios(request):
+    """RF06 — Consultar los bloques horarios con sus cupos.
+
+    Devuelve los seis bloques de la jornada siguiente, cada uno con su aforo y
+    los cupos que quedan libres (RN03 y RN04). Es la misma consulta para los tres
+    roles: lo único que cambia es que la interfaz no ofrece la acción de reservar
+    a quien no es estudiante (RN10).
+
+    Los cupos NO viven en el catálogo de bloques sino en la disponibilidad de
+    cada jornada. Si vivieran en el catálogo, el contador sería el mismo para
+    todos los días: lo que se reserva hoy para mañana descontaría también el
+    aforo de pasado mañana, y el gimnasio quedaría lleno para siempre.
+    """
     # ╔══════════════════════════════════════════════════════════════════╗
     # ║ CASO DE USO CRÍTICO #3 — CONSULTA DE CUPOS EN TIEMPO REAL           ║
-    # ║ Crítico para la consistencia: el frontend muestra disponibilidad    ║
-    # ║ "en vivo" y decide qué bloques se pueden reservar a partir de este  ║
-    # ║ valor. Debe reflejar siempre el estado real de la colección slots.  ║
-    # ║ RN03 — La respuesta incluye la FECHA DE LA RESERVA (el día          ║
-    # ║ siguiente) para que la interfaz la muestre de forma explícita.      ║
+    # ║ Crítico para la consistencia: la interfaz muestra la disponibilidad ║
+    # ║ y decide qué bloques se pueden reservar a partir de este valor.     ║
     # ╚══════════════════════════════════════════════════════════════════╝
-    seed_slots()
-    db = get_db()
-    slots = [
-        {'id': s['slotId'], 'hour': s['hour'], 'available': s['available'], 'total': s['total']}
-        for s in db.slots.find({}, {'_id': 0}).sort('slotId', 1)
-    ]
     fecha = fecha_reserva()
+    fecha_iso = fecha.isoformat()
+    asegurar_disponibilidad(fecha_iso)
+
+    db = get_db()
+    catalogo = {b['slotId']: b for b in db.slots.find({}, {'_id': 0})}
+    slots = [
+        {
+            'id':        d['slotId'],
+            'hour':      catalogo[d['slotId']]['hour'],
+            'hora_fin':  catalogo[d['slotId']].get('hora_fin', ''),
+            'available': d['cupos_disponibles'],
+            'total':     d['aforo_maximo'],
+        }
+        for d in db.disponibilidad.find({'fecha': fecha_iso}).sort('slotId', 1)
+        if d['slotId'] in catalogo
+    ]
     return Response({
-        'fecha': fecha.isoformat(),
+        'fecha': fecha_iso,
         'fecha_label': formato_fecha_es(fecha),
         'slots': slots,
     })
@@ -556,107 +576,124 @@ def get_slots(request):
 )
 @api_view(['GET', 'POST'])
 def reservations(request):
-    db = get_db()
+    """Punto de entrada de /api/reservations/.
 
+    Delega en el requisito que corresponde según el método: RF08 para consultar
+    la reserva vigente y RF07 para crearla.
+    """
     if request.method == 'GET':
-        email = request.query_params.get('email', '').lower()
-        if not email:
-            return Response({'error': 'Parámetro email requerido.'}, status=400)
-        # Solo las ACTIVA: las canceladas o marcadas No-Show no se listan.
-        docs = [serialize(r) for r in db.reservations.find({'email': email, 'estado': 'ACTIVA'})]
-        return Response(docs)
+        return consultar_reserva(request)
+    return reservar_mañana(request)
 
+
+def consultar_reserva(request):
+    """RF08 — Consultar mis reservas.
+
+    Devuelve la reserva vigente del estudiante con su bloque, su fecha y su
+    estado. Solo se listan las ACTIVA: las canceladas, las completadas y las
+    inasistencias pertenecen al historial (RF14), no a esta consulta.
+    """
+    email = request.query_params.get('email', '').lower()
+    if not email:
+        return Response({'error': 'Parámetro email requerido.'}, status=400)
+    docs = [serialize(r) for r in get_db().reservations.find({'email': email, 'estado': 'ACTIVA'})]
+    return Response(docs)
+
+
+def reservar_mañana(request):
+    """RF07 — Reservar un bloque para el día siguiente.
+
+    Aplica en orden las reglas RN10 (solo el estudiante reserva), RN09 (la
+    cuenta penalizada no reserva), RN04 (la fecha es siempre la del día
+    siguiente), RN05 (una reserva por día) y RN06 (el cupo se descuenta sin que
+    dos personas puedan tomar el mismo).
+    """
     # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO CRÍTICO #4 — CREAR RESERVA (DESCUENTO ATÓMICO DE CUPO)  ║
-    # ║ El más crítico del sistema. Bajo concurrencia (varios estudiantes   ║
-    # ║ reservando el último cupo a la vez), un patrón "leer-luego-escribir" ║
-    # ║ permite SOBREVENTA: dos peticiones leen available=1, ambas crean la  ║
-    # ║ reserva y el cupo queda en -1.                                      ║
-    # ║ Solución: se descuenta con find_one_and_update CONDICIONAL          ║
-    # ║ (available > 0) en una sola operación atómica de MongoDB. Si el     ║
-    # ║ documento devuelto es None, no había cupo y se rechaza SIN crear     ║
-    # ║ reserva. La reserva solo se inserta DESPUÉS de ganar el cupo.       ║
-    # ║ Reglas aplicadas aquí:                                              ║
-    # ║   RN02 — Solo los ESTUDIANTES reservan (profesores y admins solo     ║
-    # ║          consultan el aforo).                                       ║
-    # ║   RN03 — La reserva es SIEMPRE para el día siguiente.                ║
-    # ║   RN05 — Una única reserva por día.                                  ║
-    # ║   RN09/RN10 — Bloqueo si el usuario está PENALIZADO.                 ║
+    # ║ CASO DE USO CRÍTICO #4 — CREAR RESERVA SIN SOBRECUPO                ║
+    # ║ El más crítico del sistema. Si el cupo se comprobara primero y se    ║
+    # ║ descontara después, dos estudiantes que reservan en el mismo         ║
+    # ║ instante leerían los dos que queda un lugar y lo ocuparían los dos.  ║
+    # ║ Por eso comprobar y descontar van en UNA sola operación condicionada ║
+    # ║ (tomar_cupo). La reserva se inserta solo DESPUÉS de ganar el cupo.   ║
     # ╚══════════════════════════════════════════════════════════════════╝
+    db = get_db()
     email   = request.data.get('email', '').strip().lower()
     slot_id = request.data.get('slotId')
 
     if not email or slot_id is None:
         return Response({'error': 'email y slotId son obligatorios.'}, status=400)
+    try:
+        slot_id = int(slot_id)
+    except (TypeError, ValueError):
+        return Response({'error': 'slotId debe ser un número.'}, status=400)
 
     owner = db.users.find_one({'email': email})
     if not owner:
         return Response({'error': 'El usuario de la reserva no existe.'}, status=404)
 
-    # RN02 — El gimnasio reserva cupos para estudiantes. Profesores y
-    # administradores usan el sistema únicamente para consultar el aforo.
+    # RN10 — Entrenadores y administradores consultan el aforo, no lo ocupan.
     if owner.get('role') != 'ESTUDIANTE':
         return Response(
-            {'error': 'Los profesores y administradores no reservan cupos: solo consultan el aforo.'},
+            {'error': 'Los entrenadores y administradores no reservan cupos: solo consultan la disponibilidad.'},
             status=403,
         )
 
-    # RN09/RN10 — Un usuario PENALIZADO no puede crear reservas (sí consultar).
+    # RN09 — Una cuenta penalizada no reserva mientras dure la penalización.
     if owner.get('estado') == 'PENALIZADO':
         hasta = owner.get('penalizado_hasta')
         if hasta and hasta > datetime.utcnow():
-            return Response({'error': 'Tu cuenta está penalizada. No puedes reservar por ahora.'}, status=403)
-        # Penalización vencida: se reactiva la cuenta y se reinician contadores.
+            return Response(
+                {'error': 'Tu cuenta está penalizada por inasistencias. No puedes reservar por ahora.'},
+                status=403,
+            )
+        # Penalización vencida: la cuenta vuelve a estar activa.
         db.users.update_one(
             {'email': email},
-            {'$set': {'estado': 'ACTIVO', 'no_show_count': 0, 'cancel_count': 0, 'penalizado_hasta': None}},
+            {'$set': {'estado': 'ACTIVO', 'no_show_count': 0, 'penalizado_hasta': None}},
         )
+
+    # RN04 — La fecha la calcula el sistema: siempre el día siguiente.
+    fecha = fecha_reserva()
+    fecha_iso = fecha.isoformat()
+    fecha_label = formato_fecha_es(fecha)
+    asegurar_disponibilidad(fecha_iso)
 
     slot = db.slots.find_one({'slotId': slot_id})
     if not slot:
         return Response({'error': 'Horario no encontrado.'}, status=404)
 
-    fecha = fecha_reserva()
-    fecha_iso = fecha.isoformat()
-    fecha_label = formato_fecha_es(fecha)
-
-    # RN05 — UNA SOLA RESERVA POR DÍA. Se cuenta sobre la fecha de la reserva
-    # (el día siguiente), no sobre el total histórico de reservas activas.
-    del_dia = db.reservations.count_documents(
-        {'email': email, 'estado': 'ACTIVA', 'reserva_date': fecha_iso}
-    )
-    if del_dia >= MAX_RESERVAS_POR_DIA:
+    # RN05 — Una sola reserva por estudiante y por día. Se comprueba ANTES de
+    # tocar el aforo, para que un intento duplicado no descuente ningún cupo.
+    if db.reservations.count_documents(
+            {'email': email, 'estado': 'ACTIVA', 'reserva_date': fecha_iso}) >= MAX_RESERVAS_POR_DIA:
         aviso = (f'Ya tienes una reserva para el {fecha_label}. '
                  'Solo se permite una reserva por día: cancela la actual si quieres cambiar de horario.')
         return Response({'error': aviso, 'notificacion': aviso, 'tipo': 'RESERVA_DUPLICADA'}, status=409)
 
-    # Descuento ATÓMICO: solo descuenta si todavía queda cupo (available > 0).
-    claimed = db.slots.find_one_and_update(
-        {'slotId': slot_id, 'available': {'$gt': 0}},
-        {'$inc': {'available': -1}},
-    )
-    if claimed is None:
-        # Otro estudiante tomó el último cupo entre la lectura y este punto.
-        return Response({'error': 'No hay cupos disponibles en este horario.'}, status=409)
+    # RN06 — Comprobar y descontar en una sola operación.
+    if not tomar_cupo(fecha_iso, slot_id):
+        aviso = f"El bloque de las {slot['hour']} se quedó sin cupos."
+        return Response({'error': aviso, 'notificacion': aviso, 'tipo': 'SIN_CUPOS'}, status=409)
 
-    now = datetime.utcnow()
     result = db.reservations.insert_one({
         'email':        email,
         'slotId':       slot_id,
         'hour':         slot['hour'],
-        'reserva_date': fecha_iso,        # RN03 — fecha efectiva: el día siguiente
-        'date':         fecha_label,      # etiqueta legible para la interfaz
-        'estado':       'ACTIVA',         # ACTIVA | CANCELADA | NO_SHOW | COMPLETADA
+        'reserva_date': fecha_iso,        # RN04 — la jornada siguiente
+        'date':         fecha_label,      # la misma fecha, escrita en palabras
+        'estado':       'ACTIVA',
         'created_by':   email,
-        'created_at':   now,
+        'created_at':   datetime.utcnow(),
     })
 
-    new_res = serialize(db.reservations.find_one({'_id': result.inserted_id}))
-    new_res['notificacion'] = (
-        f"Reserva confirmada para las {slot['hour']} del {fecha_label}."
+    # RN11 — La confirmación la produce el backend, no la interfaz.
+    nueva = serialize(db.reservations.find_one({'_id': result.inserted_id}))
+    nueva['notificacion'] = (
+        f"Reserva confirmada para las {slot['hour']} del {fecha_label}. "
+        'Si no vas a asistir, cancélala para liberar el cupo.'
     )
-    new_res['tipo'] = 'RESERVA_CONFIRMADA'
-    return Response(new_res, status=201)
+    nueva['tipo'] = 'RESERVA_CONFIRMADA'
+    return Response(nueva, status=201)
 
 
 @swagger_auto_schema(
@@ -672,16 +709,21 @@ def reservations(request):
     }
 )
 @api_view(['DELETE'])
-def cancel_reservation(request, reservation_id):
+def cancelar_reserva(request, reservation_id):
+    """RF09 — Cancelar mi reserva.
+
+    Anula la reserva vigente y devuelve el cupo al bloque en la misma operación,
+    para que otro estudiante lo vea disponible enseguida (RN07).
+
+    Cancelar a tiempo NO penaliza. Es justo la conducta que el sistema quiere
+    fomentar: la penalización es por no presentarse habiendo reservado (RN08),
+    no por avisar con antelación que no se va a ir.
+    """
     # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO CRÍTICO #5 — CANCELAR RESERVA Y LIBERAR CUPO            ║
-    # ║ Crítico para no "perder" cupos: el cupo solo se devuelve (+1) si la  ║
-    # ║ reserva estaba ACTIVA y esta operación la pasó a CANCELADA. Se usa    ║
-    # ║ find_one_and_update CONDICIONAL (estado='ACTIVA') como guardia: una   ║
-    # ║ doble cancelación no vuelve a sumar el cupo (no dejaría available>total).║
-    # ║ RN10 — Cada cancelación suma al contador del estudiante. Al llegar a  ║
-    # ║ CANCELACION_LIMITE la cuenta queda PENALIZADA; antes de eso la        ║
-    # ║ respuesta devuelve la alerta que la app muestra en pantalla.          ║
+    # ║ CASO DE USO CRÍTICO #5 — CANCELAR Y LIBERAR EL CUPO                 ║
+    # ║ Crítico para no perder ni inventar cupos. El paso de ACTIVA a        ║
+    # ║ CANCELADA es una sola operación condicionada: si la reserva ya no     ║
+    # ║ estaba activa, no se ejecuta y el cupo no se devuelve dos veces.      ║
     # ╚══════════════════════════════════════════════════════════════════╝
     db = get_db()
     try:
@@ -689,48 +731,27 @@ def cancel_reservation(request, reservation_id):
     except Exception:
         return Response({'error': 'ID de reserva inválido.'}, status=400)
 
-    # Transición atómica ACTIVA -> CANCELADA. Devuelve el doc previo o None.
+    # La condición sobre el estado es la guardia: de dos peticiones simultáneas
+    # de cancelación, solo una encuentra la reserva todavía ACTIVA.
     reservation = db.reservations.find_one_and_update(
         {'_id': oid, 'estado': 'ACTIVA'},
         {'$set': {'estado': 'CANCELADA', 'cancelled_at': datetime.utcnow()}},
     )
     if reservation is None:
-        # O no existe, o ya no estaba activa (cancelada / no-show).
         if db.reservations.find_one({'_id': oid}):
             return Response({'error': 'La reserva ya no está activa.'}, status=409)
         return Response({'error': 'Reserva no encontrada.'}, status=404)
 
-    db.slots.update_one({'slotId': reservation['slotId']}, {'$inc': {'available': 1}})
+    # RN07 — El cupo vuelve al bloque de ESA jornada, no a un contador global.
+    devolver_cupo(reservation['reserva_date'], reservation['slotId'])
 
-    # RN10 — Contador de cancelaciones del estudiante.
-    owner = db.users.find_one_and_update(
-        {'email': reservation['email']},
-        {'$inc': {'cancel_count': 1}},
-        return_document=True,
-    )
-    penalizado = False
-    if owner and owner.get('cancel_count', 0) >= CANCELACION_LIMITE:
-        hasta = add_business_days(datetime.utcnow(), PENALIZACION_DIAS_HABILES)
-        db.users.update_one(
-            {'email': reservation['email']},
-            {'$set': {'estado': 'PENALIZADO', 'penalizado_hasta': hasta}},
-        )
-        penalizado = True
-
-    # RF12 — al liberar el cupo, mueve al primero de la lista de espera.
-    from .features import pop_next_in_waitlist
-    pop_next_in_waitlist(reservation['slotId'])
-
+    # RN11 — La confirmación la produce el backend, no la interfaz.
     return Response({
         'message': 'Reserva cancelada. Cupo liberado.',
-        'notificacion': f"Cancelaste tu reserva de las {reservation['hour']} "
-                        f"del {reservation.get('date', '')}. El cupo quedó liberado.",
+        'notificacion': (f"Cancelaste tu reserva de las {reservation['hour']} "
+                         f"del {reservation.get('date', '')}. El cupo quedó liberado "
+                         'para otro compañero.'),
         'tipo': 'RESERVA_CANCELADA',
-        'cancel_count': (owner or {}).get('cancel_count', 0),
-        'cancelaciones_restantes': cancelaciones_restantes(owner),
-        'cancelacion_limite': CANCELACION_LIMITE,
-        'penalizado': penalizado,
-        'alerta': alerta_cancelaciones(owner),
     })
 
 

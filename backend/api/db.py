@@ -2,6 +2,7 @@ import hashlib
 import os
 from datetime import date, datetime, timedelta
 from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
 from django.conf import settings
 from django.utils import timezone
 
@@ -31,6 +32,18 @@ NO_SHOW_LIMITE = 5            # RF16: 5 inasistencias -> PENALIZADO
 CANCELACION_LIMITE = 5        # RN10: 5 cancelaciones -> PENALIZADO
 CANCELACION_ALERTA = 2        # RN10: avisar cuando falten 2 para la penalización
 PENALIZACION_DIAS_HABILES = 5  # RN09/RN10: penalización de 5 días hábiles
+
+# RN03 — Los seis bloques de dos horas en horas pares. El gimnasio cierra a las
+# 18:00, por eso el último bloque empieza a las 16:00.
+BLOQUES_HORARIOS = (
+    (1, '06:00', '08:00'),
+    (2, '08:00', '10:00'),
+    (3, '10:00', '12:00'),
+    (4, '12:00', '14:00'),
+    (5, '14:00', '16:00'),
+    (6, '16:00', '18:00'),
+)
+AFORO_POR_DEFECTO = 20        # aforo de cada bloque, configurable
 
 # Nombres en español para las fechas: strftime depende del locale del sistema
 # (que en los contenedores suele ser inglés), así que se formatea a mano.
@@ -195,29 +208,76 @@ def get_db():
     return _client[settings.MONGO_DB]
 
 def seed_slots():
-    """Inicializa los bloques horarios si la colección está vacía."""
+    """Carga el catálogo de bloques horarios si todavía no existe (RN03).
+
+    El catálogo es fijo: seis bloques de dos horas en horas pares. NO guarda
+    cupos disponibles, porque el aforo depende de la jornada: los cupos viven en
+    la colección `disponibilidad`, un documento por cada fecha y bloque.
+    """
     db = get_db()
     if db.slots.count_documents({}) == 0:
         db.slots.insert_many([
-            {'slotId': 1, 'hour': '06:00', 'available': 20, 'total': 20},
-            {'slotId': 2, 'hour': '08:00', 'available': 20, 'total': 20},
-            {'slotId': 3, 'hour': '10:00', 'available': 20, 'total': 20},
-            {'slotId': 4, 'hour': '12:00', 'available': 20, 'total': 20},
-            {'slotId': 5, 'hour': '14:00', 'available': 20, 'total': 20},
-            {'slotId': 6, 'hour': '16:00', 'available': 20, 'total': 20},
+            {'slotId': i, 'hour': inicio, 'hora_fin': fin, 'total': AFORO_POR_DEFECTO}
+            for i, inicio, fin in BLOQUES_HORARIOS
         ])
 
-def seed_machines():
-    """Inicializa el catálogo de máquinas si está vacío (RF18)."""
+
+def asegurar_disponibilidad(fecha_iso: str):
+    """Crea la disponibilidad de una jornada si todavía no existe.
+
+    Cada jornada arranca con el aforo completo en cada bloque. Los documentos se
+    crean la primera vez que alguien consulta o reserva esa fecha, así no hace
+    falta un proceso nocturno que las genere por adelantado.
+
+    `$setOnInsert` garantiza que una jornada ya empezada NO se reinicie: si el
+    documento existe, la operación no toca los cupos que ya se descontaron.
+    """
     db = get_db()
-    if db.machines.count_documents({}) == 0:
-        db.machines.insert_many([
-            {'machineId': 1, 'name': 'Caminadora 1',    'estado': 'DISPONIBLE', 'note': ''},
-            {'machineId': 2, 'name': 'Caminadora 2',    'estado': 'DISPONIBLE', 'note': ''},
-            {'machineId': 3, 'name': 'Banco de pesas',  'estado': 'DISPONIBLE', 'note': ''},
-            {'machineId': 4, 'name': 'Bicicleta estática', 'estado': 'DISPONIBLE', 'note': ''},
-            {'machineId': 5, 'name': 'Multifuerza',     'estado': 'DISPONIBLE', 'note': ''},
-        ])
+    seed_slots()
+    for bloque in db.slots.find({}).sort('slotId', 1):
+        try:
+            db.disponibilidad.update_one(
+                {'fecha': fecha_iso, 'slotId': bloque['slotId']},
+                {'$setOnInsert': {
+                    'fecha': fecha_iso,
+                    'slotId': bloque['slotId'],
+                    'cupos_disponibles': bloque['total'],
+                    'aforo_maximo': bloque['total'],
+                }},
+                upsert=True,
+            )
+        except DuplicateKeyError:
+            # Dos peticiones simultáneas intentaron crear la misma jornada.
+            # El índice único dejó pasar solo una, que es justo lo que se busca.
+            pass
+
+
+def tomar_cupo(fecha_iso: str, slot_id: int) -> bool:
+    """RN06 — Descuenta un cupo de un bloque de una jornada, o devuelve False.
+
+    La comprobación de que queda cupo y el descuento van en UNA SOLA operación
+    condicionada. Si se hicieran por separado, dos estudiantes que reservan en el
+    mismo instante podrían leer los dos que queda un lugar y ocuparlo los dos,
+    dejando el bloque con más personas de las que caben.
+    """
+    tomado = get_db().disponibilidad.find_one_and_update(
+        {'fecha': fecha_iso, 'slotId': slot_id, 'cupos_disponibles': {'$gt': 0}},
+        {'$inc': {'cupos_disponibles': -1}},
+    )
+    return tomado is not None
+
+
+def devolver_cupo(fecha_iso: str, slot_id: int):
+    """RN07 — Devuelve un cupo al bloque al cancelar una reserva.
+
+    La condición sobre el aforo impide que una doble cancelación deje el bloque
+    con más cupos libres de los que tiene de aforo.
+    """
+    get_db().disponibilidad.update_one(
+        {'fecha': fecha_iso, 'slotId': slot_id,
+         '$expr': {'$lt': ['$cupos_disponibles', '$aforo_maximo']}},
+        {'$inc': {'cupos_disponibles': 1}},
+    )
 
 
 def get_config(key: str, default=None):

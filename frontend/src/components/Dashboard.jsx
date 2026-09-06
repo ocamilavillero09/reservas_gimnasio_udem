@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 const RED = '#CC0000';
 
-function SlotCard({ slot, isReserved, yaReservoElDia, onReserve, onJoinWaitlist }) {
+function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
   const isFull       = slot.available === 0;
   const isAlmostFull = slot.available > 0 && slot.available <= 4;
   const pct          = Math.round((slot.available / slot.total) * 100);
@@ -69,19 +69,8 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve, onJoinWaitlist 
         </span>
       </div>
 
-      {/* Botón */}
-      {/* RF12 — Si el bloque está lleno y no lo tienes reservado, ofrece lista de espera */}
-      {isFull && !isReserved && !bloqueadoPorLimite ? (
-        <button
-          onClick={() => onJoinWaitlist(slot)}
-          style={{
-            width: '100%', padding: '13px 0', border: `1.5px solid ${RED}`, borderRadius: 12,
-            cursor: 'pointer', backgroundColor: 'white', color: RED, fontWeight: 700, fontSize: 14,
-          }}
-        >
-          ⏳ Unirme a la lista de espera
-        </button>
-      ) : (
+      {/* Botón. Un bloque agotado se muestra sin acción disponible (RF06). */}
+      {(
         <button
           onClick={() => !deshabilitado && onReserve(slot)}
           disabled={deshabilitado}
@@ -176,7 +165,7 @@ function ReserveModal({ slot, fechaLabel, onConfirm, onClose }) {
   );
 }
 
-export default function Dashboard({ slots, user, reservaFecha, reservations, onReserve, onJoinWaitlist }) {
+export default function Dashboard({ slots, user, reservaFecha, reservations, onReserve }) {
   const [pendingSlot, setPendingSlot] = useState(null);
 
   const hoy = new Date().toLocaleDateString('es-CO', {
@@ -256,7 +245,6 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
             isReserved={reservations.some(r => r.slotId === slot.id)}
             yaReservoElDia={yaReservoElDia}
             onReserve={setPendingSlot}
-            onJoinWaitlist={onJoinWaitlist}
           />
         ))}
       </div>

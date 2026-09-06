@@ -62,8 +62,30 @@ class GymApiTestCase(TestCase):
     def _reserve(self, email, slot_id):
         return self.client.post('/api/reservations/', {'email': email, 'slotId': slot_id}, format='json')
 
+    def _fecha_reserva(self):
+        """RN04 — La jornada para la que se reserva: siempre el día siguiente."""
+        return db_module.fecha_reserva().isoformat()
+
     def _slot(self, slot_id):
-        return db_module.get_db().slots.find_one({'slotId': slot_id})
+        """Cupos del bloque EN LA JORNADA que se reserva.
+
+        Los cupos ya no viven en el catálogo de bloques sino en la
+        disponibilidad de cada fecha, así que el aforo de mañana no se mezcla
+        con el de ningún otro día.
+        """
+        db_module.asegurar_disponibilidad(self._fecha_reserva())
+        doc = db_module.get_db().disponibilidad.find_one(
+            {'fecha': self._fecha_reserva(), 'slotId': slot_id}
+        )
+        return {'available': doc['cupos_disponibles'], 'total': doc['aforo_maximo']}
+
+    def _fijar_cupos(self, slot_id, cupos):
+        """Deja un bloque de la jornada con los cupos indicados."""
+        db_module.asegurar_disponibilidad(self._fecha_reserva())
+        db_module.get_db().disponibilidad.update_one(
+            {'fecha': self._fecha_reserva(), 'slotId': slot_id},
+            {'$set': {'cupos_disponibles': cupos}},
+        )
 
     def _user(self, email):
         return db_module.get_db().users.find_one({'email': email})
@@ -88,7 +110,7 @@ class RegisterTests(GymApiTestCase):
         self.assertNotEqual(user['password'], DOCUMENTOS[ESTUDIANTE])
         self.assertIn(':', user['password'])
         self.assertEqual(user['estado'], 'ACTIVO')
-        self.assertEqual(user['cancel_count'], 0)
+        self.assertEqual(user['no_show_count'], 0)
 
     def test_rn01_correo_de_estudiante_da_rol_estudiante(self):
         self.assertEqual(self._register().data['role'], 'ESTUDIANTE')
@@ -285,7 +307,7 @@ class ReservationTests(GymApiTestCase):
         self.assertEqual(self._reserve('fantasma@soyudemedellin.edu.co', 1).status_code, 404)
 
     def test_rechaza_sin_cupos(self):
-        db_module.get_db().slots.update_one({'slotId': 1}, {'$set': {'available': 0}})
+        self._fijar_cupos(1, 0)
         self.assertEqual(self._reserve(ESTUDIANTE, 1).status_code, 409)
 
     def test_rechaza_slot_inexistente(self):
@@ -293,7 +315,7 @@ class ReservationTests(GymApiTestCase):
 
     def test_descuento_atomico_no_sobrevende(self):
         self._register(email='ana.gomez@soyudemedellin.edu.co', name='Ana Gomez')
-        db_module.get_db().slots.update_one({'slotId': 1}, {'$set': {'available': 1}})
+        self._fijar_cupos(1, 1)
         r1 = self._reserve(ESTUDIANTE, 1)
         r2 = self._reserve('ana.gomez@soyudemedellin.edu.co', 1)
         self.assertEqual(sorted([r1.status_code, r2.status_code]), [201, 409])
@@ -306,58 +328,124 @@ class ReservationTests(GymApiTestCase):
         self.assertEqual(len(listado.data), 0)  # la cancelada no aparece
 
 
-# ── CU-5 / RN10: CANCELAR, CONTADOR Y ALERTA ────────────────────────────────
+# ── RN04 / RN06: LA DISPONIBILIDAD ES DE CADA JORNADA ───────────────────────
+class DisponibilidadPorJornadaTests(GymApiTestCase):
+    """El aforo de una jornada no se mezcla con el de otra.
+
+    Antes los cupos vivían en el catálogo de bloques, con un solo contador para
+    todos los días. Como solo se descontaba al reservar y solo se reponía al
+    cancelar, una asistencia o una inasistencia consumían el cupo para siempre:
+    tras veinte reservas, ese bloque quedaba lleno de forma definitiva y ya
+    nadie podía volver a reservarlo ningún día.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self._register(email=PROFESOR, name='Coach')
+        self._register()
+        self.client.get('/api/slots/')
+
+    def _cupos(self, fecha_iso, slot_id):
+        db_module.asegurar_disponibilidad(fecha_iso)
+        return db_module.get_db().disponibilidad.find_one(
+            {'fecha': fecha_iso, 'slotId': slot_id})['cupos_disponibles']
+
+    def test_cada_jornada_arranca_con_el_aforo_completo(self):
+        hoy = db_module.hoy_local().isoformat()
+        manana = self._fecha_reserva()
+        pasado = (db_module.hoy_local() + timedelta(days=2)).isoformat()
+        self._reserve(ESTUDIANTE, 1)
+        self.assertEqual(self._cupos(manana, 1), 19)   # la jornada reservada
+        self.assertEqual(self._cupos(hoy, 1), 20)      # no toca la de hoy
+        self.assertEqual(self._cupos(pasado, 1), 20)   # ni la de pasado mañana
+
+    def test_la_inasistencia_no_consume_el_cupo_de_las_demas_jornadas(self):
+        """Es el caso que dejaba el gimnasio lleno para siempre."""
+        manana = self._fecha_reserva()
+        pasado = (db_module.hoy_local() + timedelta(days=2)).isoformat()
+        rid = self._reserve(ESTUDIANTE, 1).data['id']
+        self.client.post(f'/api/reservations/{rid}/no-show/',
+                         {'actor_email': PROFESOR}, format='json')
+        # La jornada siguiente sigue con su aforo intacto.
+        self.assertEqual(self._cupos(pasado, 1), 20)
+
+    def test_el_catalogo_de_bloques_no_guarda_cupos(self):
+        """Los cupos son de la jornada, no del bloque."""
+        bloque = db_module.get_db().slots.find_one({'slotId': 1})
+        self.assertNotIn('available', bloque)
+        self.assertEqual(bloque['hour'], '06:00')
+        self.assertEqual(bloque['hora_fin'], '08:00')
+
+    def test_rn06_el_contador_nunca_baja_de_cero(self):
+        manana = self._fecha_reserva()
+        self._fijar_cupos(1, 1)
+        self.assertEqual(self._reserve(ESTUDIANTE, 1).status_code, 201)
+        self.assertEqual(self._cupos(manana, 1), 0)
+        # El siguiente intento no prospera y no deja el contador en negativo.
+        self._register(email='otra@soyudemedellin.edu.co', name='Otra')
+        self.assertEqual(self._reserve('otra@soyudemedellin.edu.co', 1).status_code, 409)
+        self.assertEqual(self._cupos(manana, 1), 0)
+
+    def test_rn07_el_cupo_vuelve_a_la_jornada_correcta(self):
+        manana = self._fecha_reserva()
+        pasado = (db_module.hoy_local() + timedelta(days=2)).isoformat()
+        rid = self._reserve(ESTUDIANTE, 1).data['id']
+        self.client.delete(f'/api/reservations/{rid}/')
+        self.assertEqual(self._cupos(manana, 1), 20)   # se devolvió aquí
+        self.assertEqual(self._cupos(pasado, 1), 20)   # y no infló otra jornada
+
+
+# ── RF09 / CU-5: CANCELAR Y LIBERAR EL CUPO ─────────────────────────────────
 class CancelTests(GymApiTestCase):
+    """RF09 — Cancelar mi reserva.
+
+    Cancelar a tiempo NO penaliza: la penalización es por no presentarse
+    habiendo reservado (RN08), no por avisar con antelación.
+    """
+
     def setUp(self):
         super().setUp()
         self._register()
         self.client.get('/api/slots/')
         self.rid = self._reserve(ESTUDIANTE, 1).data['id']
 
-    def test_cancelar_libera_cupo(self):
+    def test_rn07_cancelar_libera_el_cupo_de_inmediato(self):
         self.assertEqual(self._slot(1)['available'], 19)
         resp = self.client.delete(f'/api/reservations/{self.rid}/')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(self._slot(1)['available'], 20)
 
-    def test_doble_cancelacion_no_suma_cupo_ni_contador(self):
+    def test_la_reserva_cancelada_no_aparece_en_mis_reservas(self):
+        self.client.delete(f'/api/reservations/{self.rid}/')
+        listado = self.client.get(f'/api/reservations/?email={ESTUDIANTE}')
+        self.assertEqual(len(listado.data), 0)
+
+    def test_doble_cancelacion_no_devuelve_el_cupo_dos_veces(self):
         self.client.delete(f'/api/reservations/{self.rid}/')
         resp = self.client.delete(f'/api/reservations/{self.rid}/')
-        self.assertEqual(resp.status_code, 409)          # ya no está activa
-        self.assertEqual(self._slot(1)['available'], 20)
-        self.assertEqual(self._user(ESTUDIANTE)['cancel_count'], 1)
+        self.assertEqual(resp.status_code, 409)          # ya no estaba activa
+        self.assertEqual(self._slot(1)['available'], 20)  # y no quedó en 21
 
     def test_id_invalido(self):
         self.assertEqual(self.client.delete('/api/reservations/no-es-objectid/').status_code, 400)
 
-    def test_rn10_cada_cancelacion_suma_al_contador(self):
+    def test_rn11_la_cancelacion_devuelve_su_confirmacion(self):
         resp = self.client.delete(f'/api/reservations/{self.rid}/')
-        self.assertEqual(resp.data['cancel_count'], 1)
-        self.assertEqual(resp.data['cancelaciones_restantes'], db_module.CANCELACION_LIMITE - 1)
-        self.assertFalse(resp.data['penalizado'])
-        self.assertIsNone(resp.data['alerta'])           # aún lejos del límite
+        self.assertEqual(resp.data['tipo'], 'RESERVA_CANCELADA')
+        self.assertIn('liberado', resp.data['notificacion'])
 
-    def test_rn10_alerta_cuando_faltan_dos_cancelaciones(self):
-        """Con 3 de 5 cancelaciones la app avisa que faltan 2 para la penalización."""
-        self.client.delete(f'/api/reservations/{self.rid}/')          # 1
-        self._cancelar_n_veces(ESTUDIANTE, 2)                          # 2 y 3
-        user = self._user(ESTUDIANTE)
-        self.assertEqual(user['cancel_count'], 3)
-        alerta = db_module.alerta_cancelaciones(user)
-        self.assertIsNotNone(alerta)
-        self.assertIn('2 cancelaciones de ser penalizado', alerta)
-        self.assertEqual(user['estado'], 'ACTIVO')                     # todavía no penalizado
+    def test_rn05_tras_cancelar_puede_volver_a_reservar_ese_dia(self):
+        self.client.delete(f'/api/reservations/{self.rid}/')
+        self.assertEqual(self._reserve(ESTUDIANTE, 2).status_code, 201)
 
-    def test_rn10_quinta_cancelacion_penaliza_y_bloquea(self):
-        self.client.delete(f'/api/reservations/{self.rid}/')           # 1
-        self._cancelar_n_veces(ESTUDIANTE, 3)                          # 2, 3 y 4
-        rid = self._reserve(ESTUDIANTE, 1).data['id']
-        resp = self.client.delete(f'/api/reservations/{rid}/')         # 5 -> penaliza
-        self.assertTrue(resp.data['penalizado'])
-        self.assertEqual(resp.data['cancelaciones_restantes'], 0)
-        self.assertEqual(self._user(ESTUDIANTE)['estado'], 'PENALIZADO')
-        # Penalizado: no puede volver a reservar.
-        self.assertEqual(self._reserve(ESTUDIANTE, 2).status_code, 403)
+    def test_cancelar_muchas_veces_no_penaliza(self):
+        """La penalización por acumular cancelaciones se retiró del alcance."""
+        self.client.delete(f'/api/reservations/{self.rid}/')
+        for _ in range(6):
+            rid = self._reserve(ESTUDIANTE, 1).data['id']
+            self.client.delete(f'/api/reservations/{rid}/')
+        self.assertEqual(self._user(ESTUDIANTE)['estado'], 'ACTIVO')
+        self.assertEqual(self._reserve(ESTUDIANTE, 1).status_code, 201)
 
 
 # ── RN09: NO-SHOW Y PENALIZACIÓN ────────────────────────────────────────────
@@ -387,7 +475,7 @@ class NoShowTests(GymApiTestCase):
         self.assertEqual(resp.status_code, 403)
 
 
-# ── RF11–RF19: FEATURES COMPLEMENTARIAS ─────────────────────────────────────
+# ── RF14 historial · perfil físico · calificaciones · reporte por estudiante ─
 class FeaturesTests(GymApiTestCase):
     ANA = 'ana@soyudemedellin.edu.co'
 
@@ -397,47 +485,20 @@ class FeaturesTests(GymApiTestCase):
         self._register(email=self.ANA, name='Ana')
         self.client.get('/api/slots/')
 
-    def test_rf11_historial_incluye_canceladas(self):
+    def test_rf14_historial_incluye_canceladas(self):
         rid = self._reserve(self.ANA, 1).data['id']
         self.client.delete(f'/api/reservations/{rid}/')
         resp = self.client.get(f'/api/reservations/history/?email={self.ANA}')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data[0]['estado'], 'CANCELADA')
 
-    def test_rf17_completar_asistencia(self):
-        rid = self._reserve(self.ANA, 1).data['id']
-        resp = self.client.post(f'/api/reservations/{rid}/complete/',
-                                {'actor_email': PROFESOR}, format='json')
-        self.assertEqual(resp.status_code, 200)
-        hist = self.client.get(f'/api/reservations/history/?email={self.ANA}')
-        self.assertEqual(hist.data[0]['estado'], 'COMPLETADA')
-
-    def test_rf12_lista_de_espera(self):
-        db_module.get_db().slots.update_one({'slotId': 1}, {'$set': {'available': 0}})
-        r1 = self.client.post('/api/slots/1/waitlist/', {'email': self.ANA}, format='json')
-        self.assertEqual(r1.status_code, 201)
-        r2 = self.client.post('/api/slots/1/waitlist/', {'email': self.ANA}, format='json')
-        self.assertEqual(r2.status_code, 409)
-
-    def test_rf12_no_lista_si_hay_cupos(self):
-        resp = self.client.post('/api/slots/1/waitlist/', {'email': self.ANA}, format='json')
-        self.assertEqual(resp.status_code, 409)
-
-    def test_rf13_perfil_fisico(self):
+    def test_rf03_perfil_fisico(self):
         resp = self.client.put('/api/users/profile/',
                                {'email': self.ANA, 'peso': 65, 'altura': 170, 'meta': 'Resistencia'},
                                format='json')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data['peso'], 65)
         self.assertEqual(resp.data['meta'], 'Resistencia')
-
-    def test_rf13_el_perfil_muestra_las_cancelaciones_del_estudiante(self):
-        rid = self._reserve(self.ANA, 1).data['id']
-        self.client.delete(f'/api/reservations/{rid}/')
-        resp = self.client.get(f'/api/users/profile/?email={self.ANA}')
-        self.assertEqual(resp.data['cancel_count'], 1)
-        self.assertEqual(resp.data['cancelacion_limite'], db_module.CANCELACION_LIMITE)
-        self.assertEqual(resp.data['cancelaciones_restantes'], db_module.CANCELACION_LIMITE - 1)
 
     def test_rf15_calificacion(self):
         self.client.post('/api/ratings/', {'email': self.ANA, 'stars': 5, 'comment': 'Excelente'}, format='json')
@@ -450,13 +511,6 @@ class FeaturesTests(GymApiTestCase):
         resp = self.client.post('/api/ratings/', {'email': self.ANA, 'stars': 9}, format='json')
         self.assertEqual(resp.status_code, 400)
 
-    def test_rf16_occupancy(self):
-        self._reserve(self.ANA, 1)
-        resp = self.client.get('/api/reports/occupancy/')
-        self.assertEqual(resp.status_code, 200)
-        bloque1 = next(b for b in resp.data if b['slotId'] == 1)
-        self.assertEqual(bloque1['reservados'], 1)
-
     def test_rf17_reporte_por_estudiante(self):
         """El reporte sale por persona: solo estudiantes, con sus contadores."""
         rid = self._reserve(self.ANA, 1).data['id']
@@ -468,43 +522,16 @@ class FeaturesTests(GymApiTestCase):
         self.assertEqual([e['email'] for e in estudiantes], [self.ANA])
         fila = estudiantes[0]
         self.assertEqual(fila['canceladas'], 1)
-        self.assertEqual(fila['cancel_count'], 1)
-        self.assertEqual(fila['cancelaciones_restantes'], db_module.CANCELACION_LIMITE - 1)
-        self.assertFalse(fila['en_alerta'])
+        # Las cancelaciones se cuentan, pero ya no penalizan: el contador de
+        # cancelaciones salió del alcance y solo penalizan las inasistencias.
+        self.assertEqual(fila['no_show_count'], 0)
 
-    def test_rf17_el_reporte_marca_a_quien_esta_en_alerta(self):
-        for _ in range(3):
-            rid = self._reserve(self.ANA, 1).data['id']
-            self.client.delete(f'/api/reservations/{rid}/')
+    def test_rf17_el_reporte_cuenta_las_cancelaciones_sin_penalizar(self):
+        self.client.delete(f"/api/reservations/{self._reserve(self.ANA, 1).data['id']}/")
+        self.client.delete(f"/api/reservations/{self._reserve(self.ANA, 1).data['id']}/")
         fila = self.client.get('/api/reports/students/').data['estudiantes'][0]
-        self.assertEqual(fila['cancel_count'], 3)
-        self.assertTrue(fila['en_alerta'])
-
-    def test_rf18_maquinas_seed_y_mantenimiento(self):
-        listado = self.client.get('/api/machines/')
-        self.assertEqual(len(listado.data), 5)
-        # Estudiante NO puede cambiar estado
-        deny = self.client.patch('/api/machines/1/', {'actor_email': self.ANA, 'estado': 'FUERA_DE_SERVICIO'}, format='json')
-        self.assertEqual(deny.status_code, 403)
-        # Profesor SÍ
-        ok = self.client.patch('/api/machines/1/', {'actor_email': PROFESOR, 'estado': 'FUERA_DE_SERVICIO', 'note': 'Mantenimiento'}, format='json')
-        self.assertEqual(ok.status_code, 200)
-        m = db_module.get_db().machines.find_one({'machineId': 1})
-        self.assertEqual(m['estado'], 'FUERA_DE_SERVICIO')
-
-    def test_rf19_csv_export_por_estudiante(self):
-        resp = self.client.get('/api/reports/usage.csv')
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn('text/csv', resp['Content-Type'])
-        cuerpo = resp.content.decode()
-        self.assertIn('email', cuerpo)
-        self.assertIn('canceladas', cuerpo)
-        self.assertIn(self.ANA, cuerpo)
-
-
-# ══════════════════════════════════════════════════════════════════════════
-#  REQUISITOS FUNCIONALES RF01–RF25 DEL DOCUMENTO DE ANÁLISIS
-# ══════════════════════════════════════════════════════════════════════════
+        self.assertEqual(fila['canceladas'], 2)
+        self.assertEqual(self._user(self.ANA)['estado'], 'ACTIVO')
 
 class PerfilTests(GymApiTestCase):
     """RF03 — Perfil del estudiante · RF04 — Entrenador · RF05 — Administrador."""

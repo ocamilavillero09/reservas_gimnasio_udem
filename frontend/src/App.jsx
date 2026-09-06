@@ -7,7 +7,7 @@ import TrainerPanel from './components/TrainerPanel';
 import AdminPanel from './components/AdminPanel';
 import HistoryView from './components/HistoryView';
 import ProfileView from './components/ProfileView';
-import { authApi, slotsApi, reservationsApi, waitlistApi } from './services/api';
+import { authApi, slotsApi, reservationsApi } from './services/api';
 
 // Clave de la sesión guardada en el navegador: gracias a esto, recargar la
 // página (F5) NO cierra la sesión.
@@ -104,8 +104,8 @@ export default function App() {
 
   const refreshData = useCallback(async (email) => {
     const [slotsData, resData] = await Promise.all([
-      slotsApi.getAll(),
-      reservationsApi.getByEmail(email),
+      slotsApi.consultarHorarios(),
+      reservationsApi.consultarReserva(email),
     ]);
     setSlots(slotsData.slots || []);
     setReservaFecha({ fecha: slotsData.fecha, label: slotsData.fecha_label });
@@ -170,7 +170,7 @@ export default function App() {
   const handleReserve = async (slot) => {
     try {
       // RF23 / P23 — Notificación de confirmación de la reserva.
-      const r = await reservationsApi.create({ email: user.email, slotId: slot.id });
+      const r = await reservationsApi.reservarMañana({ email: user.email, slotId: slot.id });
       await refreshData(user.email);
       showToast(
         r.notificacion || `¡Reserva confirmada para las ${slot.hour} del ${reservaFecha?.label ?? 'día siguiente'}!`,
@@ -181,32 +181,14 @@ export default function App() {
     }
   };
 
-  const handleJoinWaitlist = async (slot) => {
-    try {
-      const r = await waitlistApi.join(slot.id, user.email);
-      showToast(`Estás en la lista de espera de las ${slot.hour} (posición ${r.posicion}).`, 'info');
-    } catch (err) {
-      showToast(err.message, 'warning');
-    }
-  };
 
   const handleCancel = async (id) => {
     try {
-      const r = await reservationsApi.cancel(id);
+      const r = await reservationsApi.cancelarReserva(id);
       await refreshData(user.email);
       await refreshSession(user.email);
-      // RN10 — tras cancelar se informa el contador y, si aplica, la alerta.
-      if (r.penalizado) {
-        showToast(`Reserva cancelada. Llegaste a ${r.cancel_count} cancelaciones: tu cuenta quedó PENALIZADA.`, 'error');
-      } else if (r.alerta) {
-        showToast(r.alerta, 'warning');
-      } else {
-        // RF25 / P25 — Notificación de cancelación registrada.
-        showToast(
-          `${r.notificacion || 'Reserva cancelada.'} Llevas ${r.cancel_count} de ${r.cancelacion_limite} cancelaciones.`,
-          'info',
-        );
-      }
+      // RN11 — el texto de la confirmación lo produce el backend.
+      showToast(r.notificacion || 'Reserva cancelada. El cupo quedó liberado.', 'info');
     } catch (err) {
       showToast(err.message, 'error');
     }
@@ -258,7 +240,6 @@ export default function App() {
               reservaFecha={reservaFecha}
               reservations={reservations}
               onReserve={handleReserve}
-              onJoinWaitlist={handleJoinWaitlist}
             />
           )}
           {!staff && view === 'my-reservations' && (

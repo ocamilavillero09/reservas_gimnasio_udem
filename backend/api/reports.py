@@ -8,7 +8,6 @@ El reporte es POR ESTUDIANTE (por persona, no por bloque horario): una fila por
 estudiante con sus reservas, asistencias, cancelaciones e inasistencias.
 CSV se abre en Excel; el PDF usa reportlab.
 """
-import csv
 import io
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
@@ -17,18 +16,6 @@ from .features import build_student_rows
 
 HEADERS = ['name', 'email', 'estado', 'activas', 'completadas',
            'canceladas', 'no_show', 'cancelaciones_restantes']
-
-
-@api_view(['GET'])
-def usage_csv(request):
-    rows = build_student_rows()
-    buf = io.StringIO()
-    writer = csv.DictWriter(buf, fieldnames=HEADERS, extrasaction='ignore')
-    writer.writeheader()
-    writer.writerows(rows)
-    resp = HttpResponse(buf.getvalue(), content_type='text/csv')
-    resp['Content-Disposition'] = 'attachment; filename="reporte_estudiantes_gimnasio.csv"'
-    return resp
 
 
 @api_view(['GET'])

@@ -42,7 +42,7 @@ describe('api service', () => {
       fecha_label: 'lunes 17 de agosto de 2026',
       slots: [{ id: 1, hour: '06:00', available: 20, total: 20 }],
     });
-    const data = await slotsApi.getAll();
+    const data = await slotsApi.consultarHorarios();
     expect(data.slots).toHaveLength(1);
     expect(data.fecha_label).toContain('agosto');
     expect(global.fetch.mock.calls[0][0]).toContain('/slots/');
@@ -130,7 +130,7 @@ describe('api service', () => {
 
   it('lanza Error con el mensaje del servidor cuando !ok', async () => {
     mockFetch({ error: 'No hay cupos disponibles en este horario.' }, false);
-    await expect(reservationsApi.create({ email: 'j@soyudemedellin.edu.co', slotId: 1 }))
+    await expect(reservationsApi.reservarMañana({ email: 'j@soyudemedellin.edu.co', slotId: 1 }))
       .rejects.toThrow('No hay cupos disponibles');
   });
 });

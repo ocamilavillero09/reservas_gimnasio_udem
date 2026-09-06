@@ -46,29 +46,26 @@ export const attendanceApi = {
 };
 
 export const slotsApi = {
-  // Devuelve { fecha, fecha_label, slots } — la fecha es SIEMPRE el día siguiente.
-  getAll: () => request('/slots/'),
+  // RF06 — Consultar los bloques horarios con sus cupos (backend: consultar_horarios).
+  // Devuelve { fecha, fecha_label, slots }. La fecha es SIEMPRE la del día siguiente.
+  consultarHorarios: () => request('/slots/'),
 };
 
 export const reservationsApi = {
-  getByEmail: (email) => request(`/reservations/?email=${encodeURIComponent(email)}`),
-  create:     (body)  => request('/reservations/', { method: 'POST', body: JSON.stringify(body) }),
-  cancel:     (id)    => request(`/reservations/${id}/`, { method: 'DELETE' }),
-  // RN09 — el profesor/admin marca una inasistencia (No-Show).
-  noShow:     (id, actorEmail) =>
+  // RF08 — Consultar mis reservas (backend: consultar_reserva).
+  consultarReserva: (email) => request(`/reservations/?email=${encodeURIComponent(email)}`),
+  // RF07 — Reservar un bloque para el día siguiente (backend: reservar_mañana).
+  reservarMañana:   (body)  => request('/reservations/', { method: 'POST', body: JSON.stringify(body) }),
+  // RF09 — Cancelar mi reserva (backend: cancelar_reserva).
+  cancelarReserva:  (id)    => request(`/reservations/${id}/`, { method: 'DELETE' }),
+  // El entrenador marca una inasistencia suelta.
+  noShow: (id, actorEmail) =>
     request(`/reservations/${id}/no-show/`, { method: 'POST', body: JSON.stringify({ actor_email: actorEmail }) }),
-  // RF17 — el profesor confirma asistencia.
-  complete:   (id, actorEmail) =>
-    request(`/reservations/${id}/complete/`, { method: 'POST', body: JSON.stringify({ actor_email: actorEmail }) }),
-  // RF11 — historial.
-  history:    (email) => request(`/reservations/history/?email=${encodeURIComponent(email)}`),
+  // RF14 — Ver mi historial.
+  history: (email) => request(`/reservations/history/?email=${encodeURIComponent(email)}`),
 };
 
 // RF12 — Lista de espera.
-export const waitlistApi = {
-  join: (slotId, email) => request(`/slots/${slotId}/waitlist/`, { method: 'POST', body: JSON.stringify({ email }) }),
-};
-
 // RF13 — Perfil y metas.
 export const profileApi = {
   // RF03 — Consultar y actualizar el perfil del estudiante
@@ -89,7 +86,6 @@ export const ratingsApi = {
 
 // Reportes: aforo, por estudiante, personal (RF18) y general diario (RF19/RF20).
 export const reportsApi = {
-  occupancy: () => request('/reports/occupancy/'),
   students:  () => request('/reports/students/'),
   // RF18 — Reporte personal del estudiante: inasistencias y penalizaciones.
   personal:  (email) => request(`/reports/personal/?email=${encodeURIComponent(email)}`),
@@ -99,13 +95,7 @@ export const reportsApi = {
   // RF20 — El mismo reporte diario en PDF, listo para imprimir.
   dailyPdfUrl: (actorEmail, fecha = '') =>
     `${BASE}/reports/daily.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
-  csvUrl:    `${BASE}/reports/usage.csv`,
   pdfUrl:    `${BASE}/reports/usage.pdf`,
 };
 
 // RF18 — Máquinas.
-export const machinesApi = {
-  list:      ()                         => request('/machines/'),
-  create:    (name, actorEmail)         => request('/machines/', { method: 'POST', body: JSON.stringify({ name, actor_email: actorEmail }) }),
-  setEstado: (id, estado, note, actor)  => request(`/machines/${id}/`, { method: 'PATCH', body: JSON.stringify({ estado, note, actor_email: actor }) }),
-};

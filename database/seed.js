@@ -81,10 +81,12 @@ db.users.insertMany(PERSONAS.map(function (p) {
 
 // ── Bloques horarios ────────────────────────────────────────────────────────
 // Se recrean solo si faltan, para no pisar el aforo de una base ya en uso.
-var HORAS = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00'];
+var HORAS     = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00'];
+var HORAS_FIN = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'];
+var AFORO = NumberInt(20);
 if (db.slots.countDocuments({}) === 0) {
   db.slots.insertMany(HORAS.map(function (hora, i) {
-    return { slotId: NumberInt(i + 1), hour: hora, available: NumberInt(20), total: NumberInt(20) };
+    return { slotId: NumberInt(i + 1), hour: hora, hora_fin: HORAS_FIN[i], total: AFORO };
   }));
   print('Bloques horarios creados: 6');
 } else {
@@ -124,10 +126,26 @@ db.reservations.insertMany([
     created_by: 'clara.demo@soyudemedellin.edu.co', created_at: ahora }
 ]);
 
-// El aforo tiene que reflejar las reservas activas que se acaban de crear,
-// porque el backend descuenta el cupo al reservar (RN06). Si no se ajusta aqui,
-// el contador quedaria descuadrado.
-db.slots.updateOne({ slotId: 1 }, { $set: { available: NumberInt(18) } });
+// ── Disponibilidad de las jornadas sembradas ────────────────────────────────
+// Cada jornada arranca con el aforo completo y se descuentan las reservas
+// activas que se acaban de crear, para que el contador cuadre con los datos.
+[manana, ayer].forEach(function (fecha) {
+  db.slots.find({}).sort({ slotId: 1 }).toArray().forEach(function (b) {
+    var activas = db.reservations.countDocuments({
+      reserva_date: fecha, slotId: b.slotId, estado: 'ACTIVA'
+    });
+    db.disponibilidad.updateOne(
+      { fecha: fecha, slotId: b.slotId },
+      { $set: {
+          fecha: fecha,
+          slotId: b.slotId,
+          cupos_disponibles: NumberInt(b.total - activas),
+          aforo_maximo: b.total
+      } },
+      { upsert: true }
+    );
+  });
+});
 
 // ── Buzón de sugerencias ────────────────────────────────────────────────────
 db.suggestions.insertMany([
@@ -144,6 +162,7 @@ print('');
 print('Datos de prueba cargados:');
 print('  cuentas ......... ' + db.users.countDocuments({ email: { $in: correosDemo } }));
 print('  bloques ......... ' + db.slots.countDocuments({}));
+print('  disponibilidad .. ' + db.disponibilidad.countDocuments({}) + ' (2 jornadas x 6 bloques)');
 print('  reservas ........ ' + db.reservations.countDocuments({ email: { $in: correosDemo } }));
 print('  sugerencias ..... ' + db.suggestions.countDocuments({ autor_email: { $in: correosDemo } }));
 print('');

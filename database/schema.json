@@ -7,71 +7,343 @@
     "users": {
       "descripcion": "Personas del sistema, sin importar su rol.",
       "campos": {
-        "name": { "tipo": "string", "obligatorio": true, "descripcion": "Nombre completo (RF01)." },
-        "email": { "tipo": "string", "obligatorio": true, "unico": true, "descripcion": "Correo institucional. Su dominio determina el rol (RN01).", "dominios": ["@soyudemedellin.edu.co = ESTUDIANTE", "@udem.edu.co = ENTRENADOR", "@udemedellin.edu.co = ADMIN"] },
-        "documento": { "tipo": "string", "obligatorio": true, "unico": true, "descripcion": "Documento normalizado, sin puntos ni espacios. Dato de busqueda del entrenador (RN02, RF10)." },
-        "password": { "tipo": "string", "obligatorio": true, "descripcion": "Documento cifrado con PBKDF2 en formato sal:clave. Nunca en claro (RN02)." },
-        "role": { "tipo": "enum", "obligatorio": true, "valores": ["ESTUDIANTE", "ENTRENADOR", "ADMIN", "SIN_ROL"], "descripcion": "SIN_ROL es una cuenta a la que se le retiro el rol de administrador (RF23)." },
-        "estado": { "tipo": "enum", "obligatorio": true, "valores": ["ACTIVO", "PENALIZADO", "INACTIVO"], "descripcion": "PENALIZADO impide reservar (RN09)." },
-        "es_principal": { "tipo": "bool", "obligatorio": false, "descripcion": "Cuenta del administrador principal (RF22, RF23)." },
-        "no_show_count": { "tipo": "int", "obligatorio": false, "descripcion": "Inasistencias acumuladas. A las cinco se penaliza (RN08)." },
-        "cancel_count": { "tipo": "int", "obligatorio": false, "descripcion": "Cancelaciones acumuladas. Campo heredado: se retira al eliminar la penalizacion por cancelaciones." },
-        "penalizado_hasta": { "tipo": "date|null", "obligatorio": false, "descripcion": "Fin de la penalizacion vigente (RN09)." },
-        "created_at": { "tipo": "date", "obligatorio": true },
-        "created_by": { "tipo": "string", "obligatorio": false, "descripcion": "Administrador que creo la cuenta (RF22)." },
-        "edad": { "tipo": "int|null", "obligatorio": false, "descripcion": "Perfil del estudiante (RF03)." },
-        "peso": { "tipo": "number|null", "obligatorio": false, "descripcion": "Perfil del estudiante (RF03)." },
-        "altura": { "tipo": "number|null", "obligatorio": false, "descripcion": "Perfil del estudiante (RF03)." },
-        "meta": { "tipo": "string|null", "obligatorio": false, "descripcion": "Objetivo de entrenamiento (RF03)." }
+        "name": {
+          "tipo": "string",
+          "obligatorio": true,
+          "descripcion": "Nombre completo (RF01)."
+        },
+        "email": {
+          "tipo": "string",
+          "obligatorio": true,
+          "unico": true,
+          "descripcion": "Correo institucional. Su dominio determina el rol (RN01).",
+          "dominios": [
+            "@soyudemedellin.edu.co = ESTUDIANTE",
+            "@udem.edu.co = ENTRENADOR",
+            "@udemedellin.edu.co = ADMIN"
+          ]
+        },
+        "documento": {
+          "tipo": "string",
+          "obligatorio": true,
+          "unico": true,
+          "descripcion": "Documento normalizado, sin puntos ni espacios. Dato de busqueda del entrenador (RN02, RF10)."
+        },
+        "password": {
+          "tipo": "string",
+          "obligatorio": true,
+          "descripcion": "Documento cifrado con PBKDF2 en formato sal:clave. Nunca en claro (RN02)."
+        },
+        "role": {
+          "tipo": "enum",
+          "obligatorio": true,
+          "valores": [
+            "ESTUDIANTE",
+            "ENTRENADOR",
+            "ADMIN",
+            "SIN_ROL"
+          ],
+          "descripcion": "SIN_ROL es una cuenta a la que se le retiro el rol de administrador (RF23)."
+        },
+        "estado": {
+          "tipo": "enum",
+          "obligatorio": true,
+          "valores": [
+            "ACTIVO",
+            "PENALIZADO",
+            "INACTIVO"
+          ],
+          "descripcion": "PENALIZADO impide reservar (RN09)."
+        },
+        "es_principal": {
+          "tipo": "bool",
+          "obligatorio": false,
+          "descripcion": "Cuenta del administrador principal (RF22, RF23)."
+        },
+        "no_show_count": {
+          "tipo": "int",
+          "obligatorio": false,
+          "descripcion": "Inasistencias acumuladas. A las cinco se penaliza (RN08)."
+        },
+        "cancel_count": {
+          "tipo": "int",
+          "obligatorio": false,
+          "descripcion": "Cancelaciones acumuladas. Campo heredado: se retira al eliminar la penalizacion por cancelaciones."
+        },
+        "penalizado_hasta": {
+          "tipo": "date|null",
+          "obligatorio": false,
+          "descripcion": "Fin de la penalizacion vigente (RN09)."
+        },
+        "created_at": {
+          "tipo": "date",
+          "obligatorio": true
+        },
+        "created_by": {
+          "tipo": "string",
+          "obligatorio": false,
+          "descripcion": "Administrador que creo la cuenta (RF22)."
+        },
+        "edad": {
+          "tipo": "int|null",
+          "obligatorio": false,
+          "descripcion": "Perfil del estudiante (RF03)."
+        },
+        "peso": {
+          "tipo": "number|null",
+          "obligatorio": false,
+          "descripcion": "Perfil del estudiante (RF03)."
+        },
+        "altura": {
+          "tipo": "number|null",
+          "obligatorio": false,
+          "descripcion": "Perfil del estudiante (RF03)."
+        },
+        "meta": {
+          "tipo": "string|null",
+          "obligatorio": false,
+          "descripcion": "Objetivo de entrenamiento (RF03)."
+        }
       },
       "indices": [
-        { "campos": { "email": 1 }, "unico": true },
-        { "campos": { "documento": 1 }, "unico": true },
-        { "campos": { "role": 1, "estado": 1 }, "unico": false }
+        {
+          "campos": {
+            "email": 1
+          },
+          "unico": true
+        },
+        {
+          "campos": {
+            "documento": 1
+          },
+          "unico": true
+        },
+        {
+          "campos": {
+            "role": 1,
+            "estado": 1
+          },
+          "unico": false
+        }
       ]
     },
     "slots": {
-      "descripcion": "Catalogo de los seis bloques horarios con su aforo y sus cupos libres.",
+      "descripcion": "CATALOGO de los seis bloques horarios. Es fijo y no guarda cupos: los cupos de cada jornada viven en la coleccion disponibilidad.",
       "campos": {
-        "slotId": { "tipo": "int", "obligatorio": true, "unico": true, "rango": "1 a 6" },
-        "hour": { "tipo": "enum", "obligatorio": true, "valores": ["06:00", "08:00", "10:00", "12:00", "14:00", "16:00"], "descripcion": "Hora par de inicio. No hay horas intermedias (RN03)." },
-        "available": { "tipo": "int", "obligatorio": true, "descripcion": "Cupos libres. Campo sobre el que actua el descuento condicionado que impide el sobrecupo (RN06)." },
-        "total": { "tipo": "int", "obligatorio": true, "descripcion": "Aforo maximo del bloque." }
+        "slotId": {
+          "tipo": "int",
+          "obligatorio": true,
+          "unico": true,
+          "rango": "1 a 6"
+        },
+        "hour": {
+          "tipo": "enum",
+          "obligatorio": true,
+          "valores": [
+            "06:00",
+            "08:00",
+            "10:00",
+            "12:00",
+            "14:00",
+            "16:00"
+          ],
+          "descripcion": "Hora par de inicio (RN03)."
+        },
+        "hora_fin": {
+          "tipo": "enum",
+          "obligatorio": true,
+          "valores": [
+            "08:00",
+            "10:00",
+            "12:00",
+            "14:00",
+            "16:00",
+            "18:00"
+          ],
+          "descripcion": "Fin del bloque, dos horas despues. El ultimo cierra a las 18:00 (RN03)."
+        },
+        "total": {
+          "tipo": "int",
+          "obligatorio": true,
+          "descripcion": "Aforo maximo. Es el valor con el que arranca cada jornada."
+        }
       },
-      "indices": [{ "campos": { "slotId": 1 }, "unico": true }],
-      "pendiente": "El contador de cupos es global y no distingue la fecha. Al implementar RF06 y RF07 se separa en un catalogo de bloques y una coleccion de disponibilidad por fecha, como describe el modelo de analisis v2.0."
+      "indices": [
+        {
+          "campos": {
+            "slotId": 1
+          },
+          "unico": true
+        }
+      ]
+    },
+    "disponibilidad": {
+      "descripcion": "Cupos libres de cada bloque EN CADA JORNADA. Un documento por fecha y bloque.",
+      "por_que_existe": "Si los cupos vivieran en el catalogo de bloques, el contador seria el mismo para todos los dias: lo reservado hoy para manana descontaria tambien el aforo de pasado manana. Y como el cupo solo se reponia al cancelar, una asistencia o una inasistencia lo consumian para siempre, hasta dejar el bloque lleno de forma definitiva.",
+      "campos": {
+        "fecha": {
+          "tipo": "string",
+          "obligatorio": true,
+          "formato": "AAAA-MM-DD",
+          "descripcion": "Jornada a la que corresponde."
+        },
+        "slotId": {
+          "tipo": "int",
+          "obligatorio": true
+        },
+        "cupos_disponibles": {
+          "tipo": "int",
+          "obligatorio": true,
+          "descripcion": "Lugares libres. Nunca negativo: es la barrera contra el sobrecupo (RN06)."
+        },
+        "aforo_maximo": {
+          "tipo": "int",
+          "obligatorio": true,
+          "descripcion": "Copia del aforo vigente el dia en que se creo la jornada, para que el historico no cambie si el aforo se modifica despues."
+        }
+      },
+      "indices": [
+        {
+          "campos": {
+            "fecha": 1,
+            "slotId": 1
+          },
+          "unico": true,
+          "descripcion": "Impide que existan dos disponibilidades del mismo bloque el mismo dia, incluso si dos peticiones simultaneas lo intentan."
+        }
+      ]
     },
     "reservations": {
       "descripcion": "Vincula a un estudiante con un bloque de una fecha y guarda el desenlace de esa reserva.",
       "campos": {
-        "email": { "tipo": "string", "obligatorio": true, "descripcion": "Estudiante que reservo." },
-        "slotId": { "tipo": "int", "obligatorio": true },
-        "hour": { "tipo": "enum", "obligatorio": true, "descripcion": "Hora de inicio del bloque (RN03)." },
-        "reserva_date": { "tipo": "string", "obligatorio": true, "formato": "AAAA-MM-DD", "descripcion": "Jornada reservada. Siempre es el dia siguiente al de la creacion (RN04)." },
-        "date": { "tipo": "string", "obligatorio": false, "descripcion": "La misma fecha escrita en palabras, para la interfaz." },
-        "estado": { "tipo": "enum", "obligatorio": true, "valores": ["ACTIVA", "CANCELADA", "COMPLETADA", "NO_SHOW"] },
-        "created_by": { "tipo": "string", "obligatorio": false },
-        "created_at": { "tipo": "date", "obligatorio": true },
-        "cancelled_at": { "tipo": "date|null", "obligatorio": false, "descripcion": "Momento de la cancelacion (RF09)." },
-        "completed_at": { "tipo": "date|null", "obligatorio": false, "descripcion": "Momento del registro de asistencia (RF11)." },
-        "registrada_por": { "tipo": "string|null", "obligatorio": false, "descripcion": "Entrenador que registro la asistencia (RF11)." }
+        "email": {
+          "tipo": "string",
+          "obligatorio": true,
+          "descripcion": "Estudiante que reservo."
+        },
+        "slotId": {
+          "tipo": "int",
+          "obligatorio": true
+        },
+        "hour": {
+          "tipo": "enum",
+          "obligatorio": true,
+          "descripcion": "Hora de inicio del bloque (RN03)."
+        },
+        "reserva_date": {
+          "tipo": "string",
+          "obligatorio": true,
+          "formato": "AAAA-MM-DD",
+          "descripcion": "Jornada reservada. Siempre es el dia siguiente al de la creacion (RN04)."
+        },
+        "date": {
+          "tipo": "string",
+          "obligatorio": false,
+          "descripcion": "La misma fecha escrita en palabras, para la interfaz."
+        },
+        "estado": {
+          "tipo": "enum",
+          "obligatorio": true,
+          "valores": [
+            "ACTIVA",
+            "CANCELADA",
+            "COMPLETADA",
+            "NO_SHOW"
+          ]
+        },
+        "created_by": {
+          "tipo": "string",
+          "obligatorio": false
+        },
+        "created_at": {
+          "tipo": "date",
+          "obligatorio": true
+        },
+        "cancelled_at": {
+          "tipo": "date|null",
+          "obligatorio": false,
+          "descripcion": "Momento de la cancelacion (RF09)."
+        },
+        "completed_at": {
+          "tipo": "date|null",
+          "obligatorio": false,
+          "descripcion": "Momento del registro de asistencia (RF11)."
+        },
+        "registrada_por": {
+          "tipo": "string|null",
+          "obligatorio": false,
+          "descripcion": "Entrenador que registro la asistencia (RF11)."
+        }
       },
       "indices": [
-        { "campos": { "email": 1, "reserva_date": 1 }, "unico": true, "parcial": { "estado": "ACTIVA" }, "descripcion": "Respalda en la base de datos la regla de una reserva activa por estudiante y por dia (RN05)." },
-        { "campos": { "reserva_date": 1, "estado": 1 }, "unico": false, "descripcion": "Cierre de jornada y registro diario (RF12, RF16)." },
-        { "campos": { "email": 1, "created_at": -1 }, "unico": false, "descripcion": "Historial del estudiante (RF14)." },
-        { "campos": { "slotId": 1, "estado": 1 }, "unico": false, "descripcion": "Detalle por bloque del registro diario." }
+        {
+          "campos": {
+            "email": 1,
+            "reserva_date": 1
+          },
+          "unico": true,
+          "parcial": {
+            "estado": "ACTIVA"
+          },
+          "descripcion": "Respalda en la base de datos la regla de una reserva activa por estudiante y por dia (RN05)."
+        },
+        {
+          "campos": {
+            "reserva_date": 1,
+            "estado": 1
+          },
+          "unico": false,
+          "descripcion": "Cierre de jornada y registro diario (RF12, RF16)."
+        },
+        {
+          "campos": {
+            "email": 1,
+            "created_at": -1
+          },
+          "unico": false,
+          "descripcion": "Historial del estudiante (RF14)."
+        },
+        {
+          "campos": {
+            "slotId": 1,
+            "estado": 1
+          },
+          "unico": false,
+          "descripcion": "Detalle por bloque del registro diario."
+        }
       ]
     },
     "suggestions": {
       "descripcion": "Buzon de sugerencias. El estudiante escribe y solo el administrador lee (RF20, RF21).",
       "campos": {
-        "autor_email": { "tipo": "string", "obligatorio": true },
-        "autor_nombre": { "tipo": "string", "obligatorio": true, "descripcion": "Se guarda junto al mensaje para que el administrador no tenga que cruzarlo con la coleccion de usuarios." },
-        "mensaje": { "tipo": "string", "obligatorio": true, "maximo": 2000 },
-        "created_at": { "tipo": "date", "obligatorio": true, "descripcion": "Ordena la bandeja del administrador (RF21)." }
+        "autor_email": {
+          "tipo": "string",
+          "obligatorio": true
+        },
+        "autor_nombre": {
+          "tipo": "string",
+          "obligatorio": true,
+          "descripcion": "Se guarda junto al mensaje para que el administrador no tenga que cruzarlo con la coleccion de usuarios."
+        },
+        "mensaje": {
+          "tipo": "string",
+          "obligatorio": true,
+          "maximo": 2000
+        },
+        "created_at": {
+          "tipo": "date",
+          "obligatorio": true,
+          "descripcion": "Ordena la bandeja del administrador (RF21)."
+        }
       },
-      "indices": [{ "campos": { "created_at": -1 }, "unico": false }],
+      "indices": [
+        {
+          "campos": {
+            "created_at": -1
+          },
+          "unico": false
+        }
+      ],
       "pendiente": "Los requisitos RF20 y RF21 todavia no estan implementados en el backend."
     }
   },

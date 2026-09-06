@@ -35,9 +35,25 @@ function mananaISO() {
 
 // ── Disponibilidad ──────────────────────────────────────────────────────────
 
-/** Los seis bloques con su aforo y sus cupos libres, ordenados por hora (RF06). */
+/** El catálogo de los seis bloques, ordenado por hora (RN03). */
 function verBloques() {
   return db.slots.find({}, { _id: 0 }).sort({ slotId: 1 }).toArray();
+}
+
+/** Cupos libres de una jornada, bloque por bloque (RF06). */
+function verDisponibilidad(fechaISO) {
+  var fecha = fechaISO || mananaISO();
+  var horas = {};
+  db.slots.find({}).forEach(function (b) { horas[b.slotId] = b.hour; });
+  return db.disponibilidad.find({ fecha: fecha }, { _id: 0 }).sort({ slotId: 1 })
+    .toArray().map(function (d) {
+      return {
+        bloque: horas[d.slotId],
+        aforo: d.aforo_maximo,
+        cupos_libres: d.cupos_disponibles,
+        ocupados: d.aforo_maximo - d.cupos_disponibles
+      };
+    });
 }
 
 /**
@@ -47,16 +63,18 @@ function verBloques() {
  */
 function verificarAforo(fechaISO) {
   var fecha = fechaISO || mananaISO();
-  return db.slots.find({}).sort({ slotId: 1 }).toArray().map(function (s) {
+  var horas = {};
+  db.slots.find({}).forEach(function (b) { horas[b.slotId] = b.hour; });
+  return db.disponibilidad.find({ fecha: fecha }).sort({ slotId: 1 }).toArray().map(function (d) {
     var activas = db.reservations.countDocuments({
-      slotId: s.slotId, reserva_date: fecha, estado: 'ACTIVA'
+      slotId: d.slotId, reserva_date: fecha, estado: 'ACTIVA'
     });
     return {
-      bloque: s.hour,
-      aforo: s.total,
-      cupos_libres: s.available,
+      bloque: horas[d.slotId],
+      aforo: d.aforo_maximo,
+      cupos_libres: d.cupos_disponibles,
       reservas_activas: activas,
-      cuadra: (s.available + activas) === s.total
+      cuadra: (d.cupos_disponibles + activas) === d.aforo_maximo
     };
   });
 }
@@ -172,7 +190,8 @@ function verBuzon(limite) {
 print('Consultas de inspeccion disponibles (solo lectura):');
 print('');
 print('  Disponibilidad');
-print('    verBloques()                     los seis bloques con sus cupos');
+print('    verBloques()                     el catalogo de los seis bloques');
+print('    verDisponibilidad(fecha)         cupos libres de una jornada');
 print('    verificarAforo(fecha)            contrasta el contador con las reservas reales');
 print('');
 print('  Usuarios');

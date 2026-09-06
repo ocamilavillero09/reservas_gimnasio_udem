@@ -17,6 +17,7 @@ db = db.getSiblingDB('gym_udem');
 var PATRON_CORREO =
   '^[A-Za-z0-9._%+-]+@(soyudemedellin\\.edu\\.co|udem\\.edu\\.co|udemedellin\\.edu\\.co)$';
 var HORAS_BLOQUE = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00'];
+var HORAS_FIN    = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'];
 
 var VALIDADORES = {
   users: {
@@ -44,12 +45,23 @@ var VALIDADORES = {
 
   slots: {
     bsonType: 'object',
-    required: ['slotId', 'hour', 'available', 'total'],
+    required: ['slotId', 'hour', 'hora_fin', 'total'],
     properties: {
-      slotId:    { bsonType: 'int', minimum: 1, maximum: 6 },
-      hour:      { enum: HORAS_BLOQUE },
-      available: { bsonType: 'int', minimum: 0 },
-      total:     { bsonType: 'int', minimum: 1 }
+      slotId:   { bsonType: 'int', minimum: 1, maximum: 6 },
+      hour:     { enum: HORAS_BLOQUE },
+      hora_fin: { enum: HORAS_FIN },
+      total:    { bsonType: 'int', minimum: 1 }
+    }
+  },
+
+  disponibilidad: {
+    bsonType: 'object',
+    required: ['fecha', 'slotId', 'cupos_disponibles', 'aforo_maximo'],
+    properties: {
+      fecha:             { bsonType: 'string', pattern: '^\\d{4}-\\d{2}-\\d{2}$' },
+      slotId:            { bsonType: 'int', minimum: 1, maximum: 6 },
+      cupos_disponibles: { bsonType: 'int', minimum: 0 },
+      aforo_maximo:      { bsonType: 'int', minimum: 1 }
     }
   },
 

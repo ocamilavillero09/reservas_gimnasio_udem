@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { attendanceApi, reportsApi, machinesApi } from '../services/api';
+import { attendanceApi, reportsApi, slotsApi } from '../services/api';
 
 const RED = '#CC0000';
 const inputStyle = { width: '100%', padding: '12px 16px', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, backgroundColor: '#FAFAFA' };
@@ -24,18 +24,17 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
   const [busqueda, setBusqueda] = useState(null);       // RF11
   const [pendientes, setPendientes] = useState(null);   // RF14
   const [diario, setDiario] = useState(null);           // RF19
-  const [occupancy, setOccupancy] = useState([]);       // RF06/RF07
-  const [machines, setMachines] = useState([]);
-  const [newMachine, setNewMachine] = useState('');
+  const [bloques, setBloques] = useState([]);           // RF06
   const [procesando, setProcesando] = useState(false);
 
   const esAdmin = user.role === 'ADMIN';
 
   const refrescar = useCallback(() => {
-    reportsApi.occupancy().then(setOccupancy).catch(() => {});
+    // RF06 — Es la MISMA consulta que hace el estudiante. Lo único que cambia
+    // es que aquí no se ofrece la acción de reservar (RN10).
+    slotsApi.consultarHorarios().then((r) => setBloques(r.slots ?? [])).catch(() => {});
     attendanceApi.pending(user.email).then(setPendientes).catch(() => {});
     reportsApi.daily(user.email).then(setDiario).catch(() => {});
-    machinesApi.list().then(setMachines).catch(() => {});
   }, [user.email]);
 
   useEffect(refrescar, [refrescar]);
@@ -86,20 +85,9 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
     }
   };
 
-  const toggleMachine = async (m) => {
-    const next = m.estado === 'DISPONIBLE' ? 'FUERA_DE_SERVICIO' : 'DISPONIBLE';
-    try { await machinesApi.setEstado(m.machineId, next, '', user.email); refrescar(); }
-    catch (err) { showToast(err.message, 'error'); }
-  };
-
-  const addMachine = async (e) => {
-    e.preventDefault();
-    try { await machinesApi.create(newMachine.trim(), user.email); setNewMachine(''); refrescar(); }
-    catch (err) { showToast(err.message, 'error'); }
-  };
-
-  const totalReservados = occupancy.reduce((s, o) => s + o.reservados, 0);
-  const totalCupos = occupancy.reduce((s, o) => s + o.total, 0);
+  // Los ocupados se deducen del aforo y de los cupos libres que informa RF06.
+  const totalCupos      = bloques.reduce((s, b) => s + b.total, 0);
+  const totalReservados = bloques.reduce((s, b) => s + (b.total - b.available), 0);
   const t = diario?.totales;
 
   return (
@@ -123,18 +111,22 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
           </span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px,1fr))', gap: 12 }}>
-          {occupancy.map((o) => (
-            <div key={o.slotId} style={{ border: '1px solid #eee', borderRadius: 12, padding: 14 }}>
-              <div style={{ fontWeight: 900, fontSize: 20 }}>{o.hour}</div>
-              <div style={{ fontSize: 13, color: '#666', margin: '4px 0' }}>
-                {o.reservados} ocupados · {o.available} libres
+          {bloques.map((b) => {
+            const ocupados = b.total - b.available;
+            const pct = b.total ? Math.round((ocupados / b.total) * 100) : 0;
+            return (
+              <div key={b.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 14 }}>
+                <div style={{ fontWeight: 900, fontSize: 20 }}>{b.hour}</div>
+                <div style={{ fontSize: 13, color: '#666', margin: '4px 0' }}>
+                  {ocupados} ocupados · {b.available} libres
+                </div>
+                <div style={{ height: 6, background: '#F0F0F0', borderRadius: 6, overflow: 'hidden', marginTop: 6 }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: pct >= 80 ? '#dc2626' : '#16a34a' }} />
+                </div>
+                <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{pct}% de aforo</div>
               </div>
-              <div style={{ height: 6, background: '#F0F0F0', borderRadius: 6, overflow: 'hidden', marginTop: 6 }}>
-                <div style={{ height: '100%', width: `${o.ocupacion_pct}%`, background: o.ocupacion_pct >= 80 ? '#dc2626' : '#16a34a' }} />
-              </div>
-              <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{o.ocupacion_pct}% de aforo</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <p style={{ fontSize: 12, color: '#999', marginTop: 14 }}>
           Los entrenadores y administradores consultan la disponibilidad; las reservas son
@@ -308,26 +300,6 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
         )}
       </div>
 
-      {/* Extra — Mantenimiento de máquinas */}
-      <div style={card}>
-        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>🛠️ Máquinas</h3>
-        {machines.map((m) => (
-          <div key={m.machineId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #F0F0F0' }}>
-            <span style={{ fontWeight: 600 }}>{m.name}
-              <span style={{ marginLeft: 10, fontSize: 12, fontWeight: 800, color: m.estado === 'DISPONIBLE' ? '#15803d' : RED }}>
-                {m.estado === 'DISPONIBLE' ? '● Disponible' : '● Fuera de servicio'}
-              </span>
-            </span>
-            <button onClick={() => toggleMachine(m)} style={{ ...btnGhost, padding: '6px 14px', fontSize: 12 }}>
-              {m.estado === 'DISPONIBLE' ? 'Marcar fuera' : 'Reactivar'}
-            </button>
-          </div>
-        ))}
-        <form onSubmit={addMachine} style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-          <input value={newMachine} onChange={(e) => setNewMachine(e.target.value)} placeholder="Nueva máquina" style={inputStyle} required />
-          <button type="submit" style={btn}>Agregar</button>
-        </form>
-      </div>
     </div>
   );
 }
