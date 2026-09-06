@@ -1,7 +1,26 @@
 FROM python:3.11-slim
+
+# Las dependencias se instalan antes de copiar el código: así una edición del
+# código no invalida la capa de dependencias y la reconstrucción es rápida.
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY . .
+# --only-binary evita compilar paquetes desde el código fuente, que es cuando
+# un paquete puede ejecutar su propio script de instalación dentro de la imagen.
+# requirements.txt fija la versión exacta de cada dependencia.
+RUN pip install --no-cache-dir --only-binary :all: -r requirements.txt
+
+# Se copia solo lo que la aplicación necesita, en vez de todo el directorio.
+# Un COPY del directorio entero acaba metiendo en la imagen lo que se olvide
+# excluir: credenciales, ficheros de trabajo, la base de datos local.
+COPY manage.py .coveragerc ./
+COPY gym_api/ ./gym_api/
+COPY api/ ./api/
+
+# El contenedor no corre como root: si alguien lograra ejecutar código dentro,
+# lo haría sin permisos de administrador sobre el sistema de ficheros.
+RUN useradd --create-home --uid 10001 gimnasio \
+    && chown -R gimnasio:gimnasio /app
+USER gimnasio
+
 EXPOSE 8000
 CMD ["sh", "-c", "python manage.py migrate --run-syncdb && python manage.py runserver 0.0.0.0:8000"]

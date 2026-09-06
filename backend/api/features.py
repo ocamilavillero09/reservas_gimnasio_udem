@@ -20,6 +20,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .db import (
+    ahora_utc,
     get_db,
     inasistencias_restantes, alerta_inasistencias, normalizar_documento,
     add_business_days, hoy_local, formato_fecha_es,
@@ -261,7 +262,7 @@ def fallo_sugerencia(request):
         'autor_email': email,
         'autor_nombre': autor['name'],
         'mensaje': mensaje,
-        'created_at': datetime.utcnow(),
+        'created_at': ahora_utc(),
     })
     # RN11 — la confirmación la produce el backend.
     return Response({

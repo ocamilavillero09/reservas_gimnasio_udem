@@ -34,7 +34,9 @@ DOCUMENTOS = {
 
 class GymApiTestCase(TestCase):
     def setUp(self):
-        db_module._client = mongomock.MongoClient()
+        # tz_aware, igual que el cliente real: las fechas vuelven con su zona
+        # horaria puesta y se pueden comparar con las que produce ahora_utc().
+        db_module._client = mongomock.MongoClient(tz_aware=True)
         self.client = APIClient()
 
     def tearDown(self):

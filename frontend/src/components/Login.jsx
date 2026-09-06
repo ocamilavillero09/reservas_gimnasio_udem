@@ -178,12 +178,13 @@ export default function Login({ onLogin }) {
             <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {tab === 'register' && (
                 <div>
-                  <label style={{ display: 'block', fontSize: 13, color: '#555', marginBottom: 6, fontWeight: 600 }}>
+                  <label htmlFor="login-nombre" style={{ display: 'block', fontSize: 13, color: '#555', marginBottom: 6, fontWeight: 600 }}>
                     Nombre completo
                   </label>
                   <input
                     type="text"
-                    value={name}
+                    id="login-nombre"
+                  value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="Ej: María García"
                     style={inputStyle}
@@ -193,11 +194,12 @@ export default function Login({ onLogin }) {
               )}
 
               <div>
-                <label style={{ display: 'block', fontSize: 13, color: '#555', marginBottom: 6, fontWeight: 600 }}>
+                <label htmlFor="login-correo" style={{ display: 'block', fontSize: 13, color: '#555', marginBottom: 6, fontWeight: 600 }}>
                   Correo institucional
                 </label>
                 <input
                   type="text"
+                  id="login-correo"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder={config?.dominios?.[0]
@@ -219,11 +221,12 @@ export default function Login({ onLogin }) {
 
               {/* RF01/RF02 — Documento de identidad: dato de registro y contraseña */}
               <div>
-                <label style={{ display: 'block', fontSize: 13, color: '#555', marginBottom: 6, fontWeight: 600 }}>
+                <label htmlFor="login-documento" style={{ display: 'block', fontSize: 13, color: '#555', marginBottom: 6, fontWeight: 600 }}>
                   Documento de identidad
                 </label>
                 <input
                   type="password"
+                  id="login-documento"
                   value={documento}
                   onChange={e => setDocumento(e.target.value)}
                   placeholder="Ej: 1001234567"

@@ -12,8 +12,10 @@
 //  consistentes entre sí, pero cargarlos no prueba que las reglas funcionen.
 //  Para eso están las pruebas del backend.
 //
-//  Las contraseñas son el documento de identidad de cada persona, cifrado con
-//  el mismo algoritmo que usa el backend (PBKDF2, 100.000 iteraciones).
+//  El campo `cifrado` NO es una contraseña: es el documento de identidad de
+//  cada persona pasado por PBKDF2 con 100.000 iteraciones y su propia sal, el
+//  mismo algoritmo que usa el backend. De ahí no se puede sacar el documento.
+//  Se llama así, y no `password`, justamente para que se lea lo que es.
 // ============================================================================
 
 db = db.getSiblingDB('gym_udem');
@@ -22,28 +24,28 @@ db = db.getSiblingDB('gym_udem');
 // El correo determina el rol (RN01). El documento es la contraseña (RN02).
 var PERSONAS = [
   { name: 'Ana Restrepo',   email: 'ana.demo@soyudemedellin.edu.co',   documento: '1001234567',
-    password: 'a1d1af6309debd88a81f8ca08368909da080378217fd2f920dea547d6db8ee6c:77aa700ea85c2e2858917cf8997db84688cb6dc5cbf040f3231b94b40ed3c535',
+    cifrado: 'a1d1af6309debd88a81f8ca08368909da080378217fd2f920dea547d6db8ee6c:77aa700ea85c2e2858917cf8997db84688cb6dc5cbf040f3231b94b40ed3c535',
     role: 'ESTUDIANTE', estado: 'ACTIVO', no_show_count: 0,
     edad: 21, peso: 62, altura: 165, meta: 'Ganar resistencia' },
 
   { name: 'Bruno Cardona',  email: 'bruno.demo@soyudemedellin.edu.co', documento: '1002345678',
-    password: '193a3415bda3d86712d3612c2e5bf149021d0812f55d974d0862941b5d18e9f8:b6a77bc93227563e412fd57a5b68c98c8afb40258df8e56a8d5f63ab3162a8ad',
+    cifrado: '193a3415bda3d86712d3612c2e5bf149021d0812f55d974d0862941b5d18e9f8:b6a77bc93227563e412fd57a5b68c98c8afb40258df8e56a8d5f63ab3162a8ad',
     role: 'ESTUDIANTE', estado: 'ACTIVO', no_show_count: 3,
     edad: 23, peso: 78, altura: 181, meta: 'Aumentar masa muscular' },
 
   // Cuenta penalizada: llegó al límite de cinco inasistencias (RN08 y RN09).
   { name: 'Clara Ospina',   email: 'clara.demo@soyudemedellin.edu.co', documento: '1003456789',
-    password: 'd35f1d804f12d1aa412362ac90c0753bebb614114aa88b2730f27a0cbd33b579:83c1a4ad46c73be79531383cd41927c5d6a89381664236883398d529c6cf3e21',
+    cifrado: 'd35f1d804f12d1aa412362ac90c0753bebb614114aa88b2730f27a0cbd33b579:83c1a4ad46c73be79531383cd41927c5d6a89381664236883398d529c6cf3e21',
     role: 'ESTUDIANTE', estado: 'PENALIZADO', no_show_count: 5,
     edad: 20, peso: 55, altura: 160, meta: 'Mejorar condicion fisica' },
 
   { name: 'Diego Marulanda', email: 'diego.demo@udem.edu.co',          documento: '7009998881',
-    password: '1c8c90713c9c7d0ab0f41819905a7a5de08525ab3c60387aa1e498223d5b52c8:cd7f3092e714b0b0a2b152fd286961cc8674467a558f024228602004439669ff',
+    cifrado: '1c8c90713c9c7d0ab0f41819905a7a5de08525ab3c60387aa1e498223d5b52c8:cd7f3092e714b0b0a2b152fd286961cc8674467a558f024228602004439669ff',
     role: 'ENTRENADOR', estado: 'ACTIVO', no_show_count: 0 },
 
   // Primera cuenta ADMIN: es la del administrador principal (RF22 y RF23).
   { name: 'Elena Zapata',   email: 'elena.demo@udemedellin.edu.co',    documento: '3005554442',
-    password: '6ba0f5f49f392b5c69325f69b3709ede91fe2e5c46d1e026d6053f39ace05455:db632c2525c869b764067f3a89ada5a6b2be505de655aeb5700c992f1241b69d',
+    cifrado: '6ba0f5f49f392b5c69325f69b3709ede91fe2e5c46d1e026d6053f39ace05455:db632c2525c869b764067f3a89ada5a6b2be505de655aeb5700c992f1241b69d',
     role: 'ADMIN', estado: 'ACTIVO', no_show_count: 0, es_principal: true }
 ];
 
@@ -62,7 +64,7 @@ db.users.insertMany(PERSONAS.map(function (p) {
     name: p.name,
     email: p.email,
     documento: p.documento,
-    password: p.password,
+    password: p.cifrado,   // el hash, tal como lo guarda el backend
     role: p.role,
     estado: p.estado,
     es_principal: p.es_principal === true,

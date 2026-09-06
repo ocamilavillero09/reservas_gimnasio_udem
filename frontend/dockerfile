@@ -1,7 +1,23 @@
 FROM node:18-alpine
+
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
+
+# npm ci instala EXACTAMENTE las versiones del package-lock, no las que resuelva
+# el rango de versiones. Dos personas construyendo el mismo commit obtienen las
+# mismas dependencias.
+# --ignore-scripts impide que los paquetes ejecuten sus propios scripts durante
+# la instalación, que es por donde entra una dependencia comprometida.
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts
+
+# Solo lo que necesita el servidor de desarrollo.
+COPY index.html vite.config.js ./
+COPY public/ ./public/
+COPY src/ ./src/
+
+# La imagen de node trae un usuario `node` sin privilegios.
+RUN chown -R node:node /app
+USER node
+
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host"]

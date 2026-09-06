@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .db import (
+    ahora_utc,
     get_db, seed_slots, hash_password, verify_password, serialize,
     asegurar_disponibilidad, tomar_cupo, devolver_cupo,
     BLOQUES_HORARIOS, AFORO_POR_DEFECTO, DOCUMENTO_MIN, NO_SHOW_ALERTA,
@@ -207,7 +208,7 @@ def registrar_cuenta(request):
         'es_principal': es_principal,    # RF21/RF22 — administrador principal
         'no_show_count': 0,
         'penalizado_hasta': None,
-        'created_at': datetime.utcnow(),
+        'created_at': ahora_utc(),
     })
 
     return Response({
@@ -422,7 +423,7 @@ def crear_administrador(request):
         'es_principal': False,
         'no_show_count': 0,
         'penalizado_hasta': None,
-        'created_at': datetime.utcnow(),
+        'created_at': ahora_utc(),
         'created_by': actor['email'],
     })
     return Response({'message': f'Usuario creado con rol {role}.', 'role': role}, status=201)
@@ -521,7 +522,7 @@ def retirar_administrador(request, user_email):
             {'email': objetivo['email']},
             {'$set': {'role': 'SIN_ROL', 'estado': 'INACTIVO',
                       'admin_retirado_por': actor['email'],
-                      'admin_retirado_at': datetime.utcnow()}},
+                      'admin_retirado_at': ahora_utc()}},
         )
         return Response({
             'message': f"Se retiró el rol de administrador a {objetivo['email']}.",
@@ -709,7 +710,7 @@ def reservar_mañana(request):
     # RN09 — Una cuenta penalizada no reserva mientras dure la penalización.
     if owner.get('estado') == 'PENALIZADO':
         hasta = owner.get('penalizado_hasta')
-        if hasta and hasta > datetime.utcnow():
+        if hasta and hasta > ahora_utc():
             return Response(
                 {'error': 'Tu cuenta está penalizada por inasistencias. No puedes reservar por ahora.'},
                 status=403,
@@ -751,7 +752,7 @@ def reservar_mañana(request):
         'date':         fecha_label,      # la misma fecha, escrita en palabras
         'estado':       'ACTIVA',
         'created_by':   email,
-        'created_at':   datetime.utcnow(),
+        'created_at':   ahora_utc(),
     })
 
     # RN11 — La confirmación la produce el backend, no la interfaz.
@@ -803,7 +804,7 @@ def cancelar_reserva(request, reservation_id):
     # de cancelación, solo una encuentra la reserva todavía ACTIVA.
     reservation = db.reservations.find_one_and_update(
         {'_id': oid, 'estado': 'ACTIVA'},
-        {'$set': {'estado': 'CANCELADA', 'cancelled_at': datetime.utcnow()}},
+        {'$set': {'estado': 'CANCELADA', 'cancelled_at': ahora_utc()}},
     )
     if reservation is None:
         if db.reservations.find_one({'_id': oid}):

@@ -16,6 +16,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .db import (
+    ahora_utc,
     get_db, add_business_days, hoy_local, formato_fecha_es, normalizar_documento,
     inasistencias_restantes, alerta_inasistencias, ventana_asistencia,
     NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
@@ -59,11 +60,11 @@ def aplicar_inasistencia(email: str):
         return None, False
     penalizado = False
     if owner.get('no_show_count', 0) >= NO_SHOW_LIMITE and owner.get('estado') != 'PENALIZADO':
-        hasta = add_business_days(datetime.utcnow(), PENALIZACION_DIAS_HABILES)
+        hasta = add_business_days(ahora_utc(), PENALIZACION_DIAS_HABILES)
         db.users.update_one(
             {'email': email},
             {'$set': {'estado': 'PENALIZADO', 'penalizado_hasta': hasta,
-                      'penalizado_at': datetime.utcnow()}},
+                      'penalizado_at': ahora_utc()}},
         )
         owner['estado'] = 'PENALIZADO'
         penalizado = True
@@ -185,7 +186,7 @@ def registrar_asistencia(request):
 
     reserva = db.reservations.find_one_and_update(
         {'_id': reserva['_id'], 'estado': 'ACTIVA'},
-        {'$set': {'estado': 'COMPLETADA', 'completed_at': datetime.utcnow(),
+        {'$set': {'estado': 'COMPLETADA', 'completed_at': ahora_utc(),
                   'registrada_por': actor['email']}},
     )
     if reserva is None:
@@ -278,7 +279,7 @@ def procesar_inasistencia(request):
         # jornada al mismo tiempo no cuentan dos veces la misma inasistencia.
         reserva = db.reservations.find_one_and_update(
             {'estado': 'ACTIVA', 'reserva_date': {'$lte': fecha}},
-            {'$set': {'estado': 'NO_SHOW', 'no_show_at': datetime.utcnow(),
+            {'$set': {'estado': 'NO_SHOW', 'no_show_at': ahora_utc(),
                       'procesado_por': actor['email']}},
         )
         if reserva is None:

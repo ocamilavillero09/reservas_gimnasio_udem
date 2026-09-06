@@ -1,6 +1,7 @@
 import hashlib
+import math
 import os
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
 from django.conf import settings
@@ -93,7 +94,10 @@ def validar_campo_perfil(campo: str, valor):
         numero = float(valor)
     except (TypeError, ValueError):
         return f'El campo {campo} debe ser un número.'
-    if numero != numero or numero in (float('inf'), float('-inf')):
+    # math.isfinite descarta de una vez los valores infinitos y el "no es un
+    # número". Antes esto era `numero != numero`, que funciona pero es un truco:
+    # se apoya en que un NaN no es igual ni a sí mismo. Con isfinite se lee.
+    if not math.isfinite(numero):
         return f'El campo {campo} debe ser un número.'
     if not (minimo <= numero <= maximo):
         unidad = {'edad': 'años', 'peso': 'kilogramos', 'altura': 'centímetros'}[campo]
@@ -150,6 +154,20 @@ def role_for_email(email: str):
         if email.endswith(dominio):
             return rol
     return None
+
+
+def ahora_utc() -> datetime:
+    """Momento actual en tiempo universal, con su zona horaria declarada.
+
+    `datetime.utcnow()` está obsoleto desde Python 3.12 porque devuelve una
+    fecha sin zona horaria que PARECE universal pero que nadie puede distinguir
+    de una hora local. Comparar dos de esas es una fuente clásica de errores.
+
+    El cliente de MongoDB se abre con `tz_aware=True`, así que lo que se guarda
+    y lo que se lee llevan la zona horaria puesta y se pueden comparar entre sí
+    sin sorpresas.
+    """
+    return datetime.now(timezone.utc)
 
 
 def hoy_local() -> date:
@@ -218,7 +236,9 @@ def add_business_days(start: datetime, days: int) -> datetime:
 def get_db():
     global _client
     if _client is None:
-        _client = MongoClient(settings.MONGO_URI)
+        # tz_aware: las fechas que devuelve MongoDB llegan con su zona horaria,
+        # de modo que se puedan comparar con las que produce ahora_utc().
+        _client = MongoClient(settings.MONGO_URI, tz_aware=True)
     return _client[settings.MONGO_DB]
 
 def seed_slots():

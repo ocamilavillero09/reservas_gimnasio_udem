@@ -171,20 +171,20 @@ export default function ProfileView({ user, showToast }) {
             </p>
           </div>
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Edad (años)</label>
-            <input type="number" min="1" value={edad} onChange={(e) => setEdad(e.target.value)} style={inputStyle} />
+            <label htmlFor="perfil-edad" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Edad (años)</label>
+            <input type="number" min="1" id="perfil-edad" value={edad} onChange={(e) => setEdad(e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Peso (kg)</label>
-            <input type="number" value={peso} onChange={(e) => setPeso(e.target.value)} style={inputStyle} />
+            <label htmlFor="perfil-peso" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Peso (kg)</label>
+            <input type="number" id="perfil-peso" value={peso} onChange={(e) => setPeso(e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Altura (cm)</label>
-            <input type="number" value={altura} onChange={(e) => setAltura(e.target.value)} style={inputStyle} />
+            <label htmlFor="perfil-altura" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Altura (cm)</label>
+            <input type="number" id="perfil-altura" value={altura} onChange={(e) => setAltura(e.target.value)} style={inputStyle} />
           </div>
           <div>
-            <label style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Objetivo de entrenamiento</label>
-            <input type="text" value={meta} onChange={(e) => setMeta(e.target.value)} placeholder="Ej: Ganar resistencia" style={inputStyle} />
+            <label htmlFor="perfil-meta" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Objetivo de entrenamiento</label>
+            <input type="text" id="perfil-meta" value={meta} onChange={(e) => setMeta(e.target.value)} placeholder="Ej: Ganar resistencia" style={inputStyle} />
           </div>
           <button type="submit" style={{ padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
             Guardar perfil
