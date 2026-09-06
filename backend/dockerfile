@@ -3,11 +3,14 @@ FROM python:3.11-slim
 # Las dependencias se instalan antes de copiar el código: así una edición del
 # código no invalida la capa de dependencias y la reconstrucción es rápida.
 WORKDIR /app
-COPY requirements.txt .
-# --only-binary evita compilar paquetes desde el código fuente, que es cuando
-# un paquete puede ejecutar su propio script de instalación dentro de la imagen.
-# requirements.txt fija la versión exacta de cada dependencia.
-RUN pip install --no-cache-dir --only-binary :all: -r requirements.txt
+COPY requirements.lock.txt .
+# Se instala desde el archivo de versiones resueltas, no desde requirements.txt:
+#   --require-hashes  cada paquete trae su huella y pip la comprueba al bajarlo,
+#                     así que la construcción falla si algo cambió en el
+#                     repositorio en vez de meterlo en la imagen sin más.
+#   --only-binary     no se compila nada desde el código fuente, que es cuando
+#                     un paquete puede ejecutar su propio script de instalación.
+RUN pip install --no-cache-dir --require-hashes --only-binary :all: -r requirements.lock.txt
 
 # Se copia solo lo que la aplicación necesita, en vez de todo el directorio.
 # Un COPY del directorio entero acaba metiendo en la imagen lo que se olvide

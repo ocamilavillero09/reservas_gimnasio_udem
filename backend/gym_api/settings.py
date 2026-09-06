@@ -22,6 +22,16 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # Protección contra peticiones falsificadas desde otro sitio.
+    #
+    # Las vistas de Django REST Framework quedan exentas por diseño del propio
+    # framework, así que la API sigue funcionando sin tokens: es una API sin
+    # cookies de sesión, y ese ataque necesita justamente que el navegador
+    # adjunte una cookie por su cuenta.
+    #
+    # El middleware sí protege todo lo que NO es la API y se sirve desde el
+    # mismo dominio, como la documentación interactiva de Swagger.
+    'django.middleware.csrf.CsrfViewMiddleware',
 ]
 
 ROOT_URLCONF = 'gym_api.urls'

@@ -13,9 +13,24 @@ import { authApi, slotsApi, reservationsApi } from './services/api';
 // página (F5) NO cierra la sesión.
 const SESSION_KEY = 'gym_udem_session';
 
+// Lo único que se guarda en el navegador para sobrevivir a un F5. Es una lista
+// cerrada a propósito: no se vuelca en el disco del usuario todo lo que venga
+// en la respuesta del servidor, solo lo que la interfaz necesita para pintarse
+// mientras vuelve a pedir los datos frescos.
+const CAMPOS_SESION = ['name', 'email', 'documento', 'role', 'estado', 'es_principal'];
+
+const soloCamposDeSesion = (u) => {
+  if (!u || typeof u !== 'object') return null;
+  const limpio = {};
+  for (const campo of CAMPOS_SESION) {
+    if (u[campo] !== undefined) limpio[campo] = u[campo];
+  }
+  return limpio.email ? limpio : null;
+};
+
 const readStoredSession = () => {
   try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY)) || null;
+    return soloCamposDeSesion(JSON.parse(localStorage.getItem(SESSION_KEY)));
   } catch {
     return null;
   }
@@ -94,8 +109,11 @@ export default function App() {
   };
 
   const saveSession = (u) => {
+    // En memoria se conserva la respuesta completa, porque la interfaz usa los
+    // contadores; en el navegador solo van los campos de la lista cerrada.
     setUser(u);
-    if (u) localStorage.setItem(SESSION_KEY, JSON.stringify(u));
+    const guardable = soloCamposDeSesion(u);
+    if (guardable) localStorage.setItem(SESSION_KEY, JSON.stringify(guardable));
     else localStorage.removeItem(SESSION_KEY);
   };
 

@@ -1,11 +1,12 @@
 FROM mongo:6
 
-# Copiar el script de inicialización
-# MongoDB ejecuta automáticamente scripts .js de /docker-entrypoint-initdb.d/
+# MongoDB ejecuta automáticamente los scripts .js que encuentre aquí, la primera
+# vez que arranca sobre un volumen vacío.
 COPY init.mongodb.js /docker-entrypoint-initdb.d/
 
-# Asegurar permisos de ejecución
-RUN chmod +x /docker-entrypoint-initdb.d/init.mongodb.js
+# El contenedor no corre como administrador. La imagen oficial trae el usuario
+# `mongodb`, que es el dueño del directorio de datos, así que el servidor
+# arranca y el script de inicio se ejecuta igual.
+USER mongodb
 
-# Exponer el puerto de MongoDB
 EXPOSE 27017

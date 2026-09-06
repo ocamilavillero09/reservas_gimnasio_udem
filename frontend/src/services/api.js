@@ -1,4 +1,23 @@
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const BASE_POR_DEFECTO = 'http://localhost:8000/api';
+
+/**
+ * Dirección del backend, comprobada antes de usarse.
+ *
+ * El valor viene de una variable de entorno que se fija al construir la imagen.
+ * Aun así se valida: si alguien la definiera con algo que no es una dirección
+ * admisible, todas las peticiones de la aplicación acabarían saliendo hacia
+ * donde esa variable dijera. Solo se aceptan una ruta relativa que empiece por
+ * barra, o una dirección http/https completa.
+ */
+function baseValida(valor) {
+  if (typeof valor !== 'string' || valor.trim() === '') return BASE_POR_DEFECTO;
+  const limpio = valor.trim().replace(/\/$/, '');
+  if (/^\/[A-Za-z0-9\-._~/]*$/.test(limpio)) return limpio;      // ruta relativa
+  if (/^https?:\/\/[A-Za-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+$/.test(limpio)) return limpio;
+  return BASE_POR_DEFECTO;
+}
+
+const BASE = baseValida(import.meta.env.VITE_API_URL);
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {

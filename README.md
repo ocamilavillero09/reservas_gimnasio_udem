@@ -361,6 +361,7 @@ reservas_gimnasio_udem/
 ├── backend/           # Django 4.2.7 + DRF 3.14.0
 │   ├── dockerfile
 │   ├── requirements.txt
+│   ├── requirements.lock.txt   # versiones resueltas + huellas
 │   ├── api/
 │   └── gym_api/
 ├── database/          # MongoDB 6.0
@@ -394,7 +395,8 @@ venv\Scripts\activate
 source venv/bin/activate
 
 # Instalar dependencias
-pip install -r requirements.txt
+# Versiones exactas, con la huella de cada paquete comprobada al descargar
+pip install --require-hashes -r requirements.lock.txt
 
 # Crear archivo .env
 echo SECRET_KEY=tu-clave-secreta > .env
