@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useConfig } from '../services/config';
 
 const RED = '#CC0000';
 
@@ -166,6 +167,7 @@ function ReserveModal({ slot, fechaLabel, onConfirm, onClose }) {
 }
 
 export default function Dashboard({ slots, user, reservaFecha, reservations, onReserve }) {
+  const config = useConfig();
   const [pendingSlot, setPendingSlot] = useState(null);
 
   const hoy = new Date().toLocaleDateString('es-CO', {
@@ -175,6 +177,12 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
   const totalAvailable = slots.reduce((sum, s) => sum + s.available, 0);
   // RN05 — con una reserva activa para el día siguiente ya no puede reservar más.
   const yaReservoElDia = reservations.length > 0;
+  // El umbral de aviso lo decide el backend, no la interfaz.
+  const umbral = config?.no_show_alerta;
+  const enAlertaInasistencias =
+    umbral !== undefined && user?.inasistencias_restantes !== undefined
+      ? user.inasistencias_restantes <= umbral
+      : false;
 
   const handleConfirm = () => {
     onReserve(pendingSlot);
@@ -218,12 +226,16 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 28 }}>
         <StatCard icon="✅" label="Cupos disponibles" value={totalAvailable} />
         <StatCard icon="📌" label="Mi reserva de mañana" value={`${reservations.length}/1`} />
-        {/* RN08 — Cancelar no penaliza; lo que penaliza es no presentarse. */}
+        {/* RN08 — Cancelar no penaliza; lo que penaliza es no presentarse.
+            El límite y el umbral de aviso los fija el backend (RNF06): si no
+            han llegado, la tarjeta no inventa un número. */}
         <StatCard
           icon="🚫"
-          label={`Inasistencias (límite ${user?.no_show_limite ?? 5})`}
+          label={user?.no_show_limite
+            ? `Inasistencias (límite ${user.no_show_limite})`
+            : 'Inasistencias'}
           value={user?.no_show_count ?? 0}
-          highlight={(user?.inasistencias_restantes ?? 99) <= 2}
+          highlight={enAlertaInasistencias}
         />
       </div>
 

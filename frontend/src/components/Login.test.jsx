@@ -1,6 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Login from './Login';
+
+// RNF06 — Los dominios institucionales ya no están escritos en la interfaz:
+// llegan del backend por el punto de configuración. La prueba los sirve como
+// lo haría el servidor, de modo que si el backend cambiara un dominio, aquí
+// no habría una copia vieja que lo tapara.
+const CONFIG = {
+  dominios: [
+    { dominio: '@soyudemedellin.edu.co', rol: 'ESTUDIANTE', etiqueta: 'Estudiante' },
+    { dominio: '@udem.edu.co', rol: 'ENTRENADOR', etiqueta: 'Entrenador' },
+    { dominio: '@udemedellin.edu.co', rol: 'ADMIN', etiqueta: 'Administrador' },
+  ],
+  no_show_limite: 5,
+  no_show_alerta: 2,
+};
+
+beforeEach(() => {
+  vi.resetModules();
+  global.fetch = vi.fn(() =>
+    Promise.resolve({ ok: true, json: () => Promise.resolve(CONFIG) }));
+});
 
 describe('Login', () => {
   it('muestra las pestañas de iniciar sesión y registrarse', () => {
@@ -15,10 +35,10 @@ describe('Login', () => {
     expect(screen.getByPlaceholderText(/María García/i)).toBeInTheDocument();
   });
 
-  it('anuncia los tres dominios institucionales y su rol', () => {
+  it('anuncia los dominios institucionales que informa el backend', async () => {
     render(<Login onLogin={() => {}} />);
-    expect(screen.getByText(/Tres tipos de correo institucional/i)).toBeInTheDocument();
-    expect(screen.getByText('@soyudemedellin.edu.co')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(screen.getByText('@soyudemedellin.edu.co')).toBeInTheDocument());
     expect(screen.getByText('@udem.edu.co')).toBeInTheDocument();
     expect(screen.getByText('@udemedellin.edu.co')).toBeInTheDocument();
   });
@@ -30,12 +50,12 @@ describe('Login', () => {
     expect(screen.getByText(/Tu documento de identidad es tu contraseña/i)).toBeInTheDocument();
   });
 
-  it('al escribir el correo en el registro indica el rol que se asignará', () => {
+  it('al escribir el correo en el registro indica el rol que se asignará', async () => {
     render(<Login onLogin={() => {}} />);
     fireEvent.click(screen.getByText('Registrarse'));
-    fireEvent.change(screen.getByPlaceholderText(/nombre@soyudemedellin/i), {
-      target: { value: 'jefa@udemedellin.edu.co' },
-    });
-    expect(screen.getByText(/Entrarás como ADMINISTRADOR/i)).toBeInTheDocument();
+    const correo = await screen.findByPlaceholderText(/nombre@soyudemedellin/i);
+    fireEvent.change(correo, { target: { value: 'jefa@udemedellin.edu.co' } });
+    await waitFor(() =>
+      expect(screen.getByText(/Entrarás como ADMINISTRADOR/i)).toBeInTheDocument());
   });
 });

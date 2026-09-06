@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { authApi, slotsApi, reservationsApi, adminApi, attendanceApi, reportsApi } from './api';
+import { configApi, authApi, slotsApi, reservationsApi, adminApi, attendanceApi, reportsApi } from './api';
 
 function mockFetch(responseData, ok = true) {
   global.fetch = vi.fn(() =>
@@ -9,6 +9,13 @@ function mockFetch(responseData, ok = true) {
 
 describe('api service', () => {
   beforeEach(() => vi.restoreAllMocks());
+
+  it('consultarConfiguracion pide las constantes de negocio al backend (RNF06)', async () => {
+    mockFetch({ dominios: [], no_show_limite: 5 });
+    const c = await configApi.consultarConfiguracion();
+    expect(global.fetch.mock.calls[0][0]).toContain('/config/');
+    expect(c.no_show_limite).toBe(5);
+  });
 
   it('login hace POST a /auth/login/ con el correo y el documento (RF02)', async () => {
     mockFetch({ name: 'Juan', email: 'j@soyudemedellin.edu.co', role: 'ESTUDIANTE' });

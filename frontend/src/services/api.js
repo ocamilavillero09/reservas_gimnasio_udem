@@ -10,6 +10,12 @@ async function request(path, options = {}) {
   return data;
 }
 
+// Constantes de negocio para la interfaz. No es un requisito funcional: es lo
+// que hace cumplir el RNF06 (backend: consultar_configuracion).
+export const configApi = {
+  consultarConfiguracion: () => request('/config/'),
+};
+
 // RF01/RF02 — Registro e inicio de sesión con nombre, correo institucional y
 // DOCUMENTO DE IDENTIDAD (el documento es además la contraseña).
 export const authApi = {

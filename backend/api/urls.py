@@ -4,6 +4,10 @@ from . import views, features, reports, attendance
 # Una ruta por requisito. El nombre de la función es el del requisito, de modo
 # que la trazabilidad entre el documento y el código sea directa.
 urlpatterns = [
+    # Constantes de negocio para la interfaz. No es un requisito funcional:
+    # es lo que hace cumplir el RNF06, la separación de capas.
+    path('config/',                     views.consultar_configuracion, name='config'),
+
     # ── Módulo 1 — Autenticación y perfiles ─────────────────────────────────
     # RF01 — Registrar una cuenta
     path('auth/register/',              views.registrar_cuenta,     name='register'),

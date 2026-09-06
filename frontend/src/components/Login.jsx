@@ -1,17 +1,9 @@
 import { useState } from 'react';
 import { authApi } from '../services/api';
+import { useConfig, rolDeCorreo } from '../services/config';
 
 const RED = '#CC0000';
 
-// RN01 — Tres tipos de correo institucional: el dominio determina el rol.
-const DOMINIOS = [
-  { dominio: '@soyudemedellin.edu.co', etiqueta: 'Estudiante' },
-  { dominio: '@udem.edu.co',           etiqueta: 'Entrenador' },
-  { dominio: '@udemedellin.edu.co',    etiqueta: 'Administrador' },
-];
-
-const rolDeCorreo = (email) =>
-  DOMINIOS.find((d) => email.trim().toLowerCase().endsWith(d.dominio))?.etiqueta ?? null;
 
 const inputStyle = {
   width: '100%',
@@ -34,6 +26,11 @@ export default function Login({ onLogin }) {
   const [error, setError]           = useState('');
   const [registered, setRegistered] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // RN01 — Los dominios y el rol que otorga cada uno los define el backend.
+  // La interfaz no guarda esa tabla: la recibe (RNF06).
+  const config = useConfig();
+  const dominioDetectado = rolDeCorreo(config, email);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -203,16 +200,18 @@ export default function Login({ onLogin }) {
                   type="text"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="nombre@soyudemedellin.edu.co"
+                  placeholder={config?.dominios?.[0]
+                    ? `nombre${config.dominios[0].dominio}`
+                    : 'Tu correo institucional'}
                   style={inputStyle}
                   autoCapitalize="none"
                   autoCorrect="off"
                 />
                 {/* RN01 — se avisa en vivo qué rol otorga el dominio escrito */}
-                {tab === 'register' && email.trim() !== '' && (
-                  <p style={{ fontSize: 12, marginTop: 6, color: rolDeCorreo(email) ? '#15803D' : '#991B1B' }}>
-                    {rolDeCorreo(email)
-                      ? `✓ Entrarás como ${rolDeCorreo(email).toUpperCase()}`
+                {tab === 'register' && email.trim() !== '' && config && (
+                  <p style={{ fontSize: 12, marginTop: 6, color: dominioDetectado ? '#15803D' : '#991B1B' }}>
+                    {dominioDetectado
+                      ? `✓ Entrarás como ${dominioDetectado.etiqueta.toUpperCase()}`
                       : '⚠ Ese dominio no es institucional'}
                   </p>
                 )}
@@ -255,16 +254,18 @@ export default function Login({ onLogin }) {
                 {submitting ? 'Cargando...' : tab === 'login' ? 'Ingresar →' : 'Crear cuenta →'}
               </button>
 
-              <div style={{ padding: '12px 16px', backgroundColor: '#FFF8F0', borderRadius: 10, border: '1px solid #FFD9A0' }}>
-                <p style={{ fontSize: 12, color: '#92400e', margin: 0, marginBottom: 8, textAlign: 'center', fontWeight: 700 }}>
-                  🔒 Tres tipos de correo institucional
-                </p>
-                {DOMINIOS.map(d => (
-                  <p key={d.dominio} style={{ fontSize: 12, color: '#92400e', margin: 0, textAlign: 'center', lineHeight: 1.7 }}>
-                    <strong>{d.dominio}</strong> → {d.etiqueta}
+              {config?.dominios && (
+                <div style={{ padding: '12px 16px', backgroundColor: '#FFF8F0', borderRadius: 10, border: '1px solid #FFD9A0' }}>
+                  <p style={{ fontSize: 12, color: '#92400e', margin: 0, marginBottom: 8, textAlign: 'center', fontWeight: 700 }}>
+                    🔒 Correos institucionales que reconoce el sistema
                   </p>
-                ))}
-              </div>
+                  {config.dominios.map((d) => (
+                    <p key={d.dominio} style={{ fontSize: 12, color: '#92400e', margin: 0, textAlign: 'center', lineHeight: 1.7 }}>
+                      <strong>{d.dominio}</strong> → {d.etiqueta}
+                    </p>
+                  ))}
+                </div>
+              )}
             </form>
           </div>
         </div>

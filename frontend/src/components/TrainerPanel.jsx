@@ -222,7 +222,9 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
         <p style={{ fontSize: 12, color: '#999', marginBottom: 16 }}>
           {esAdmin
             ? 'Solo el entrenador cierra la jornada. Aquí puedes supervisar quiénes quedan pendientes.'
-            : `Al cerrar la jornada se registra la inasistencia de cada uno y se penaliza a quien llegue a ${pendientes?.no_show_limite ?? 5} inasistencias.`}
+            : pendientes?.no_show_limite
+              ? `Al cerrar la jornada se registra la inasistencia de cada uno y se penaliza a quien llegue a ${pendientes.no_show_limite} inasistencias.`
+              : 'Al cerrar la jornada se registra la inasistencia de cada uno y se aplican las penalizaciones que correspondan.'}
         </p>
 
         {!pendientes || pendientes.total === 0 ? (

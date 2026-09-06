@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { profileApi, reportsApi } from '../services/api';
+import { useConfig } from '../services/config';
 
 const RED = '#CC0000';
 const inputStyle = { width: '100%', padding: '12px 16px', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, backgroundColor: '#FAFAFA' };
@@ -24,6 +25,7 @@ const ROLE_LABEL = {
  *   RF15 — El estudiante consulta su reporte de inasistencias y penalizaciones.
  */
 export default function ProfileView({ user, showToast }) {
+  const config = useConfig();
   const [edad, setEdad] = useState('');
   const [peso, setPeso] = useState('');
   const [altura, setAltura] = useState('');
@@ -74,6 +76,8 @@ export default function ProfileView({ user, showToast }) {
   };
 
   const inasistenciasRestantes = reporte?.inasistencias_restantes ?? datos?.inasistencias_restantes ?? 0;
+  // El umbral desde el que se avisa lo fija el backend (RNF06).
+  const umbralAviso = config?.no_show_alerta;
   const penalizado = (reporte?.estado ?? datos?.estado) === 'PENALIZADO';
 
   return (
@@ -117,7 +121,7 @@ export default function ProfileView({ user, showToast }) {
               label="Me faltan"
               value={inasistenciasRestantes}
               sub="para la penalización"
-              alerta={inasistenciasRestantes <= 2}
+              alerta={umbralAviso !== undefined && inasistenciasRestantes <= umbralAviso}
             />
             <Contador
               label="Asistencias"

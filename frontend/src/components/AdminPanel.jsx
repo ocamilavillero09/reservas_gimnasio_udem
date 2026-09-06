@@ -1,16 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { adminApi, buzonApi } from '../services/api';
+import { useConfig, rolDeCorreo } from '../services/config';
 
 const RED = '#CC0000';
 const inputStyle = { width: '100%', padding: '12px 16px', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, backgroundColor: '#FAFAFA' };
 const card = { backgroundColor: 'white', borderRadius: 18, padding: 26, boxShadow: '0 2px 14px rgba(0,0,0,0.07)', marginBottom: 24 };
-
-// Los tres dominios institucionales y el rol que otorga cada uno (RN01).
-const DOMINIOS = [
-  { dominio: '@soyudemedellin.edu.co', rol: 'ESTUDIANTE',  etiqueta: 'Estudiante' },
-  { dominio: '@udem.edu.co',           rol: 'ENTRENADOR',  etiqueta: 'Entrenador' },
-  { dominio: '@udemedellin.edu.co',    rol: 'ADMIN',       etiqueta: 'Administrador' },
-];
 
 const ROLE_BADGE = {
   ESTUDIANTE: { bg: '#DBEAFE', fg: '#1D4ED8', label: 'Estudiante' },
@@ -18,9 +12,6 @@ const ROLE_BADGE = {
   ADMIN:      { bg: '#FEE2E2', fg: '#991B1B', label: 'Administrador' },
   SIN_ROL:    { bg: '#E5E7EB', fg: '#4B5563', label: 'Rol retirado' },
 };
-
-const rolDeCorreo = (email) =>
-  DOMINIOS.find((d) => email.trim().toLowerCase().endsWith(d.dominio))?.rol ?? null;
 
 /**
  * Panel del ADMINISTRADOR.
@@ -80,7 +71,10 @@ export default function AdminPanel({ user, showToast }) {
     }
   };
 
-  const rolDetectado = rolDeCorreo(email);
+  // RN01 — Los dominios los define el backend; la interfaz solo los muestra (RNF06).
+  const config = useConfig();
+  const dominioAdmin = config?.dominios?.find((d) => d.rol === 'ADMIN');
+  const rolDetectado = rolDeCorreo(config, email)?.rol ?? null;
   const porRol = (rol) => users.filter((u) => u.role === rol).length;
   // Solo el administrador principal gestiona las cuentas de administrador.
   const esPrincipal = user.es_principal ?? false;
@@ -105,13 +99,14 @@ export default function AdminPanel({ user, showToast }) {
       <div style={card}>
         <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>➕ Crear usuario</h3>
         <p style={{ color: '#777', fontSize: 13, marginBottom: 18, lineHeight: 1.6 }}>
-          El rol se asigna automáticamente según el dominio del correo. Para crear otro
-          <strong> administrador</strong> (RF21), usa un correo <strong>@udemedellin.edu.co</strong>.
+          El rol se asigna automáticamente según el dominio del correo (RN01). Para crear
+          otro <strong>administrador</strong> (RF22), usa un correo del dominio
+          administrativo{dominioAdmin ? <strong> {dominioAdmin.dominio}</strong> : null}.
           El documento de identidad será su contraseña de ingreso.
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: 10, marginBottom: 20 }}>
-          {DOMINIOS.map((d) => {
+          {(config?.dominios ?? []).map((d) => {
             const b = ROLE_BADGE[d.rol];
             return (
               <div key={d.dominio} style={{ border: '1px solid #eee', borderRadius: 12, padding: '12px 14px' }}>
@@ -130,7 +125,7 @@ export default function AdminPanel({ user, showToast }) {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="correo@udemedellin.edu.co"
+            placeholder={dominioAdmin ? `correo${dominioAdmin.dominio}` : 'Correo institucional'}
             style={inputStyle}
             autoCapitalize="none"
             required

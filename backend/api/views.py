@@ -7,6 +7,8 @@ from drf_yasg import openapi
 from .db import (
     get_db, seed_slots, hash_password, verify_password, serialize,
     asegurar_disponibilidad, tomar_cupo, devolver_cupo,
+    BLOQUES_HORARIOS, AFORO_POR_DEFECTO, DOCUMENTO_MIN, NO_SHOW_ALERTA,
+    PERFIL_RANGOS, META_MAX,
     ROLES, DOMINIOS_ROL, role_for_email,
     fecha_reserva, formato_fecha_es,
     normalizar_documento, inasistencias_restantes, alerta_inasistencias,
@@ -31,10 +33,59 @@ from .db import (
 # ══════════════════════════════════════════════════════════════════════════
 
 
+ETIQUETA_ROL = {
+    'ESTUDIANTE': 'Estudiante',
+    'ENTRENADOR': 'Entrenador',
+    'ADMIN': 'Administrador',
+    'SIN_ROL': 'Sin rol asignado',
+}
+
+
+@api_view(['GET'])
+def consultar_configuracion(request):
+    """Constantes de negocio que la interfaz necesita para pintarse.
+
+    No es un requisito funcional: es lo que hace cumplir el RNF06. La interfaz
+    aporta presentación y no guarda constantes de negocio, así que los dominios
+    institucionales, los bloques horarios y los límites los recibe de aquí.
+
+    Antes, la tabla que decide el rol según el dominio estaba escrita a mano en
+    dos componentes del frontend. Si mañana cambia un dominio institucional
+    había que tocar tres archivos, y bastaba olvidar uno para que la interfaz
+    dijera algo distinto de lo que el backend aplica.
+    """
+    return Response({
+        # RN01 — el dominio determina el rol.
+        'dominios': [
+            {'dominio': dominio, 'rol': rol, 'etiqueta': ETIQUETA_ROL[rol]}
+            for dominio, rol in DOMINIOS_ROL.items()
+        ],
+        # RN03 — los seis bloques de dos horas en horas pares.
+        'bloques': [
+            {'id': i, 'hora_inicio': inicio, 'hora_fin': fin}
+            for i, inicio, fin in BLOQUES_HORARIOS
+        ],
+        'aforo_por_defecto': AFORO_POR_DEFECTO,
+        # RN02 — longitud mínima del documento de identidad.
+        'documento_min': DOCUMENTO_MIN,
+        # RN05 — una reserva por estudiante y por día.
+        'max_reservas_por_dia': MAX_RESERVAS_POR_DIA,
+        # RN08 — cinco inasistencias penalizan, y se avisa cuando faltan dos.
+        'no_show_limite': NO_SHOW_LIMITE,
+        'no_show_alerta': NO_SHOW_ALERTA,
+        # RF03 — rangos admitidos en el perfil físico.
+        'perfil_rangos': {
+            campo: {'minimo': minimo, 'maximo': maximo}
+            for campo, (minimo, maximo) in PERFIL_RANGOS.items()
+        },
+        'meta_max': META_MAX,
+        'etiquetas_rol': ETIQUETA_ROL,
+    })
+
+
 def _dominios_texto() -> str:
-    """'@soyudemedellin.edu.co (estudiante), @udem.edu.co (profesor), ...'"""
-    etiquetas = {'ESTUDIANTE': 'estudiante', 'ENTRENADOR': 'profesor', 'ADMIN': 'administrador'}
-    return ', '.join(f'{d} ({etiquetas[r]})' for d, r in DOMINIOS_ROL.items())
+    """'@soyudemedellin.edu.co (Estudiante), @udem.edu.co (Entrenador), ...'"""
+    return ', '.join(f'{d} ({ETIQUETA_ROL[r].lower()})' for d, r in DOMINIOS_ROL.items())
 
 
 def _perfil_sesion(user: dict) -> dict:

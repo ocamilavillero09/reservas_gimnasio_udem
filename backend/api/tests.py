@@ -127,6 +127,44 @@ class GymApiTestCase(TestCase):
             self.client.delete(f'/api/reservations/{rid}/')
 
 
+# ── RNF06: LA INTERFAZ RECIBE LAS CONSTANTES, NO LAS GUARDA ─────────────────
+class ConfiguracionTests(GymApiTestCase):
+    """El punto de configuración es lo que hace cumplir la separación de capas.
+
+    La interfaz no guarda los dominios, los bloques ni los límites: los recibe
+    de aquí. Estas pruebas comprueban que lo que se entrega es EXACTAMENTE lo
+    que aplica el backend, porque si divergieran la interfaz mostraría una regla
+    y el sistema aplicaría otra.
+    """
+
+    def test_los_dominios_son_los_que_aplica_la_regla_rn01(self):
+        resp = self.client.get('/api/config/')
+        self.assertEqual(resp.status_code, 200)
+        entregados = {d['dominio']: d['rol'] for d in resp.data['dominios']}
+        self.assertEqual(entregados, db_module.DOMINIOS_ROL)
+
+    def test_los_bloques_son_los_que_aplica_la_regla_rn03(self):
+        bloques = self.client.get('/api/config/').data['bloques']
+        self.assertEqual(
+            [(b['id'], b['hora_inicio'], b['hora_fin']) for b in bloques],
+            [tuple(b) for b in db_module.BLOQUES_HORARIOS],
+        )
+
+    def test_los_limites_son_los_que_aplica_el_backend(self):
+        c = self.client.get('/api/config/').data
+        self.assertEqual(c['no_show_limite'], db_module.NO_SHOW_LIMITE)
+        self.assertEqual(c['no_show_alerta'], db_module.NO_SHOW_ALERTA)
+        self.assertEqual(c['max_reservas_por_dia'], db_module.MAX_RESERVAS_POR_DIA)
+        self.assertEqual(c['documento_min'], db_module.DOCUMENTO_MIN)
+        self.assertEqual(c['aforo_por_defecto'], db_module.AFORO_POR_DEFECTO)
+
+    def test_los_rangos_del_perfil_son_los_que_valida_rf03(self):
+        rangos = self.client.get('/api/config/').data['perfil_rangos']
+        for campo, (minimo, maximo) in db_module.PERFIL_RANGOS.items():
+            self.assertEqual(rangos[campo]['minimo'], minimo)
+            self.assertEqual(rangos[campo]['maximo'], maximo)
+
+
 # ── CU-1 / RN01: REGISTRO Y TRES TIPOS DE CORREO ────────────────────────────
 class RegisterTests(GymApiTestCase):
 

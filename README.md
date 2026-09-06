@@ -256,8 +256,11 @@ que las pruebas y los diagramas de flujo calcen con el código.
 | RF22 Crear administrador | `crear_administrador` | `crearAdministrador` | `POST /api/admin/users/` |
 | RF23 Retirar el rol de administrador | `retirar_administrador` | `retirarAdministrador` | `PATCH /api/admin/users/<correo>/` |
 
-El sistema no expone ninguna ruta más. La única que no corresponde a un requisito
-es la que rehidrata la sesión al recargar la página, que da apoyo a RF02.
+Dos rutas más no corresponden a un requisito funcional y existen por una razón
+declarada. `GET /api/auth/session/` rehidrata la sesión al recargar la página, y
+da apoyo a RF02. `GET /api/config/` entrega los dominios institucionales, los
+bloques horarios y los límites: es lo que hace cumplir el RNF06, para que la
+interfaz no guarde una segunda copia de esas reglas.
 
 ### Verificación rápida con curl
 
