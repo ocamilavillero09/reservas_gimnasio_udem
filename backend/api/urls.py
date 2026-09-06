@@ -28,8 +28,8 @@ urlpatterns = [
     # RF12 — Lista de espera
     path('slots/<int:slot_id>/waitlist/', features.waitlist,        name='waitlist'),
 
-    # RF13 — Perfil y metas
-    path('users/profile/',              features.user_profile,      name='profile'),
+    # RF03 — Consultar y actualizar el perfil
+    path('users/profile/',              features.consultar_actualizar_perfil, name='profile'),
 
     # RF15 — Calificaciones
     path('ratings/',                    features.ratings,           name='ratings'),

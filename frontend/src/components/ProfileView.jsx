@@ -31,7 +31,7 @@ export default function ProfileView({ user, showToast }) {
   const [reporte, setReporte] = useState(null);
 
   const cargar = useCallback(() => {
-    profileApi.get(user.email).then((p) => {
+    profileApi.consultarPerfil(user.email).then((p) => {
       setDatos(p);
       setEdad(p.edad ?? '');
       setPeso(p.peso ?? '');
@@ -53,7 +53,7 @@ export default function ProfileView({ user, showToast }) {
   const save = async (e) => {
     e.preventDefault();
     try {
-      const actualizado = await profileApi.update({
+      const actualizado = await profileApi.actualizarPerfil({
         email: user.email,
         edad: edad === '' ? null : Number(edad),
         peso: peso === '' ? null : Number(peso),

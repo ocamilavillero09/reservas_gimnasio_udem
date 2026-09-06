@@ -3,7 +3,7 @@ Funcionalidades complementarias del documento de análisis (RF11–RF18):
 
   RF11  Historial de entrenamiento          (reservation_history)
   RF12  Lista de espera                      (waitlist + pop_next_in_waitlist)
-  RF13  Perfil de usuario y metas            (user_profile)
+  RF03  Consultar y actualizar el perfil     (consultar_actualizar_perfil)
   RF15  Calificación del servicio            (ratings)
   RF16  Dashboard de aforo proyectado        (occupancy_report)
   RF17  Reporte POR ESTUDIANTE               (students_report, complete_reservation)
@@ -18,6 +18,7 @@ from .db import (
     get_db, seed_machines, cancelaciones_restantes, alerta_cancelaciones,
     inasistencias_restantes, alerta_inasistencias, normalizar_documento,
     add_business_days, hoy_local, formato_fecha_es,
+    validar_campo_perfil, normalizar_campo_perfil,
     CANCELACION_LIMITE, NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
 )
 
@@ -112,9 +113,56 @@ def pop_next_in_waitlist(slot_id: int):
     return get_db().waitlist.find_one_and_delete({'slotId': slot_id}, sort=[('created_at', 1)])
 
 
-# ── RF13 — PERFIL DE USUARIO Y METAS ────────────────────────────────────────
+# ── RF03 — CONSULTAR Y ACTUALIZAR EL PERFIL ─────────────────────────────────
+# Campos del perfil físico que el estudiante puede editar. El nombre, el correo,
+# el documento y el rol NO están aquí: identifican a la persona y no se editan.
+CAMPOS_PERFIL = ('edad', 'peso', 'altura', 'meta')
+
+
+def _respuesta_perfil(user: dict) -> dict:
+    """Perfil completo tal como lo consume la interfaz."""
+    return {
+        # Datos de identidad, de solo lectura para todos los roles.
+        'name': user['name'], 'email': user['email'],
+        'documento': user.get('documento', ''),
+        'role': user.get('role'),
+        'estado': user.get('estado'),
+        'es_principal': bool(user.get('es_principal')),
+        # Inasistencias y cuántas faltan para la penalización (RN08).
+        'no_show_count': user.get('no_show_count', 0),
+        'inasistencias_restantes': inasistencias_restantes(user),
+        'no_show_limite': NO_SHOW_LIMITE,
+        'alerta_inasistencias': alerta_inasistencias(user),
+        # Contadores de cancelaciones. Campo heredado: sale al refactorizar RF09.
+        'cancel_count': user.get('cancel_count', 0),
+        'cancelaciones_restantes': cancelaciones_restantes(user),
+        'cancelacion_limite': CANCELACION_LIMITE,
+        'alerta': alerta_cancelaciones(user),
+        # RF03 — perfil físico y objetivo de entrenamiento.
+        'edad': user.get('edad'), 'peso': user.get('peso'),
+        'altura': user.get('altura'), 'meta': user.get('meta'),
+    }
+
+
 @api_view(['GET', 'PUT'])
-def user_profile(request):
+def consultar_actualizar_perfil(request):
+    """RF03 — Consultar y actualizar mi perfil.
+
+    GET devuelve el perfil. PUT guarda la edad, el peso, la altura y el objetivo
+    de entrenamiento del estudiante.
+
+    Los valores se validan ANTES de escribir. Los rangos admitidos son los
+    mismos que declara el validador de esquema de MongoDB, así que un valor
+    fuera de rango se rechaza aquí con un mensaje que dice qué corregir, en vez
+    de llegar a la base de datos y provocar un error del servidor.
+
+    Flujo alterno A1: si algún campo está fuera de rango no se guarda NINGUNO,
+    para que el perfil no quede a medio actualizar.
+
+    Nota: este endpoint sirve hoy también a RF04 y RF05, la consulta del perfil
+    del entrenador y del administrador. Se separan al implementar esos dos
+    requisitos.
+    """
     db = get_db()
     if request.method == 'GET':
         email = request.query_params.get('email', '').strip().lower()
@@ -122,43 +170,45 @@ def user_profile(request):
         email = request.data.get('email', '').strip().lower()
     if not email:
         return Response({'error': 'email requerido.'}, status=400)
+
     user = db.users.find_one({'email': email})
     if not user:
         return Response({'error': 'Usuario no encontrado.'}, status=404)
 
     if request.method == 'PUT':
-        # RF04 — El estudiante gestiona edad, peso, altura y objetivo de
-        # entrenamiento. El nombre, el correo, el documento y el rol NO se
-        # editan desde aquí: identifican a la persona.
-        update = {}
-        for field in ('edad', 'peso', 'altura', 'meta'):
-            if field in request.data:
-                update[field] = request.data.get(field)
-        if update:
-            db.users.update_one({'email': email}, {'$set': update})
+        # Solo el estudiante tiene perfil físico que editar (RF03). El
+        # entrenador y el administrador consultan, no editan (RF04 y RF05).
+        if user.get('role') != 'ESTUDIANTE':
+            return Response(
+                {'error': 'Solo los estudiantes pueden editar su perfil de entrenamiento.'},
+                status=403,
+            )
+
+        # Primero se validan TODOS los campos recibidos; solo si no hay ningún
+        # error se escribe. Así el flujo alterno A1 no deja el perfil a medias.
+        errores = {}
+        cambios = {}
+        for campo in CAMPOS_PERFIL:
+            if campo not in request.data:
+                continue
+            valor = request.data.get(campo)
+            error = validar_campo_perfil(campo, valor)
+            if error:
+                errores[campo] = error
+            else:
+                cambios[campo] = normalizar_campo_perfil(campo, valor)
+
+        if errores:
+            return Response(
+                {'error': ' '.join(errores.values()), 'campos': errores},
+                status=400,
+            )
+
+        if cambios:
+            db.users.update_one({'email': email}, {'$set': cambios})
             user = db.users.find_one({'email': email})
 
-    return Response({
-        # RF05 — nombre, documento de identidad y rol asignado.
-        'name': user['name'], 'email': user['email'],
-        'documento': user.get('documento', ''),
-        'role': user.get('role'),
-        'estado': user.get('estado'),
-        'es_principal': bool(user.get('es_principal')),
-        # RF16/RF18 — inasistencias y cuántas faltan para la penalización.
-        'no_show_count': user.get('no_show_count', 0),
-        'inasistencias_restantes': inasistencias_restantes(user),
-        'no_show_limite': NO_SHOW_LIMITE,
-        'alerta_inasistencias': alerta_inasistencias(user),
-        # RN10 — el estudiante ve cuántas veces ha cancelado y cuánto le queda.
-        'cancel_count': user.get('cancel_count', 0),
-        'cancelaciones_restantes': cancelaciones_restantes(user),
-        'cancelacion_limite': CANCELACION_LIMITE,
-        'alerta': alerta_cancelaciones(user),
-        # RF04 — información personal de entrenamiento.
-        'edad': user.get('edad'), 'peso': user.get('peso'),
-        'altura': user.get('altura'), 'meta': user.get('meta'),
-    })
+    return Response(_respuesta_perfil(user))
 
 
 # ── RF15 — CALIFICACIÓN DEL SERVICIO ────────────────────────────────────────

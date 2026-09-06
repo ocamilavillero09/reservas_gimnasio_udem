@@ -44,7 +44,66 @@ _MESES = ('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
 # claro para poder buscarlo (RF11: el entrenador busca al estudiante por su
 # documento) y hasheado en el campo `password` para validar el inicio de sesión.
 DOCUMENTO_MIN = 6             # longitud mínima del documento de identidad
-NO_SHOW_ALERTA = 2            # RF18: avisar cuando falten 2 inasistencias
+NO_SHOW_ALERTA = 2            # RF15: avisar cuando falten 2 inasistencias
+
+
+# RF03 — Rangos admitidos en el perfil físico del estudiante.
+# Son los MISMOS que declara el validador de esquema de MongoDB. Si difirieran,
+# el backend aceptaría un valor que la base de datos rechazaría después, y la
+# persona vería un error del servidor en vez de un mensaje que explique qué
+# corregir. Cualquier cambio aquí hay que hacerlo también en database/.
+PERFIL_RANGOS = {
+    'edad':   (10, 100),
+    'peso':   (20, 300),
+    'altura': (100, 250),
+}
+META_MAX = 200                # longitud máxima del objetivo de entrenamiento
+
+
+def validar_campo_perfil(campo: str, valor):
+    """RF03 — Comprueba un campo del perfil antes de guardarlo.
+
+    Devuelve None si el valor es válido, o el texto del error si no lo es.
+    Un valor vacío o nulo es válido: significa que la persona quiere dejar el
+    campo sin diligenciar.
+    """
+    if valor is None or valor == '':
+        return None
+
+    if campo == 'meta':
+        if not isinstance(valor, str):
+            return 'El objetivo de entrenamiento debe ser un texto.'
+        if len(valor) > META_MAX:
+            return f'El objetivo de entrenamiento no puede superar los {META_MAX} caracteres.'
+        return None
+
+    minimo, maximo = PERFIL_RANGOS[campo]
+    try:
+        numero = float(valor)
+    except (TypeError, ValueError):
+        return f'El campo {campo} debe ser un número.'
+    if numero != numero or numero in (float('inf'), float('-inf')):
+        return f'El campo {campo} debe ser un número.'
+    if not (minimo <= numero <= maximo):
+        unidad = {'edad': 'años', 'peso': 'kilogramos', 'altura': 'centímetros'}[campo]
+        return f'El campo {campo} debe estar entre {minimo} y {maximo} {unidad}.'
+    return None
+
+
+def normalizar_campo_perfil(campo: str, valor):
+    """RF03 — Deja el valor en el tipo que espera la base de datos.
+
+    La edad se guarda como entero; el peso y la altura admiten decimales; el
+    objetivo se guarda sin espacios sobrantes. Un valor vacío se guarda como
+    nulo, que es como el esquema representa un campo sin diligenciar.
+    """
+    if valor is None or valor == '':
+        return None
+    if campo == 'meta':
+        return valor.strip()
+    if campo == 'edad':
+        return int(float(valor))
+    return float(valor)
 
 
 def normalizar_documento(documento) -> str:
