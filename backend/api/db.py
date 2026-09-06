@@ -294,16 +294,6 @@ def devolver_cupo(fecha_iso: str, slot_id: int):
     )
 
 
-def get_config(key: str, default=None):
-    """Lee un valor de la colección de configuración."""
-    doc = get_db().config.find_one({'_id': key})
-    return doc['value'] if doc else default
-
-
-def set_config(key: str, value):
-    get_db().config.update_one({'_id': key}, {'$set': {'value': value}}, upsert=True)
-
-
 def hash_password(password: str) -> str:
     salt = os.urandom(32)
     key = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 100_000)

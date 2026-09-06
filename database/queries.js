@@ -58,8 +58,8 @@ function verDisponibilidad(fechaISO) {
 
 /**
  * Contraste entre el contador de cupos y las reservas activas que hay de verdad.
- * Sirve para detectar si algún cupo quedó descuadrado: si `available` más las
- * reservas activas no da el aforo total, hay una inconsistencia que revisar.
+ * Sirve para detectar si algún cupo quedó descuadrado: si los cupos libres más
+ * las reservas activas no dan el aforo, hay una inconsistencia que revisar.
  */
 function verificarAforo(fechaISO) {
   var fecha = fechaISO || mananaISO();
@@ -105,11 +105,21 @@ function penalizados() {
   ).sort({ penalizado_hasta: 1 }).toArray();
 }
 
-/** Quiénes están cerca del límite de inasistencias, sin haberlo alcanzado (RN08). */
+/**
+ * Quiénes están cerca del límite de inasistencias, sin haberlo alcanzado.
+ *
+ * El límite hay que pasarlo: la base de datos NO guarda una copia. El valor lo
+ * fija la regla RN08 en el backend, y si aquí hubiera un número escrito a mano
+ * bastaría cambiarlo allá para que esta consulta empezara a mentir en silencio.
+ *
+ *     cercaDelLimite(5)
+ */
 function cercaDelLimite(limite) {
-  var tope = limite || 5;
+  if (typeof limite !== 'number') {
+    throw new Error('Indica el límite de inasistencias que aplica el backend, por ejemplo cercaDelLimite(5).');
+  }
   return db.users.find(
-    { role: 'ESTUDIANTE', no_show_count: { $gte: tope - 2, $lt: tope } },
+    { role: 'ESTUDIANTE', no_show_count: { $gte: limite - 2, $lt: limite } },
     { _id: 0, name: 1, email: 1, no_show_count: 1 }
   ).sort({ no_show_count: -1 }).toArray();
 }
@@ -198,7 +208,7 @@ print('  Usuarios');
 print('    usuariosPorRol()                 cuentas por rol y estado');
 print('    buscarPorDocumento(documento)    ficha de una persona, sin la credencial');
 print('    penalizados()                    cuentas penalizadas y hasta cuando');
-print('    cercaDelLimite(limite)           quienes estan por alcanzar el limite');
+print('    cercaDelLimite(limite)           quienes estan por alcanzar el limite (hay que pasarlo)');
 print('');
 print('  Reservas');
 print('    reservasDeLaJornada(fecha, est)  reservas de un dia');
