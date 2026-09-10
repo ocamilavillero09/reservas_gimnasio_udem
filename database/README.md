@@ -33,7 +33,7 @@ falsas. Por eso se retiró.
 |---|---|---|
 | `init.mongodb.js` | Crea las colecciones con sus validadores e índices y carga los seis bloques horarios | Automático, al arrancar el contenedor sobre un volumen vacío |
 | `validations.js` | Vuelve a aplicar los validadores sobre una base que ya existe, sin borrar datos | A mano, cuando cambia el esquema |
-| `indexes.js` | Crea y lista los índices | A mano; es idempotente |
+| `indexes.js` | Lista y verifica los índices que ya existen | A mano; solo lee |
 | `seed.js` | Carga cuentas, reservas y sugerencias de demostración | A mano, en desarrollo |
 | `queries.js` | Consultas de inspección, todas de solo lectura | A mano |
 | `schema.json` | Documentación del esquema, campo por campo | Referencia |

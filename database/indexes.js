@@ -1,57 +1,52 @@
 // ============================================================================
-//  ÍNDICES — creación y verificación
+//  ÍNDICES — verificación
 // ----------------------------------------------------------------------------
 //      mongosh mongodb://localhost:27017 database/indexes.js
 //
-//  createIndex es idempotente: si el índice ya existe con la misma definición,
-//  no hace nada. Ejecutar este script de nuevo es seguro.
+//  Este script NO crea índices: solo muestra los que la base tiene puestos.
+//  Los índices se declaran en un único sitio, `init.mongodb.js`, que es el que
+//  MongoDB ejecuta al arrancar el contenedor sobre un volumen vacío. Tenerlos
+//  declarados también aquí significaba mantener dos copias de las mismas diez
+//  definiciones, y bastaba con cambiar una y olvidar la otra para que la base
+//  real dejara de parecerse a lo que dice el repositorio.
+//
+//  Sirve para comprobar, después de levantar el stack, que la inicialización
+//  se ejecutó y que las reglas respaldadas por la base están en su sitio: el
+//  correo y el documento únicos (RN02), una sola disponibilidad por jornada y
+//  bloque, y una única reserva ACTIVA por estudiante y día (RN05).
 // ============================================================================
 
 db = db.getSiblingDB('gym_udem');
 
-// ── users ───────────────────────────────────────────────────────────────────
-// El correo identifica la cuenta y el documento es la credencial y el dato de
-// búsqueda del entrenador (RN02). Los dos tienen que ser únicos.
-db.users.createIndex({ email: 1 },     { unique: true, name: 'idx_users_email_unico' });
-db.users.createIndex({ documento: 1 }, { unique: true, name: 'idx_users_documento_unico' });
-db.users.createIndex({ role: 1, estado: 1 }, { name: 'idx_users_rol_estado' });
+var COLECCIONES = ['users', 'slots', 'disponibilidad', 'reservations', 'suggestions'];
 
-// ── slots ───────────────────────────────────────────────────────────────────
-db.slots.createIndex({ slotId: 1 }, { unique: true, name: 'idx_slots_id_unico' });
-
-// ── disponibilidad ──────────────────────────────────────────────────────────
-// Un solo documento por jornada y bloque. El indice unico hace que la propia
-// base impida crear dos veces la disponibilidad del mismo dia, aunque dos
-// peticiones simultaneas lo intenten a la vez.
-db.disponibilidad.createIndex(
-  { fecha: 1, slotId: 1 },
-  { unique: true, name: 'idx_disponibilidad_jornada_bloque' }
-);
-
-// ── reservations ────────────────────────────────────────────────────────────
-// Índice único PARCIAL: solo cuenta las reservas en estado ACTIVA. Con él, la
-// regla de una reserva por estudiante y por día (RN05) queda respaldada por la
-// propia base de datos y no solo por la validación del backend. Un estudiante
-// puede tener muchas reservas canceladas o completadas del mismo día, pero
-// activa solo una.
-db.reservations.createIndex(
-  { email: 1, reserva_date: 1 },
-  { unique: true, partialFilterExpression: { estado: 'ACTIVA' }, name: 'idx_reservas_una_activa_por_dia' }
-);
-// Cierre de jornada y reporte diario: se filtra por fecha y estado (RF12, RF16).
-db.reservations.createIndex({ reserva_date: 1, estado: 1 }, { name: 'idx_reservas_jornada' });
-// Historial del estudiante, de la más reciente a la más antigua (RF14).
-db.reservations.createIndex({ email: 1, created_at: -1 }, { name: 'idx_reservas_historial' });
-// Detalle por bloque dentro del registro diario (RF16, RF17).
-db.reservations.createIndex({ slotId: 1, estado: 1 }, { name: 'idx_reservas_bloque' });
-
-// ── suggestions ─────────────────────────────────────────────────────────────
-db.suggestions.createIndex({ created_at: -1 }, { name: 'idx_sugerencias_recientes' });
+var total = 0;
 
 print('\nIndices por coleccion:');
-['users', 'slots', 'disponibilidad', 'reservations', 'suggestions'].forEach(function (c) {
+COLECCIONES.forEach(function (c) {
   print('\n  ' + c);
-  db.getCollection(c).getIndexes().forEach(function (i) {
-    print('    - ' + i.name + '  ' + JSON.stringify(i.key) + (i.unique ? '  [unico]' : ''));
+  var indices = db.getCollection(c).getIndexes();
+  if (indices.length === 0) {
+    print('    (la coleccion no existe o no tiene indices)');
+    return;
+  }
+  indices.forEach(function (i) {
+    // Se anota lo que hace especial a cada índice: los únicos impiden
+    // duplicados, y el parcial solo cuenta los documentos que cumplen su
+    // filtro, que es lo que permite una reserva activa por día y muchas
+    // canceladas.
+    var marcas = [];
+    if (i.unique) { marcas.push('unico'); }
+    if (i.partialFilterExpression) {
+      marcas.push('parcial ' + JSON.stringify(i.partialFilterExpression));
+    }
+    print('    - ' + i.name + '  ' + JSON.stringify(i.key) +
+          (marcas.length ? '  [' + marcas.join(', ') + ']' : ''));
+    total += 1;
   });
 });
+
+print('\nTotal de indices: ' + total);
+print('Si falta alguno, la inicializacion no llego a ejecutarse: el script de');
+print('init.mongodb.js solo corre sobre un volumen vacio. Para rehacerla:');
+print('  docker compose down -v && docker compose up --build');
