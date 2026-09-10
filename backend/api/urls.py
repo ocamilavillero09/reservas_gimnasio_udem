@@ -1,5 +1,8 @@
 from django.urls import path
-from . import views, features, reports, attendance
+from . import views, features, attendance
+# Los requisitos que no entran en esta entrega de pruebas viven aparte, pero
+# se enrutan igual que los demás: la aplicación no cambia de comportamiento.
+from . import Nousadas
 
 # Una ruta por requisito. El nombre de la función es el del requisito, de modo
 # que la trazabilidad entre el documento y el código sea directa.
@@ -48,11 +51,11 @@ urlpatterns = [
     # RF16 — Ver el registro diario (entrenador)
     path('reports/daily/entrenador/',   attendance.ver_registro_entrenador,     name='registro-entrenador'),
     # RF17 — Ver el registro diario (administrador)
-    path('reports/daily/administrador/', attendance.ver_registro_administrador, name='registro-administrador'),
+    path('reports/daily/administrador/', Nousadas.ver_registro_administrador, name='registro-administrador'),
     # RF18 — Descargar el registro diario en PDF (entrenador)
-    path('reports/daily/entrenador.pdf', reports.descargar_registro_entrenador,     name='registro-entrenador-pdf'),
+    path('reports/daily/entrenador.pdf', Nousadas.descargar_registro_entrenador,     name='registro-entrenador-pdf'),
     # RF19 — Descargar el registro diario en PDF (administrador)
-    path('reports/daily/administrador.pdf', reports.descargar_registro_administrador, name='registro-administrador-pdf'),
+    path('reports/daily/administrador.pdf', Nousadas.descargar_registro_administrador, name='registro-administrador-pdf'),
 
     # ── Módulo 5 — Buzón de sugerencias ─────────────────────────────────────
     # RF20 — Reportar una falla o enviar una sugerencia
@@ -62,7 +65,7 @@ urlpatterns = [
 
     # ── Módulo 6 — Administración de usuarios ───────────────────────────────
     # RF22 — Crear cuentas con rol de administrador
-    path('admin/users/',                views.crear_administrador,  name='admin-users'),
+    path('admin/users/',                Nousadas.crear_administrador,  name='admin-users'),
     # RF23 — Retirar el rol de administrador
-    path('admin/users/<str:user_email>/', views.retirar_administrador, name='admin-user-detail'),
+    path('admin/users/<str:user_email>/', Nousadas.retirar_administrador, name='admin-user-detail'),
 ]

@@ -21,7 +21,7 @@ Arquitectura desplegada en un cluster local de **minikube**:
 | Carpeta            | Qué contiene |
 |--------------------|--------------|
 | `backend/`         | API Django + DRF (Mongo via pymongo). Casos de uso críticos marcados en `api/views.py`. |
-| `tests/`           | **Todas las pruebas del proyecto**: `backend/` (Django + mongomock), `frontend/` (Vitest) y `e2e/` (Playwright). Ni el backend ni el frontend llevan pruebas dentro. |
+| `tests/`           | **Todas las pruebas del proyecto**: `backend/` (Django + mongomock), `frontend/` (Vitest) y `e2e/` (Playwright). Ni el backend ni el frontend llevan pruebas dentro. Los requisitos fuera del reparto del equipo se prueban en los archivos `nousadas`. |
 | `frontend/`        | React + Vite. `Dockerfile.prod` + `nginx.conf` = imagen de producción que sirve estáticos y hace proxy `/api`. |
 | `k8s/`             | Manifiestos del cluster (namespace, mongo, backend, frontend). **Fuente de verdad de ArgoCD**. |
 | `observability/`   | Valores de Helm para Grafana + Loki + Promtail. |
@@ -160,8 +160,11 @@ y queda como alternativa on-prem.
 > Las notificaciones (push web y correos automáticos) se retiraron por innecesarias:
 > la app informa en pantalla mediante avisos y alertas.
 
-Módulos backend: `api/views.py` (core + administración de usuarios),
-`api/features.py` (RF11–RF18), `api/reports.py` (RF19).
+Módulos backend: `api/views.py` (registro, sesión, cupos y reservas),
+`api/features.py` (perfiles, historial y buzón), `api/attendance.py`
+(asistencia, inasistencias y registro diario) y `api/Nousadas.py`, que reúne
+los requisitos que no entran en la entrega de pruebas: RF17, RF18, RF19, RF22
+y RF23. Estar en ese archivo no los desconecta; `urls.py` los enruta igual.
 
 ## Casos de uso críticos
 

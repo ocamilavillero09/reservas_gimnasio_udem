@@ -17,9 +17,11 @@ function baseValida(valor) {
   return BASE_POR_DEFECTO;
 }
 
-const BASE = baseValida(import.meta.env.VITE_API_URL);
+// BASE y request los comparte Nousadas.js, el archivo con los requisitos que no
+// entran en esta entrega de pruebas. Fuera de ahí son internos de este cliente.
+export const BASE = baseValida(import.meta.env.VITE_API_URL);
 
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
     headers: { 'Content-Type': 'application/json' },
     ...options,
@@ -46,22 +48,6 @@ export const authApi = {
   session:  (email) => request(`/auth/session/?email=${encodeURIComponent(email)}`),
 };
 
-// RF21/RF22 — Gestión de usuarios por el ADMINISTRADOR PRINCIPAL.
-export const adminApi = {
-  listarUsuarios: (actorEmail) => request(`/admin/users/?actor_email=${encodeURIComponent(actorEmail)}`),
-  // RF22 — Crear una cuenta de administrador (backend: crear_administrador).
-  crearAdministrador: (body) => request('/admin/users/', { method: 'POST', body: JSON.stringify(body) }),
-  // RF23 — Retirar el rol de administrador (backend: retirar_administrador).
-  // La cuenta NO se borra: queda sin rol. accion: 'retirar' | 'restaurar'.
-  retirarAdministrador: (email, accion, actorEmail) =>
-    request(`/admin/users/${encodeURIComponent(email)}/`, {
-      method: 'PATCH',
-      body: JSON.stringify({ accion, actor_email: actorEmail }),
-    }),
-};
-
-// RF11/RF13 — El entrenador busca al estudiante por su DOCUMENTO y le registra
-// la asistencia. RF14/RF15 — Inasistencias pendientes y su procesamiento general.
 export const attendanceApi = {
   // RF10 — Buscar la reserva de un estudiante por su documento (backend: buscar_reserva).
   buscarReserva: (documento, actorEmail) =>
@@ -115,22 +101,13 @@ export const buzonApi = {
     request(`/suggestions/inbox/?actor_email=${encodeURIComponent(actorEmail)}`),
 };
 
-// Reportes: aforo, por estudiante, personal (RF18) y general diario (RF19/RF20).
+// Reportes del estudiante (RF15) y registro diario del entrenador (RF16).
 export const reportsApi = {
   // RF15 — Ver mi reporte de inasistencias (backend: ver_inasistencias).
   verInasistencias: (email) => request(`/reports/personal/?email=${encodeURIComponent(email)}`),
   // RF16 — Ver el registro diario, entrenador (backend: ver_registro_entrenador).
   verRegistroEntrenador: (actorEmail, fecha = '') =>
     request(`/reports/daily/entrenador/?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
-  // RF17 — Ver el registro diario, administrador (backend: ver_registro_administrador).
-  verRegistroAdministrador: (actorEmail, fecha = '') =>
-    request(`/reports/daily/administrador/?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
-  // RF18 — Descargar el registro en PDF, entrenador (backend: descargar_registro_entrenador).
-  descargarRegistroEntrenador: (actorEmail, fecha = '') =>
-    `${BASE}/reports/daily/entrenador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
-  // RF19 — Descargar el registro en PDF, administrador (backend: descargar_registro_administrador).
-  descargarRegistroAdministrador: (actorEmail, fecha = '') =>
-    `${BASE}/reports/daily/administrador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
 };
 
 // RF18 — Máquinas.

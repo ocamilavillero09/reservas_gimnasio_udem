@@ -248,13 +248,13 @@ que las pruebas y los diagramas de flujo calcen con el código.
 | RF14 Ver mi historial | `ver_historial` | `verHistorial` | `GET /api/reservations/history/` |
 | RF15 Ver mis inasistencias | `ver_inasistencias` | `verInasistencias` | `GET /api/reports/personal/` |
 | RF16 Registro diario, entrenador | `ver_registro_entrenador` | `verRegistroEntrenador` | `GET /api/reports/daily/entrenador/` |
-| RF17 Registro diario, administrador | `ver_registro_administrador` | `verRegistroAdministrador` | `GET /api/reports/daily/administrador/` |
-| RF18 Registro en PDF, entrenador | `descargar_registro_entrenador` | `descargarRegistroEntrenador` | `GET /api/reports/daily/entrenador.pdf` |
-| RF19 Registro en PDF, administrador | `descargar_registro_administrador` | `descargarRegistroAdministrador` | `GET /api/reports/daily/administrador.pdf` |
+| RF17 Registro diario, administrador · *no usado* | `ver_registro_administrador` | `verRegistroAdministrador` | `GET /api/reports/daily/administrador/` |
+| RF18 Registro en PDF, entrenador · *no usado* | `descargar_registro_entrenador` | `descargarRegistroEntrenador` | `GET /api/reports/daily/entrenador.pdf` |
+| RF19 Registro en PDF, administrador · *no usado* | `descargar_registro_administrador` | `descargarRegistroAdministrador` | `GET /api/reports/daily/administrador.pdf` |
 | RF20 Reportar una falla | `fallo_sugerencia` | `falloSugerencia` | `POST /api/suggestions/` |
 | RF21 Consultar el buzón | `consultar_buzon` | `consultarBuzon` | `GET /api/suggestions/inbox/` |
-| RF22 Crear administrador | `crear_administrador` | `crearAdministrador` | `POST /api/admin/users/` |
-| RF23 Retirar el rol de administrador | `retirar_administrador` | `retirarAdministrador` | `PATCH /api/admin/users/<correo>/` |
+| RF22 Crear administrador · *no usado* | `crear_administrador` | `crearAdministrador` | `POST /api/admin/users/` |
+| RF23 Retirar el rol de administrador · *no usado* | `retirar_administrador` | `retirarAdministrador` | `PATCH /api/admin/users/<correo>/` |
 
 Dos rutas más no corresponden a un requisito funcional y existen por una razón
 declarada. `GET /api/auth/session/` rehidrata la sesión al recargar la página, y
@@ -333,6 +333,13 @@ curl -X PATCH http://localhost:8000/api/admin/users/nueva@udemedellin.edu.co/ \
 
 Todas las pruebas están en `tests/`, en la raíz del repositorio: ni `backend/`
 ni `frontend/` contienen código de pruebas.
+
+El equipo se reparte los requisitos así: RF01 a RF05 acceso y perfiles, RF06 a
+RF10 reservas, y RF11 a RF16 con RF20 y RF21 asistencia, registro diario y
+buzón. Los cinco que quedan fuera de ese reparto están marcados como *no usado*
+en la tabla de arriba y viven en archivos aparte, llamados `Nousadas` en el
+código y `nousadas` en las pruebas. Siguen enrutados y siguen ejecutándose: la
+separación es para leer el código, no cambia el comportamiento.
 
 ```bash
 # Backend: reglas de negocio y requisitos funcionales (desde la raíz)

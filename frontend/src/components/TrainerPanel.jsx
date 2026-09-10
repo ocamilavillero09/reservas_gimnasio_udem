@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { attendanceApi, reportsApi, slotsApi } from '../services/api';
+// RF17, RF18 y RF19 no entran en esta entrega de pruebas y viven aparte.
+import { registroDiarioApi } from '../services/Nousadas';
 
 const RED = '#CC0000';
 const inputStyle = { width: '100%', padding: '12px 16px', border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, backgroundColor: '#FAFAFA' };
@@ -36,7 +38,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
     attendanceApi.consultarReservas(user.email).then(setPendientes).catch(() => {});
     // RF16 para el entrenador, RF17 para el administrador: son dos requisitos
     // distintos porque son dos actores distintos.
-    const verRegistro = esAdmin ? reportsApi.verRegistroAdministrador
+    const verRegistro = esAdmin ? registroDiarioApi.verRegistroAdministrador
                                 : reportsApi.verRegistroEntrenador;
     verRegistro(user.email).then(setDiario).catch(() => {});
   }, [user.email, esAdmin]);
@@ -281,8 +283,8 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
             </p>
           </div>
           <a
-            href={(esAdmin ? reportsApi.descargarRegistroAdministrador
-                           : reportsApi.descargarRegistroEntrenador)(user.email)}
+            href={(esAdmin ? registroDiarioApi.descargarRegistroAdministrador
+                           : registroDiarioApi.descargarRegistroEntrenador)(user.email)}
             target="_blank"
             rel="noreferrer"
             style={{ ...btn, textDecoration: 'none', display: 'inline-block' }}

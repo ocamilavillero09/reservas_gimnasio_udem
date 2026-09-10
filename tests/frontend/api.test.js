@@ -1,11 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { configApi, authApi, slotsApi, reservationsApi, adminApi, attendanceApi, reportsApi } from '../../frontend/src/services/api';
-
-function mockFetch(responseData, ok = true) {
-  global.fetch = vi.fn(() =>
-    Promise.resolve({ ok, json: () => Promise.resolve(responseData) })
-  );
-}
+import { configApi, authApi, slotsApi, reservationsApi, attendanceApi, reportsApi } from '../../frontend/src/services/api';
+import { mockFetch } from './helpers';
 
 describe('api service', () => {
   beforeEach(() => vi.restoreAllMocks());
@@ -55,20 +50,6 @@ describe('api service', () => {
     expect(global.fetch.mock.calls[0][0]).toContain('/slots/');
   });
 
-  it('el admin crea usuarios con POST a /admin/users/', async () => {
-    mockFetch({ message: 'Usuario creado con rol ADMIN.', role: 'ADMIN' }, true);
-    const res = await adminApi.crearAdministrador({
-      actor_email: 'jefe@udemedellin.edu.co',
-      name: 'Nueva Admin',
-      email: 'nueva@udemedellin.edu.co',
-      documento: '3005554442',
-    });
-    expect(res.role).toBe('ADMIN');
-    const [url, opts] = global.fetch.mock.calls[0];
-    expect(url).toContain('/admin/users/');
-    expect(opts.method).toBe('POST');
-  });
-
   it('lookup busca al estudiante por su documento (RF11)', async () => {
     mockFetch({ estudiante: { name: 'Ana', documento: '1001234567' }, tiene_reserva: true, reservas: [] });
     const res = await attendanceApi.buscarReserva('1001234567', 'coach@udem.edu.co');
@@ -112,19 +93,6 @@ describe('api service', () => {
     const res = await reportsApi.verRegistroEntrenador('coach@udem.edu.co');
     expect(res.totales.asistencias).toBe(4);
     expect(global.fetch.mock.calls[0][0]).toContain('/reports/daily/entrenador/?actor_email=');
-  });
-
-  it('dailyPdfUrl apunta al PDF del reporte diario (RF20)', () => {
-    expect(reportsApi.descargarRegistroEntrenador('coach@udem.edu.co')).toContain('/reports/daily/entrenador.pdf?actor_email=');
-  });
-
-  it('setAdminRole retira el rol de administrador (RF22)', async () => {
-    mockFetch({ message: 'Se retiró el rol.', role: 'SIN_ROL' });
-    await adminApi.retirarAdministrador('otra@udemedellin.edu.co', 'retirar', 'jefe@udemedellin.edu.co');
-    const [url, opts] = global.fetch.mock.calls[0];
-    expect(url).toContain('/admin/users/otra%40udemedellin.edu.co/');
-    expect(opts.method).toBe('PATCH');
-    expect(JSON.parse(opts.body).accion).toBe('retirar');
   });
 
   it('lanza Error con el mensaje del servidor cuando !ok', async () => {

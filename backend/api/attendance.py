@@ -448,13 +448,3 @@ def ver_registro_entrenador(request):
     entrenador cierra su turno.
     """
     return _registro_diario_para(request, 'ENTRENADOR', 'un entrenador')
-
-
-@api_view(['GET'])
-def ver_registro_administrador(request):
-    """RF17 — Ver el registro diario del gimnasio (administrador).
-
-    El mismo registro de la jornada, con el propósito de supervisar la
-    operación del gimnasio.
-    """
-    return _registro_diario_para(request, 'ADMIN', 'un administrador')

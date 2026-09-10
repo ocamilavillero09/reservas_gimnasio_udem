@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
-import { adminApi, buzonApi } from '../services/api';
+import { buzonApi } from '../services/api';
+// RF22 y RF23 no entran en esta entrega de pruebas y viven aparte.
+import { adminApi } from '../services/Nousadas';
 import { useConfig, rolDeCorreo } from '../services/config';
 
 const RED = '#CC0000';
