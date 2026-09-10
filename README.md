@@ -331,15 +331,22 @@ curl -X PATCH http://localhost:8000/api/admin/users/nueva@udemedellin.edu.co/ \
 
 ### Pruebas automatizadas
 
-```bash
-# Backend: pruebas de las reglas de negocio y de los requisitos funcionales
-cd backend && python manage.py test api
+Todas las pruebas están en `tests/`, en la raíz del repositorio: ni `backend/`
+ni `frontend/` contienen código de pruebas.
 
-# Frontend: pruebas unitarias de componentes y del cliente HTTP
+```bash
+# Backend: reglas de negocio y requisitos funcionales (desde la raíz)
+python backend/manage.py test tests.backend
+
+# Backend con cobertura (desde la raíz, donde está .coveragerc)
+coverage run backend/manage.py test tests.backend && coverage report
+
+# Frontend: componentes y cliente HTTP
 cd frontend && npm test
+cd frontend && npm run test:coverage
 
 # End-to-end con el stack levantado (docker compose up -d)
-cd frontend && npx playwright test
+cd frontend && npm run test:e2e
 ```
 
 ---

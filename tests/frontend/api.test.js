@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { configApi, authApi, slotsApi, reservationsApi, adminApi, attendanceApi, reportsApi } from './api';
+import { configApi, authApi, slotsApi, reservationsApi, adminApi, attendanceApi, reportsApi } from '../../frontend/src/services/api';
 
 function mockFetch(responseData, ok = true) {
   global.fetch = vi.fn(() =>

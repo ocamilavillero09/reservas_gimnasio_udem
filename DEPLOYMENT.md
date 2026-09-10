@@ -20,7 +20,8 @@ Arquitectura desplegada en un cluster local de **minikube**:
 
 | Carpeta            | Qué contiene |
 |--------------------|--------------|
-| `backend/`         | API Django + DRF (Mongo via pymongo). Casos de uso críticos marcados en `api/views.py`. Tests en `api/tests.py`. |
+| `backend/`         | API Django + DRF (Mongo via pymongo). Casos de uso críticos marcados en `api/views.py`. |
+| `tests/`           | **Todas las pruebas del proyecto**: `backend/` (Django + mongomock), `frontend/` (Vitest) y `e2e/` (Playwright). Ni el backend ni el frontend llevan pruebas dentro. |
 | `frontend/`        | React + Vite. `Dockerfile.prod` + `nginx.conf` = imagen de producción que sirve estáticos y hace proxy `/api`. |
 | `k8s/`             | Manifiestos del cluster (namespace, mongo, backend, frontend). **Fuente de verdad de ArgoCD**. |
 | `observability/`   | Valores de Helm para Grafana + Loki + Promtail. |
@@ -110,8 +111,9 @@ Cuando Jenkins publica una nueva imagen `:latest`, ArgoCD/k8s la toma en el sigu
    y lo commitea. **ArgoCD** detecta el cambio y despliega esa imagen exacta en
    minikube, bajándola desde Docker Hub (CD real).
 
-Cobertura local:
-- Backend: `cd backend && coverage run manage.py test api && coverage report` (~93%).
+Cobertura local (el backend se lanza **desde la raíz**, que es donde están
+`tests/` y `.coveragerc`):
+- Backend: `coverage run backend/manage.py test tests.backend && coverage report` (~91%).
 - Frontend: `cd frontend && npm run test:coverage`.
 
 > Configurar en GitHub → Settings → Secrets and variables → Actions:

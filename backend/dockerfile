@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir --require-hashes --only-binary :all: -r requireme
 # Se copia solo lo que la aplicación necesita, en vez de todo el directorio.
 # Un COPY del directorio entero acaba metiendo en la imagen lo que se olvide
 # excluir: credenciales, ficheros de trabajo, la base de datos local.
-COPY manage.py .coveragerc ./
+COPY manage.py ./
 COPY gym_api/ ./gym_api/
 COPY api/ ./api/
 

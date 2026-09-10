@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Login from './Login';
+import Login from '../../frontend/src/components/Login';
 
 // RNF06 — Los dominios institucionales ya no están escritos en la interfaz:
 // llegan del backend por el punto de configuración. La prueba los sirve como
