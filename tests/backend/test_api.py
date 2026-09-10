@@ -640,7 +640,7 @@ class PerfilTests(GymApiTestCase):
 
 
 class AsistenciaTests(GymApiTestCase):
-    """RF11 · RF13 · RF14 · RF15 · RF16 — Asistencia, inasistencia y penalización."""
+    """RF10 · RF11 · RF12 · RF13 — Asistencia, inasistencia y penalización."""
 
     def setUp(self):
         super().setUp()
@@ -657,8 +657,8 @@ class AsistenciaTests(GymApiTestCase):
         self._traer_a_hoy(email)
         return resp
 
-    # ── RF11 / HU11 — Buscar al estudiante por su documento ────────────────
-    def test_rf11_el_entrenador_encuentra_la_reserva_por_documento(self):
+    # ── RF10 / HU11 — Buscar al estudiante por su documento ────────────────
+    def test_rf10_el_entrenador_encuentra_la_reserva_por_documento(self):
         self._reserve(ESTUDIANTE, 1)
         resp = self.client.get(
             f'/api/students/lookup/?documento={DOCUMENTOS[ESTUDIANTE]}&actor_email={PROFESOR}')
@@ -667,17 +667,17 @@ class AsistenciaTests(GymApiTestCase):
         self.assertEqual(resp.data['estudiante']['name'], 'Juan Perez')
         self.assertEqual(len(resp.data['reservas']), 1)
 
-    def test_rf11_documento_sin_estudiante(self):
+    def test_rf10_documento_sin_estudiante(self):
         resp = self.client.get(f'/api/students/lookup/?documento=0000000&actor_email={PROFESOR}')
         self.assertEqual(resp.status_code, 404)
 
-    def test_rf11_el_estudiante_no_puede_buscar_a_otros(self):
+    def test_rf10_el_estudiante_no_puede_buscar_a_otros(self):
         resp = self.client.get(
             f'/api/students/lookup/?documento={DOCUMENTOS[ESTUDIANTE]}&actor_email={ESTUDIANTE}')
         self.assertEqual(resp.status_code, 403)
 
-    # ── RF13 / HU12 — Registrar la asistencia ──────────────────────────────
-    def test_rf13_el_entrenador_registra_la_asistencia_por_documento(self):
+    # ── RF11 / HU12 — Registrar la asistencia ──────────────────────────────
+    def test_rf11_el_entrenador_registra_la_asistencia_por_documento(self):
         self._reserve(ESTUDIANTE, 1)
         resp = self.client.post('/api/attendance/register/', {
             'actor_email': PROFESOR, 'documento': DOCUMENTOS[ESTUDIANTE], 'fecha': self.jornada,
@@ -686,28 +686,28 @@ class AsistenciaTests(GymApiTestCase):
         reserva = db_module.get_db().reservations.find_one({'email': ESTUDIANTE})
         self.assertEqual(reserva['estado'], 'COMPLETADA')
 
-    def test_rf13_no_se_registra_asistencia_sin_reserva(self):
+    def test_rf11_no_se_registra_asistencia_sin_reserva(self):
         resp = self.client.post('/api/attendance/register/', {
             'actor_email': PROFESOR, 'documento': DOCUMENTOS[ESTUDIANTE], 'fecha': self.jornada,
         }, format='json')
         self.assertEqual(resp.status_code, 404)
 
-    def test_rf13_solo_el_entrenador_registra_asistencia(self):
+    def test_rf11_solo_el_entrenador_registra_asistencia(self):
         self._reserve(ESTUDIANTE, 1)
         resp = self.client.post('/api/attendance/register/', {
             'actor_email': ESTUDIANTE, 'documento': DOCUMENTOS[ESTUDIANTE],
         }, format='json')
         self.assertEqual(resp.status_code, 403)
 
-    # ── RF14 / HU13 / HU15 — Estudiantes sin asistencia registrada ─────────
-    def test_rf14_lista_los_estudiantes_sin_asistencia(self):
+    # ── RF12 / HU13 / HU15 — Estudiantes sin asistencia registrada ─────────
+    def test_rf12_lista_los_estudiantes_sin_asistencia(self):
         self._reserve(ESTUDIANTE, 1)
         resp = self.client.get(f'/api/attendance/pending/?actor_email={PROFESOR}&fecha={self.jornada}')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data['total'], 1)
         self.assertEqual(resp.data['pendientes'][0]['documento'], DOCUMENTOS[ESTUDIANTE])
 
-    def test_rf14_quien_ya_asistio_no_aparece_como_pendiente(self):
+    def test_rf12_quien_ya_asistio_no_aparece_como_pendiente(self):
         self._reserve(ESTUDIANTE, 1)
         self.client.post('/api/attendance/register/', {
             'actor_email': PROFESOR, 'documento': DOCUMENTOS[ESTUDIANTE], 'fecha': self.jornada,
@@ -715,18 +715,18 @@ class AsistenciaTests(GymApiTestCase):
         resp = self.client.get(f'/api/attendance/pending/?actor_email={PROFESOR}&fecha={self.jornada}')
         self.assertEqual(resp.data['total'], 0)
 
-    def test_rf14_el_administrador_tambien_consulta_las_inasistencias(self):
+    def test_rf12_el_administrador_tambien_consulta_las_inasistencias(self):
         self._reserve(ESTUDIANTE, 1)
         resp = self.client.get(f'/api/attendance/pending/?actor_email={ADMIN}&fecha={self.jornada}')
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data['total'], 1)
 
-    def test_rf14_el_estudiante_no_consulta_las_inasistencias(self):
+    def test_rf12_el_estudiante_no_consulta_las_inasistencias(self):
         resp = self.client.get(f'/api/attendance/pending/?actor_email={ESTUDIANTE}')
         self.assertEqual(resp.status_code, 403)
 
-    # ── RF15 / HU14 / HU16 — Procesamiento general de inasistencias ────────
-    def test_rf15_procesa_de_forma_general_las_inasistencias(self):
+    # ── RF13 / HU14 / HU16 — Procesamiento general de inasistencias ────────
+    def test_rf13_procesa_de_forma_general_las_inasistencias(self):
         ana = 'ana@soyudemedellin.edu.co'
         self._register(email=ana, name='Ana')
         self._reserve(ESTUDIANTE, 1)
@@ -739,7 +739,7 @@ class AsistenciaTests(GymApiTestCase):
         self.assertEqual(self._user(ESTUDIANTE)['no_show_count'], 1)
         self.assertEqual(self._user(ana)['no_show_count'], 1)
 
-    def test_rf15_no_toca_a_quien_si_asistio(self):
+    def test_rf13_no_toca_a_quien_si_asistio(self):
         self._reserve(ESTUDIANTE, 1)
         self.client.post('/api/attendance/register/', {
             'actor_email': PROFESOR, 'documento': DOCUMENTOS[ESTUDIANTE], 'fecha': self.jornada,
@@ -749,7 +749,7 @@ class AsistenciaTests(GymApiTestCase):
         self.assertEqual(resp.data['total_procesadas'], 0)
         self.assertEqual(self._user(ESTUDIANTE)['no_show_count'], 0)
 
-    def test_rf15_procesar_dos_veces_no_cuenta_doble(self):
+    def test_rf13_procesar_dos_veces_no_cuenta_doble(self):
         self._reserve(ESTUDIANTE, 1)
         self.client.post('/api/attendance/process/',
                          {'actor_email': PROFESOR, 'fecha': self.jornada}, format='json')
@@ -795,16 +795,16 @@ class AsistenciaTests(GymApiTestCase):
         self.assertEqual(resp.status_code, 409)
         self.assertIn('mismo día', resp.data['error'])
 
-    def test_rf15_el_estudiante_no_puede_procesar(self):
+    def test_rf13_el_estudiante_no_puede_procesar(self):
         resp = self.client.post('/api/attendance/process/',
                                 {'actor_email': ESTUDIANTE}, format='json')
         self.assertEqual(resp.status_code, 403)
 
-    # ── RF16 — Penalización a las CINCO (5) inasistencias ──────────────────
-    def test_rf16_el_limite_de_inasistencias_es_cinco(self):
+    # ── RN08 — Penalización a las CINCO (5) inasistencias ──────────────────
+    def test_rn08_el_limite_de_inasistencias_es_cinco(self):
         self.assertEqual(db_module.NO_SHOW_LIMITE, 5)
 
-    def test_rf16_la_quinta_inasistencia_penaliza(self):
+    def test_rf13_la_quinta_inasistencia_penaliza(self):
         for i in range(db_module.NO_SHOW_LIMITE):
             self._reserve(ESTUDIANTE, 1)
             resp = self.client.post('/api/attendance/process/',
@@ -813,7 +813,7 @@ class AsistenciaTests(GymApiTestCase):
             self.assertEqual(resp.data['total_penalizados'], 1 if esperado else 0)
         self.assertEqual(self._user(ESTUDIANTE)['estado'], 'PENALIZADO')
 
-    def test_rf16_con_cuatro_inasistencias_todavia_no_hay_penalizacion(self):
+    def test_rf13_con_cuatro_inasistencias_todavia_no_hay_penalizacion(self):
         for _ in range(db_module.NO_SHOW_LIMITE - 1):
             self._reserve(ESTUDIANTE, 1)
             self.client.post('/api/attendance/process/',
@@ -823,7 +823,7 @@ class AsistenciaTests(GymApiTestCase):
 
 
 class ReportesTests(GymApiTestCase):
-    """RF14 — Historial · RF15 — Inasistencias · RF16 a RF19 — Registro diario."""
+    """RF14 — Historial · RF15 — Inasistencias · RF16 — Registro diario."""
 
     def setUp(self):
         super().setUp()
@@ -843,8 +843,8 @@ class ReportesTests(GymApiTestCase):
         return self.client.post('/api/attendance/process/',
                                 {'actor_email': PROFESOR, 'fecha': self.jornada}, format='json')
 
-    # ── RF17 / HU07 — Historial completo ───────────────────────────────────
-    def test_rf17_el_historial_incluye_reservas_cancelaciones_y_asistencias(self):
+    # ── RF14 / HU07 — Historial completo ───────────────────────────────────
+    def test_rf14_el_historial_incluye_reservas_cancelaciones_y_asistencias(self):
         rid = self._reserve(ESTUDIANTE, 1).data['id']
         self.client.delete(f'/api/reservations/{rid}/')          # CANCELADA
         self._reserve(ESTUDIANTE, 2)
@@ -858,8 +858,8 @@ class ReportesTests(GymApiTestCase):
         estados = sorted(h['estado'] for h in resp.data)
         self.assertEqual(estados, ['CANCELADA', 'COMPLETADA', 'NO_SHOW'])
 
-    # ── RF18 / HU08 — Reporte personal ─────────────────────────────────────
-    def test_rf18_el_estudiante_consulta_sus_inasistencias_y_penalizaciones(self):
+    # ── RF15 / HU08 — Reporte personal ─────────────────────────────────────
+    def test_rf15_el_estudiante_consulta_sus_inasistencias_y_penalizaciones(self):
         self._reserve(ESTUDIANTE, 1)
         self._procesar()
         resp = self.client.get(f'/api/reports/personal/?email={ESTUDIANTE}')
@@ -870,7 +870,7 @@ class ReportesTests(GymApiTestCase):
         self.assertFalse(resp.data['penalizado'])
         self.assertEqual(len(resp.data['inasistencias']), 1)
 
-    def test_rf18_el_reporte_personal_muestra_la_penalizacion(self):
+    def test_rf15_el_reporte_personal_muestra_la_penalizacion(self):
         for _ in range(db_module.NO_SHOW_LIMITE):
             self._reserve(ESTUDIANTE, 1)
             self._procesar()
@@ -879,8 +879,8 @@ class ReportesTests(GymApiTestCase):
         self.assertEqual(resp.data['inasistencias_restantes'], 0)
         self.assertIsNotNone(resp.data['penalizado_hasta'])
 
-    # ── RF19 / HU17 / HU18 — Reporte general diario ────────────────────────
-    def test_rf19_reporte_general_diario_con_totales(self):
+    # ── RF16 / HU17 / HU18 — Reporte general diario ────────────────────────
+    def test_rf16_reporte_general_diario_con_totales(self):
         ana = 'ana@soyudemedellin.edu.co'
         self._register(email=ana, name='Ana')
         rid = self._reserve(ESTUDIANTE, 1).data['id']
@@ -898,11 +898,11 @@ class ReportesTests(GymApiTestCase):
         self.assertEqual(resp.data['totales']['cancelaciones'], 1)
         self.assertEqual(resp.data['totales']['inasistencias'], 1)
 
-    def test_rf19_el_estudiante_no_ve_el_reporte_general(self):
+    def test_rf16_el_estudiante_no_ve_el_reporte_general(self):
         resp = self.client.get(f'/api/reports/daily/entrenador/?actor_email={ESTUDIANTE}')
         self.assertEqual(resp.status_code, 403)
 
-    def test_rf19_el_reporte_lista_a_los_estudiantes_penalizados(self):
+    def test_rf16_el_reporte_lista_a_los_estudiantes_penalizados(self):
         for _ in range(db_module.NO_SHOW_LIMITE):
             self._reserve(ESTUDIANTE, 1)
             self._procesar()
@@ -913,27 +913,27 @@ class ReportesTests(GymApiTestCase):
 
 
 class NotificacionesTests(GymApiTestCase):
-    """RF23 · RF24 · RF25 — Avisos al estudiante al reservar y cancelar."""
+    """RF07 y RF09 — Avisos al estudiante al reservar y cancelar."""
 
     def setUp(self):
         super().setUp()
         self._register(email=ESTUDIANTE, name='Juan Perez')
         self.client.get('/api/slots/')
 
-    def test_rf23_notifica_la_reserva_confirmada(self):
+    def test_rf07_notifica_la_reserva_confirmada(self):
         resp = self._reserve(ESTUDIANTE, 1)
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(resp.data['tipo'], 'RESERVA_CONFIRMADA')
         self.assertIn('confirmada', resp.data['notificacion'].lower())
 
-    def test_rf24_notifica_la_segunda_reserva_del_mismo_dia(self):
+    def test_rf07_notifica_la_segunda_reserva_del_mismo_dia(self):
         self._reserve(ESTUDIANTE, 1)
         resp = self._reserve(ESTUDIANTE, 2)
         self.assertEqual(resp.status_code, 409)
         self.assertEqual(resp.data['tipo'], 'RESERVA_DUPLICADA')
         self.assertIn('ya tienes una reserva', resp.data['notificacion'].lower())
 
-    def test_rf25_notifica_la_cancelacion(self):
+    def test_rf09_notifica_la_cancelacion(self):
         rid = self._reserve(ESTUDIANTE, 1).data['id']
         resp = self.client.delete(f'/api/reservations/{rid}/')
         self.assertEqual(resp.status_code, 200)

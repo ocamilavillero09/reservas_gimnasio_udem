@@ -50,14 +50,14 @@ describe('api service', () => {
     expect(global.fetch.mock.calls[0][0]).toContain('/slots/');
   });
 
-  it('lookup busca al estudiante por su documento (RF11)', async () => {
+  it('lookup busca al estudiante por su documento (RF10)', async () => {
     mockFetch({ estudiante: { name: 'Ana', documento: '1001234567' }, tiene_reserva: true, reservas: [] });
     const res = await attendanceApi.buscarReserva('1001234567', 'coach@udem.edu.co');
     expect(res.tiene_reserva).toBe(true);
     expect(global.fetch.mock.calls[0][0]).toContain('/students/lookup/?documento=1001234567');
   });
 
-  it('register de asistencia hace POST a /attendance/register/ (RF13)', async () => {
+  it('register de asistencia hace POST a /attendance/register/ (RF11)', async () => {
     mockFetch({ message: 'Asistencia registrada.' });
     await attendanceApi.registrarAsistencia({ actor_email: 'coach@udem.edu.co', documento: '1001234567' });
     const [url, opts] = global.fetch.mock.calls[0];
@@ -65,14 +65,14 @@ describe('api service', () => {
     expect(opts.method).toBe('POST');
   });
 
-  it('pending lista a los estudiantes sin asistencia registrada (RF14)', async () => {
+  it('pending lista a los estudiantes sin asistencia registrada (RF12)', async () => {
     mockFetch({ total: 2, pendientes: [{}, {}] });
     const res = await attendanceApi.consultarReservas('coach@udem.edu.co');
     expect(res.total).toBe(2);
     expect(global.fetch.mock.calls[0][0]).toContain('/attendance/pending/?actor_email=');
   });
 
-  it('process procesa de forma general las inasistencias (RF15)', async () => {
+  it('process procesa de forma general las inasistencias (RF13)', async () => {
     mockFetch({ total_procesadas: 3, total_penalizados: 1, message: 'ok' });
     const res = await attendanceApi.procesarInasistencia('coach@udem.edu.co');
     const [url, opts] = global.fetch.mock.calls[0];
@@ -81,14 +81,14 @@ describe('api service', () => {
     expect(res.total_procesadas).toBe(3);
   });
 
-  it('personal devuelve el reporte de inasistencias del estudiante (RF18)', async () => {
+  it('personal devuelve el reporte de inasistencias del estudiante (RF15)', async () => {
     mockFetch({ no_show_count: 2, no_show_limite: 5, inasistencias_restantes: 3 });
     const res = await reportsApi.verInasistencias('j@soyudemedellin.edu.co');
     expect(res.inasistencias_restantes).toBe(3);
     expect(global.fetch.mock.calls[0][0]).toContain('/reports/personal/?email=');
   });
 
-  it('daily devuelve los totales del reporte general diario (RF19)', async () => {
+  it('daily devuelve los totales del reporte general diario (RF16)', async () => {
     mockFetch({ totales: { asistencias: 4, cancelaciones: 1, inasistencias: 2, estudiantes_penalizados: 1 } });
     const res = await reportsApi.verRegistroEntrenador('coach@udem.edu.co');
     expect(res.totales.asistencias).toBe(4);

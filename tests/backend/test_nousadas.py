@@ -74,7 +74,7 @@ class AdminUserTests(GymApiTestCase):
 
 
 class AdministradorPrincipalTests(GymApiTestCase):
-    """RF21 — Crear administradores · RF22 — Retirar el rol de administrador."""
+    """RF22 — Crear administradores · RF23 — Retirar el rol de administrador."""
 
     OTRO_ADMIN = 'segunda.admin@udemedellin.edu.co'
 
@@ -89,21 +89,21 @@ class AdministradorPrincipalTests(GymApiTestCase):
             'documento': self._documento(email),
         }, format='json')
 
-    def test_rf21_el_primer_admin_es_el_principal(self):
+    def test_rf22_el_primer_admin_es_el_principal(self):
         self.assertTrue(self._user(ADMIN)['es_principal'])
 
-    def test_rf21_el_principal_crea_cuentas_de_administrador(self):
+    def test_rf22_el_principal_crea_cuentas_de_administrador(self):
         resp = self._crear_admin()
         self.assertEqual(resp.status_code, 201)
         self.assertEqual(self._user(self.OTRO_ADMIN)['role'], 'ADMIN')
         self.assertFalse(self._user(self.OTRO_ADMIN)['es_principal'])
 
-    def test_rf21_un_admin_no_principal_no_crea_administradores(self):
+    def test_rf22_un_admin_no_principal_no_crea_administradores(self):
         self._crear_admin()
         resp = self._crear_admin(actor=self.OTRO_ADMIN, email='tercera@udemedellin.edu.co')
         self.assertEqual(resp.status_code, 403)
 
-    def test_rf22_el_principal_retira_el_rol_de_administrador(self):
+    def test_rf23_el_principal_retira_el_rol_de_administrador(self):
         self._crear_admin()
         resp = self.client.patch(f'/api/admin/users/{self.OTRO_ADMIN}/',
                                  {'actor_email': ADMIN, 'accion': 'retirar'}, format='json')
@@ -112,13 +112,13 @@ class AdministradorPrincipalTests(GymApiTestCase):
         self.assertEqual(retirado['role'], 'SIN_ROL')
         self.assertEqual(retirado['estado'], 'INACTIVO')
 
-    def test_rf22_la_cuenta_retirada_ya_no_inicia_sesion(self):
+    def test_rf23_la_cuenta_retirada_ya_no_inicia_sesion(self):
         self._crear_admin()
         self.client.patch(f'/api/admin/users/{self.OTRO_ADMIN}/',
                           {'actor_email': ADMIN, 'accion': 'retirar'}, format='json')
         self.assertEqual(self._login(self.OTRO_ADMIN).status_code, 403)
 
-    def test_rf22_el_principal_puede_restaurar_el_rol(self):
+    def test_rf23_el_principal_puede_restaurar_el_rol(self):
         self._crear_admin()
         self.client.patch(f'/api/admin/users/{self.OTRO_ADMIN}/',
                           {'actor_email': ADMIN, 'accion': 'retirar'}, format='json')
@@ -127,14 +127,14 @@ class AdministradorPrincipalTests(GymApiTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(self._user(self.OTRO_ADMIN)['role'], 'ADMIN')
 
-    def test_rf22_no_se_puede_retirar_al_administrador_principal(self):
+    def test_rf23_no_se_puede_retirar_al_administrador_principal(self):
         self._crear_admin()
         resp = self.client.patch(f'/api/admin/users/{ADMIN}/',
                                  {'actor_email': ADMIN, 'accion': 'retirar'}, format='json')
         self.assertEqual(resp.status_code, 400)
         self.assertEqual(self._user(ADMIN)['role'], 'ADMIN')
 
-    def test_rf22_un_admin_no_principal_no_retira_roles(self):
+    def test_rf23_un_admin_no_principal_no_retira_roles(self):
         self._crear_admin()
         resp = self.client.patch(f'/api/admin/users/{ADMIN}/',
                                  {'actor_email': self.OTRO_ADMIN, 'accion': 'retirar'}, format='json')
@@ -168,8 +168,8 @@ class RegistroDiarioPdfTests(GymApiTestCase):
         return self.client.post('/api/attendance/process/',
                                 {'actor_email': PROFESOR, 'fecha': self.jornada}, format='json')
 
-    # ── RF20 / HU19 / HU20 — El reporte diario en PDF ──────────────────────
-    def test_rf20_el_reporte_diario_se_genera_en_pdf(self):
+    # ── RF18 / HU19 / HU20 — El reporte diario en PDF ──────────────────────
+    def test_rf18_el_reporte_diario_se_genera_en_pdf(self):
         self._reserve(ESTUDIANTE, 1)
         self._procesar()
         resp = self.client.get(f'/api/reports/daily/entrenador.pdf?actor_email={PROFESOR}&fecha={self.jornada}')
@@ -177,6 +177,6 @@ class RegistroDiarioPdfTests(GymApiTestCase):
         self.assertEqual(resp['Content-Type'], 'application/pdf')
         self.assertTrue(resp.content.startswith(b'%PDF'))
 
-    def test_rf20_el_estudiante_no_genera_el_pdf_general(self):
+    def test_rf18_el_estudiante_no_genera_el_pdf_general(self):
         resp = self.client.get(f'/api/reports/daily/entrenador.pdf?actor_email={ESTUDIANTE}')
         self.assertEqual(resp.status_code, 403)
