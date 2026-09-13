@@ -90,7 +90,9 @@ jobs:
         with:
           name: cobertura
       - name: Análisis de SonarQube Cloud
-        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703  # v5
+        # v5 ya no tiene soporte y tiene una vulnerabilidad conocida: el propio
+        # escáner pide pasar a v6.
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602  # v6
         env:
           # El escáner espera la variable SONAR_TOKEN; el secreto del repositorio
           # se guardó con el nombre SONAR_2.
@@ -151,7 +153,9 @@ jobs:
           # publicado, sha256sum falla y el paso se detiene sin ejecutar nada.
           VERSION=v5.8.1
           SHA256=029a7f0f4e1932c52a0476cf02a0fd855c0bb85694b82c338fc648dcb53a819d
-          curl -sSfL -o kustomize.tar.gz \
+          # --proto '=https': si la descarga redirige, solo sigue a direcciones
+          # HTTPS. Sin esto, una redirección podría llevarla a una web insegura.
+          curl -sSfL --proto '=https' --tlsv1.2 -o kustomize.tar.gz \
             "https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize/${VERSION}/kustomize_${VERSION}_linux_amd64.tar.gz"
           echo "${SHA256}  kustomize.tar.gz" | sha256sum -c -
           tar -xzf kustomize.tar.gz kustomize
