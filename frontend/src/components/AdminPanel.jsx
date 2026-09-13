@@ -91,13 +91,15 @@ export default function AdminPanel({ user, showToast }) {
   const dominioAdmin = config?.dominios?.find((d) => d.rol === 'ADMIN');
   const rolDetectado = rolDeCorreo(config, email)?.rol ?? null;
   const largoDocumento = config?.documento_longitud;
+  // Solo el administrador principal gestiona las cuentas de administrador.
+  // Tiene que declararse antes de usarse: una constante leída antes de su
+  // declaración lanza un error al pintar, y el panel entero no se muestra.
+  const esPrincipal = user.es_principal ?? false;
   // RF22 — Solo el principal crea administradores. Antes el formulario daba el
   // visto bueno en verde y el rechazo llegaba del servidor después de llenarlo
   // todo. Ahora se avisa en el mismo campo y el botón queda bloqueado.
   const intentaCrearAdmin = rolDetectado === 'ADMIN' && !esPrincipal;
   const porRol = (rol) => users.filter((u) => u.role === rol).length;
-  // Solo el administrador principal gestiona las cuentas de administrador.
-  const esPrincipal = user.es_principal ?? false;
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
