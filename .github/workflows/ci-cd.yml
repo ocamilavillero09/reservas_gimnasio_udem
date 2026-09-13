@@ -71,7 +71,7 @@ jobs:
 
   # ── 1b) Análisis de SonarQube Cloud con la cobertura de las pruebas ──
   #     Sustituye al análisis automático, que nunca ejecuta pruebas y por eso
-  #     no puede mostrar cobertura. Requiere el secreto SONAR_TOKEN y tener el
+  #     no puede mostrar cobertura. Requiere el secreto SONAR_2 y tener el
   #     análisis automático apagado en SonarQube Cloud.
   sonar:
     needs: [test]
@@ -89,7 +89,9 @@ jobs:
       - name: Análisis de SonarQube Cloud
         uses: SonarSource/sonarqube-scan-action@v5
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          # El escáner espera la variable SONAR_TOKEN; el secreto del repositorio
+          # se guardó con el nombre SONAR_2.
+          SONAR_TOKEN: ${{ secrets.SONAR_2 }}
 
   # Nota: las pruebas E2E con Playwright (tests/e2e/) se ejecutan en local
   # (cd frontend && npm run test:e2e); no se incluyen en CI por estabilidad.
