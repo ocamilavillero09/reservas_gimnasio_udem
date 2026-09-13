@@ -41,6 +41,8 @@ jobs:
           pip install --require-hashes -r backend/requirements.lock.txt
           coverage run backend/manage.py test tests.backend -v 2
           coverage report
+          # El mismo resultado en XML, que es lo que lee SonarQube Cloud.
+          coverage xml
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -51,6 +53,43 @@ jobs:
         run: |
           npm ci
           npm run test:coverage
+          # Vitest escribe las rutas relativas a frontend/ (src/App.jsx), pero
+          # SonarQube Cloud las busca desde la raíz del repositorio. Sin este
+          # ajuste descarta la cobertura del frontend entera sin avisar.
+          sed -i 's#^SF:src/#SF:frontend/src/#' coverage/lcov.info
+
+      # Los informes pasan al trabajo de análisis. Si el análisis corriera aquí
+      # mismo, un fallo de SonarQube Cloud tumbaría las pruebas y con ellas la
+      # publicación de imágenes, aunque el código esté bien.
+      - name: Guardar los informes de cobertura
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: |
+            coverage.xml
+            frontend/coverage/lcov.info
+
+  # ── 1b) Análisis de SonarQube Cloud con la cobertura de las pruebas ──
+  #     Sustituye al análisis automático, que nunca ejecuta pruebas y por eso
+  #     no puede mostrar cobertura. Requiere el secreto SONAR_TOKEN y tener el
+  #     análisis automático apagado en SonarQube Cloud.
+  sonar:
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Historia completa: SonarQube Cloud la usa para saber qué es código
+          # nuevo y a quién atribuir cada línea.
+          fetch-depth: 0
+      - name: Recuperar los informes de cobertura
+        uses: actions/download-artifact@v4
+        with:
+          name: cobertura
+      - name: Análisis de SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # Nota: las pruebas E2E con Playwright (tests/e2e/) se ejecutan en local
   # (cd frontend && npm run test:e2e); no se incluyen en CI por estabilidad.
