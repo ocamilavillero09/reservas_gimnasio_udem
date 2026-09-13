@@ -30,6 +30,9 @@ export default function Login({ onLogin }) {
   // RN01 — Los dominios y el rol que otorga cada uno los define el backend.
   // La interfaz no guarda esa tabla: la recibe (RNF06).
   const config = useConfig();
+  // RNF06 — La longitud de la cédula la decide el backend, no la interfaz.
+  // Mientras la configuración no llega, no se limita nada.
+  const largoDocumento = config?.documento_longitud;
   const dominioDetectado = rolDeCorreo(config, email);
 
   const handleSubmit = async (e) => {
@@ -54,6 +57,9 @@ export default function Login({ onLogin }) {
   const handleGoToLogin = () => {
     setRegistered(false);
     setTab('login');
+    // El correo también se limpia. Antes se quedaba escrito el de la cuenta
+    // recién creada y el formulario de ingreso no aparecía vacío.
+    setEmail('');
     setDocumento('');
     setName('');
     setError('');
@@ -228,16 +234,19 @@ export default function Login({ onLogin }) {
                   type="password"
                   id="login-documento"
                   value={documento}
-                  onChange={e => setDocumento(e.target.value)}
+                  // RN02 — La cédula son dígitos. Se filtra al escribir y al
+                  // pegar, para que no llegue al servidor algo que va a rechazar.
+                  onChange={e => setDocumento(e.target.value.replace(/\D/g, ''))}
                   placeholder="Ej: 1001234567"
                   style={inputStyle}
                   inputMode="numeric"
+                  maxLength={largoDocumento}
                   required
                 />
                 <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
                   {tab === 'login'
                     ? 'Tu documento de identidad es tu contraseña.'
-                    : 'Con este documento iniciarás sesión (mínimo 6 caracteres).'}
+                    : `Con este documento iniciarás sesión. Son ${largoDocumento} dígitos.`}
                 </p>
               </div>
 

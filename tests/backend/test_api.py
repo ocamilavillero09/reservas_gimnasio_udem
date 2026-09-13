@@ -157,7 +157,7 @@ class ConfiguracionTests(GymApiTestCase):
         self.assertEqual(c['no_show_limite'], db_module.NO_SHOW_LIMITE)
         self.assertEqual(c['no_show_alerta'], db_module.NO_SHOW_ALERTA)
         self.assertEqual(c['max_reservas_por_dia'], db_module.MAX_RESERVAS_POR_DIA)
-        self.assertEqual(c['documento_min'], db_module.DOCUMENTO_MIN)
+        self.assertEqual(c['documento_longitud'], db_module.DOCUMENTO_LONGITUD)
         self.assertEqual(c['aforo_por_defecto'], db_module.AFORO_POR_DEFECTO)
 
     def test_los_rangos_del_perfil_son_los_que_valida_rf03(self):
@@ -207,6 +207,26 @@ class RegisterTests(GymApiTestCase):
 
     def test_rechaza_documento_corto(self):
         self.assertEqual(self._register(documento='123').status_code, 400)
+
+    def test_rn02_el_documento_debe_tener_diez_digitos_exactos(self):
+        """RN02 — La contraseña es la cédula, así que tiene que ser una cédula.
+
+        Nueve dígitos se quedan cortos y once se pasan: los dos casos se
+        rechazan, y el de en medio entra.
+        """
+        largo = db_module.DOCUMENTO_LONGITUD
+        self.assertEqual(self._register(documento='1' * (largo - 1)).status_code, 400)
+        self.assertEqual(
+            self._register(email='otra@soyudemedellin.edu.co', name='Otra',
+                           documento='1' * (largo + 1)).status_code, 400)
+        self.assertEqual(
+            self._register(email='buena@soyudemedellin.edu.co', name='Buena',
+                           documento='1' * largo).status_code, 201)
+
+    def test_rn02_el_documento_no_admite_letras_ni_signos(self):
+        for malo in ('10012345AB', '100-123456', '100 123456'):
+            with self.subTest(documento=malo):
+                self.assertEqual(self._register(documento=malo).status_code, 400)
 
     def test_rechaza_documento_duplicado(self):
         """RF01 — Dos personas no pueden compartir el mismo documento."""
@@ -556,6 +576,39 @@ class FeaturesTests(GymApiTestCase):
         resp = self.client.post('/api/suggestions/',
                                 {'email': PROFESOR, 'mensaje': 'Algo'}, format='json')
         self.assertEqual(resp.status_code, 403)
+
+    def test_rf21_el_administrador_borra_un_mensaje_ya_atendido(self):
+        self.client.post('/api/suggestions/',
+                         {'email': self.ANA, 'mensaje': 'Un reporte'}, format='json')
+        self._register(email=ADMIN, name='Jefa')
+        buzon = self.client.get(f'/api/suggestions/inbox/?actor_email={ADMIN}').data
+        identificador = buzon['mensajes'][0]['id']
+
+        resp = self.client.delete(f'/api/suggestions/{identificador}/?actor_email={ADMIN}')
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.data['total'], 0)
+        vacio = self.client.get(f'/api/suggestions/inbox/?actor_email={ADMIN}').data
+        self.assertEqual(vacio['mensajes'], [])
+
+    def test_rf21_el_estudiante_no_borra_mensajes_del_buzon(self):
+        self.client.post('/api/suggestions/',
+                         {'email': self.ANA, 'mensaje': 'Un reporte'}, format='json')
+        self._register(email=ADMIN, name='Jefa')
+        buzon = self.client.get(f'/api/suggestions/inbox/?actor_email={ADMIN}').data
+        identificador = buzon['mensajes'][0]['id']
+
+        resp = self.client.delete(f'/api/suggestions/{identificador}/?actor_email={self.ANA}')
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(
+            self.client.get(f'/api/suggestions/inbox/?actor_email={ADMIN}').data['total'], 1)
+
+    def test_rf21_borrar_un_mensaje_que_no_existe(self):
+        self._register(email=ADMIN, name='Jefa')
+        for identificador in ('no-es-un-id', '000000000000000000000000'):
+            with self.subTest(id=identificador):
+                resp = self.client.delete(
+                    f'/api/suggestions/{identificador}/?actor_email={ADMIN}')
+                self.assertEqual(resp.status_code, 404)
 
     def test_rf21_solo_el_administrador_lee_el_buzon(self):
         self.client.post('/api/suggestions/',

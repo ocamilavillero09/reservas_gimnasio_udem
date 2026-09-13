@@ -73,10 +73,28 @@ export default function AdminPanel({ user, showToast }) {
     }
   };
 
+  // RF21 — Borrar del buzón un mensaje ya atendido, para que la bandeja deje
+  // ver los que faltan. El borrado es definitivo, así que se confirma antes.
+  const borrarMensaje = async (m) => {
+    if (!window.confirm(`¿Borrar del buzón el mensaje de ${m.autor_nombre}? No se puede deshacer.`)) return;
+    try {
+      const r = await buzonApi.eliminarSugerencia(m.id, user.email);
+      showToast(r.message, 'success');
+      cargar();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
   // RN01 — Los dominios los define el backend; la interfaz solo los muestra (RNF06).
   const config = useConfig();
   const dominioAdmin = config?.dominios?.find((d) => d.rol === 'ADMIN');
   const rolDetectado = rolDeCorreo(config, email)?.rol ?? null;
+  const largoDocumento = config?.documento_longitud;
+  // RF22 — Solo el principal crea administradores. Antes el formulario daba el
+  // visto bueno en verde y el rechazo llegaba del servidor después de llenarlo
+  // todo. Ahora se avisa en el mismo campo y el botón queda bloqueado.
+  const intentaCrearAdmin = rolDetectado === 'ADMIN' && !esPrincipal;
   const porRol = (rol) => users.filter((u) => u.role === rol).length;
   // Solo el administrador principal gestiona las cuentas de administrador.
   const esPrincipal = user.es_principal ?? false;
@@ -135,24 +153,32 @@ export default function AdminPanel({ user, showToast }) {
           <input
             type="text"
             value={documento}
-            onChange={(e) => setDocumento(e.target.value)}
-            placeholder="Documento de identidad (mínimo 6 caracteres)"
+            // RN02 — La cédula son dígitos y nada más.
+            onChange={(e) => setDocumento(e.target.value.replace(/\D/g, ''))}
+            placeholder={largoDocumento
+              ? `Documento de identidad (${largoDocumento} dígitos)`
+              : 'Documento de identidad'}
             style={inputStyle}
             inputMode="numeric"
+            maxLength={largoDocumento}
             required
           />
 
           {email && (
-            <p style={{ fontSize: 13, color: rolDetectado ? '#15803D' : '#991B1B', margin: 0 }}>
-              {rolDetectado
-                ? `✓ Este correo creará un usuario con rol ${ROLE_BADGE[rolDetectado].label.toUpperCase()}.`
-                : '⚠ El correo no pertenece a ninguno de los tres dominios institucionales.'}
+            <p style={{ fontSize: 13, color: (rolDetectado && !intentaCrearAdmin) ? '#15803D' : '#991B1B', margin: 0 }}>
+              {!rolDetectado
+                ? '⚠ El correo no pertenece a ninguno de los tres dominios institucionales.'
+                : intentaCrearAdmin
+                  ? '⚠ Este correo crearía un administrador, y eso solo puede hacerlo el administrador principal.'
+                  : `✓ Este correo creará un usuario con rol ${ROLE_BADGE[rolDetectado].label.toUpperCase()}.`}
             </p>
           )}
 
-          <button type="submit" disabled={enviando} style={{
+          <button type="submit" disabled={enviando || intentaCrearAdmin} style={{
             padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white',
-            fontWeight: 800, cursor: enviando ? 'not-allowed' : 'pointer', opacity: enviando ? 0.7 : 1,
+            fontWeight: 800,
+            cursor: (enviando || intentaCrearAdmin) ? 'not-allowed' : 'pointer',
+            opacity: (enviando || intentaCrearAdmin) ? 0.7 : 1,
           }}>
             {enviando ? 'Creando...' : 'Crear usuario'}
           </button>
@@ -227,21 +253,30 @@ export default function AdminPanel({ user, showToast }) {
           ) : null}
         </h3>
         <p style={{ fontSize: 13, color: '#777', marginBottom: 16 }}>
-          Fallas y mejoras que reportan los estudiantes desde su historial.
+          Fallas y mejoras que reportan los estudiantes desde su historial. Borra
+          los que ya hayas atendido para no perder de vista los que faltan.
         </p>
 
         {!buzon || buzon.mensajes.length === 0 ? (
           <p style={{ color: '#999', fontSize: 14 }}>Todavía no hay mensajes.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {buzon.mensajes.map((m, i) => (
-              <div key={i} style={{ border: '1px solid #eee', borderRadius: 12, padding: 16 }}>
+            {buzon.mensajes.map((m) => (
+              <div key={m.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
                   <span style={{ fontWeight: 700, fontSize: 14 }}>{m.autor_nombre}</span>
                   <span style={{ fontSize: 12, color: '#999' }}>{m.fecha.slice(0, 16).replace('T', ' ')}</span>
                 </div>
                 <p style={{ fontSize: 12, color: '#999', margin: '2px 0 10px' }}>{m.autor_email}</p>
                 <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{m.mensaje}</p>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                  <button onClick={() => borrarMensaje(m)} style={{
+                    padding: '6px 12px', border: '1.5px solid #fca5a5', borderRadius: 8,
+                    background: 'white', color: RED, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+                  }}>
+                    Borrar
+                  </button>
+                </div>
               </div>
             ))}
           </div>

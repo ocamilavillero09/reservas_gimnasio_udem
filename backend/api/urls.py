@@ -62,6 +62,9 @@ urlpatterns = [
     path('suggestions/',                features.fallo_sugerencia,  name='suggestion-create'),
     # RF21 — Consultar el buzón de sugerencias
     path('suggestions/inbox/',          features.consultar_buzon,   name='suggestion-inbox'),
+    # RF21 — Borrar un mensaje ya atendido. Va después de 'inbox/' porque el
+    # comodín del identificador también casaría con esa palabra.
+    path('suggestions/<str:suggestion_id>/', features.eliminar_sugerencia, name='suggestion-delete'),
 
     # ── Módulo 6 — Administración de usuarios ───────────────────────────────
     # RF22 — Crear cuentas con rol de administrador

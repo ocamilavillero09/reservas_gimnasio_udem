@@ -55,7 +55,7 @@ _MESES = ('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
 # registra y, además, la contraseña con la que inicia sesión. Se guarda en
 # claro para poder buscarlo (RF11: el entrenador busca al estudiante por su
 # documento) y hasheado en el campo `password` para validar el inicio de sesión.
-DOCUMENTO_MIN = 6             # longitud mínima del documento de identidad
+DOCUMENTO_LONGITUD = 10       # la cédula colombiana tiene diez dígitos exactos
 NO_SHOW_ALERTA = 2            # RF15: avisar cuando falten 2 inasistencias
 
 
@@ -125,6 +125,22 @@ def normalizar_documento(documento) -> str:
     """Deja el documento sin espacios ni puntos: '1.020 304' -> '1020304'."""
     texto = str(documento or '').strip()
     return texto.replace('.', '').replace(' ', '').replace('-', '')
+
+
+def error_de_documento(documento: str):
+    """Devuelve el motivo por el que un documento no sirve, o None si sirve.
+
+    RN02 — El documento de identidad es la cédula de la persona y además su
+    contraseña, así que tiene que ser una cédula real: solo dígitos y exactamente
+    diez. Antes se aceptaba cualquier cosa de seis caracteres en adelante, letras
+    incluidas, y con eso entraban documentos que no existen.
+    """
+    if not documento.isdigit():
+        return 'El documento de identidad solo puede tener dígitos.'
+    if len(documento) != DOCUMENTO_LONGITUD:
+        return (f'El documento de identidad debe tener exactamente '
+                f'{DOCUMENTO_LONGITUD} dígitos.')
+    return None
 
 
 def inasistencias_restantes(user: dict) -> int:

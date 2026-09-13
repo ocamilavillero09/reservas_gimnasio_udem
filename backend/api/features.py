@@ -16,6 +16,7 @@ disponibilidad es de cada jornada.
 """
 from datetime import datetime
 from bson import ObjectId
+from bson.errors import InvalidId
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -290,6 +291,9 @@ def consultar_buzon(request):
         )
 
     mensajes = [{
+        # El identificador viaja al frontend porque es lo que necesita el
+        # administrador para borrar un mensaje ya atendido.
+        'id': str(m['_id']),
         'autor_nombre': m['autor_nombre'],
         'autor_email': m['autor_email'],
         'mensaje': m['mensaje'],
@@ -297,3 +301,35 @@ def consultar_buzon(request):
     } for m in db.suggestions.find().sort('created_at', -1).limit(200)]
 
     return Response({'total': db.suggestions.count_documents({}), 'mensajes': mensajes})
+
+
+@api_view(['DELETE'])
+def eliminar_sugerencia(request, suggestion_id):
+    """RF21 — Borrar del buzón un mensaje ya atendido.
+
+    La bandeja se llena de reportes resueltos y el administrador pierde de vista
+    los que faltan. Borrar es definitivo y por eso solo puede hacerlo quien lee
+    la bandeja, que es el administrador: ni el estudiante que escribió el
+    mensaje ni el entrenador entran aquí.
+    """
+    db = get_db()
+    actor = db.users.find_one(
+        {'email': (request.query_params.get('actor_email') or '').strip().lower()})
+    if not actor or actor.get('role') != 'ADMIN':
+        return Response(
+            {'error': 'Solo el administrador puede borrar mensajes del buzón.'},
+            status=403,
+        )
+
+    try:
+        objetivo = ObjectId(suggestion_id)
+    except (InvalidId, TypeError):
+        return Response({'error': 'Mensaje no encontrado.'}, status=404)
+
+    if db.suggestions.delete_one({'_id': objetivo}).deleted_count == 0:
+        return Response({'error': 'Mensaje no encontrado.'}, status=404)
+
+    return Response({
+        'message': 'Mensaje borrado del buzón.',
+        'total': db.suggestions.count_documents({}),
+    })
