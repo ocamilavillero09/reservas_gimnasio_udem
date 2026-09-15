@@ -752,6 +752,63 @@ class AsistenciaTests(GymApiTestCase):
         }, format='json')
         self.assertEqual(resp.status_code, 403)
 
+    # Caminos del grafo de registrar_asistencia (caja blanca) que no tenían prueba.
+    def test_rf11_rechaza_un_id_de_reserva_invalido(self):
+        """Camino 1, 2, 4, 5, 6, 16 — el id no tiene formato de ObjectId."""
+        resp = self.client.post('/api/attendance/register/', {
+            'actor_email': PROFESOR, 'reservation_id': 'no-es-un-id',
+        }, format='json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.data['error'], 'ID de reserva inválido.')
+
+    def test_rf11_exige_el_documento_o_el_id_de_la_reserva(self):
+        """Camino 1, 2, 4, 7, 8, 16 — no llega documento ni id."""
+        resp = self.client.post('/api/attendance/register/',
+                                {'actor_email': PROFESOR}, format='json')
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('documento de identidad', resp.data['error'])
+
+    def test_rf11_documento_sin_estudiante_registrado(self):
+        """Camino 1, 2, 4, 7, 9, 10, 16 — el documento no es de ningún estudiante."""
+        resp = self.client.post('/api/attendance/register/', {
+            'actor_email': PROFESOR, 'documento': '1999999999', 'fecha': self.jornada,
+        }, format='json')
+        self.assertEqual(resp.status_code, 404)
+        self.assertIn('1999999999', resp.data['error'])
+
+    def test_rf11_la_asistencia_ya_la_registro_otro_entrenador(self):
+        """Camino 1, 2, 4, 7, 9, 11, 12, 14, 13, 16 — dos registros casi a la vez.
+
+        Otro entrenador completa la reserva entre la comprobación de la ventana y
+        la actualización: la operación atómica ya no la encuentra ACTIVA.
+        """
+        from unittest.mock import patch
+        self._reserve(ESTUDIANTE, 1)
+        reservas = db_module.get_db().reservations
+
+        def otro_entrenador_se_adelanta(reserva):
+            reservas.update_one({'_id': reserva['_id']}, {'$set': {'estado': 'COMPLETADA'}})
+            return True, None
+
+        with patch('api.attendance.ventana_asistencia', side_effect=otro_entrenador_se_adelanta):
+            resp = self.client.post('/api/attendance/register/', {
+                'actor_email': PROFESOR, 'documento': DOCUMENTOS[ESTUDIANTE], 'fecha': self.jornada,
+            }, format='json')
+        self.assertEqual(resp.status_code, 409)
+        self.assertEqual(resp.data['error'], 'La asistencia ya fue registrada.')
+
+    def test_rf11_registra_la_asistencia_por_id_de_reserva(self):
+        """Camino 1, 2, 4, 5, 11, 12, 14, 15, 16 — el que usa el botón del panel."""
+        self._reserve(ESTUDIANTE, 1)
+        reserva = db_module.get_db().reservations.find_one({'email': ESTUDIANTE, 'estado': 'ACTIVA'})
+        resp = self.client.post('/api/attendance/register/', {
+            'actor_email': PROFESOR, 'reservation_id': str(reserva['_id']),
+        }, format='json')
+        self.assertEqual(resp.status_code, 200)
+        actualizada = db_module.get_db().reservations.find_one({'_id': reserva['_id']})
+        self.assertEqual(actualizada['estado'], 'COMPLETADA')
+        self.assertEqual(actualizada['registrada_por'], PROFESOR)
+
     # ── RF12 / HU13 / HU15 — Estudiantes sin asistencia registrada ─────────
     def test_rf12_lista_los_estudiantes_sin_asistencia(self):
         self._reserve(ESTUDIANTE, 1)

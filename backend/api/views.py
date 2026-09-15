@@ -8,13 +8,13 @@ from .db import (
     ahora_utc,
     get_db, seed_slots, hash_password, verify_password, serialize,
     asegurar_disponibilidad, tomar_cupo, devolver_cupo,
-    BLOQUES_HORARIOS, AFORO_POR_DEFECTO, DOCUMENTO_MIN, NO_SHOW_ALERTA,
+    BLOQUES_HORARIOS, AFORO_POR_DEFECTO, DOCUMENTO_LONGITUD, NO_SHOW_ALERTA,
     PERFIL_RANGOS, META_MAX,
     ROLES, DOMINIOS_ROL, role_for_email,
     fecha_reserva, formato_fecha_es,
     normalizar_documento, inasistencias_restantes, alerta_inasistencias,
     MAX_RESERVAS_POR_DIA, NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
-    DOCUMENTO_MIN,
+    error_de_documento,
 )
 
 
@@ -67,8 +67,8 @@ def consultar_configuracion(request):
             for i, inicio, fin in BLOQUES_HORARIOS
         ],
         'aforo_por_defecto': AFORO_POR_DEFECTO,
-        # RN02 — longitud mínima del documento de identidad.
-        'documento_min': DOCUMENTO_MIN,
+        # RN02 — el documento de identidad es una cédula de diez dígitos.
+        'documento_longitud': DOCUMENTO_LONGITUD,
         # RN05 — una reserva por estudiante y por día.
         'max_reservas_por_dia': MAX_RESERVAS_POR_DIA,
         # RN08 — cinco inasistencias penalizan, y se avisa cuando faltan dos.
@@ -175,11 +175,9 @@ def registrar_cuenta(request):
         )
 
     # RF01 — El documento de identidad es además la contraseña (RF02).
-    if len(documento) < DOCUMENTO_MIN:
-        return Response(
-            {'error': f'El documento de identidad debe tener al menos {DOCUMENTO_MIN} caracteres.'},
-            status=400,
-        )
+    problema = error_de_documento(documento)
+    if problema:
+        return Response({'error': problema}, status=400)
 
     role = role_for_email(email)
     if role is None:
