@@ -1,0 +1,103 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { configApi, authApi, slotsApi, reservationsApi, attendanceApi, reportsApi } from '../../frontend/src/services/api';
+import { mockFetch } from './helpers';
+
+describe('api service', () => {
+  beforeEach(() => vi.restoreAllMocks());
+
+  it('consultarConfiguracion pide las constantes de negocio al backend (RNF06)', async () => {
+    mockFetch({ dominios: [], no_show_limite: 5 });
+    const c = await configApi.consultarConfiguracion();
+    expect(global.fetch.mock.calls[0][0]).toContain('/config/');
+    expect(c.no_show_limite).toBe(5);
+  });
+
+  it('login hace POST a /auth/login/ con el correo y el documento (RF02)', async () => {
+    mockFetch({ name: 'Juan', email: 'j@soyudemedellin.edu.co', role: 'ESTUDIANTE' });
+    const res = await authApi.iniciarSesion({ email: 'j@soyudemedellin.edu.co', documento: '1001234567' });
+    expect(res.role).toBe('ESTUDIANTE');
+    const [url, opts] = global.fetch.mock.calls[0];
+    expect(url).toContain('/auth/login/');
+    expect(opts.method).toBe('POST');
+    expect(JSON.parse(opts.body).email).toBe('j@soyudemedellin.edu.co');
+    expect(JSON.parse(opts.body).documento).toBe('1001234567');
+  });
+
+  it('registrarCuenta envía nombre, correo y documento de identidad (RF01)', async () => {
+    mockFetch({ message: 'Registro exitoso.', role: 'ESTUDIANTE' }, true);
+    await authApi.registrarCuenta({ name: 'Juan', email: 'j@soyudemedellin.edu.co', documento: '1001234567' });
+    const [url, opts] = global.fetch.mock.calls[0];
+    expect(url).toContain('/auth/register/');
+    expect(JSON.parse(opts.body)).toMatchObject({ name: 'Juan', documento: '1001234567' });
+  });
+
+  it('session rehidrata la sesión con GET y el correo en la query', async () => {
+    mockFetch({ email: 'j@soyudemedellin.edu.co', role: 'ESTUDIANTE', no_show_count: 2 });
+    const res = await authApi.session('j@soyudemedellin.edu.co');
+    expect(res.no_show_count).toBe(2);
+    expect(global.fetch.mock.calls[0][0]).toContain('/auth/session/?email=');
+  });
+
+  it('getAll de slots devuelve la fecha del día siguiente y los bloques', async () => {
+    mockFetch({
+      fecha: '2026-08-17',
+      fecha_label: 'lunes 17 de agosto de 2026',
+      slots: [{ id: 1, hour: '06:00', available: 20, total: 20 }],
+    });
+    const data = await slotsApi.consultarHorarios();
+    expect(data.slots).toHaveLength(1);
+    expect(data.fecha_label).toContain('agosto');
+    expect(global.fetch.mock.calls[0][0]).toContain('/slots/');
+  });
+
+  it('lookup busca al estudiante por su documento (RF10)', async () => {
+    mockFetch({ estudiante: { name: 'Ana', documento: '1001234567' }, tiene_reserva: true, reservas: [] });
+    const res = await attendanceApi.buscarReserva('1001234567', 'coach@udem.edu.co');
+    expect(res.tiene_reserva).toBe(true);
+    expect(global.fetch.mock.calls[0][0]).toContain('/students/lookup/?documento=1001234567');
+  });
+
+  it('register de asistencia hace POST a /attendance/register/ (RF11)', async () => {
+    mockFetch({ message: 'Asistencia registrada.' });
+    await attendanceApi.registrarAsistencia({ actor_email: 'coach@udem.edu.co', documento: '1001234567' });
+    const [url, opts] = global.fetch.mock.calls[0];
+    expect(url).toContain('/attendance/register/');
+    expect(opts.method).toBe('POST');
+  });
+
+  it('pending lista a los estudiantes sin asistencia registrada (RF12)', async () => {
+    mockFetch({ total: 2, pendientes: [{}, {}] });
+    const res = await attendanceApi.consultarReservas('coach@udem.edu.co');
+    expect(res.total).toBe(2);
+    expect(global.fetch.mock.calls[0][0]).toContain('/attendance/pending/?actor_email=');
+  });
+
+  it('process procesa de forma general las inasistencias (RF13)', async () => {
+    mockFetch({ total_procesadas: 3, total_penalizados: 1, message: 'ok' });
+    const res = await attendanceApi.procesarInasistencia('coach@udem.edu.co');
+    const [url, opts] = global.fetch.mock.calls[0];
+    expect(url).toContain('/attendance/process/');
+    expect(opts.method).toBe('POST');
+    expect(res.total_procesadas).toBe(3);
+  });
+
+  it('personal devuelve el reporte de inasistencias del estudiante (RF15)', async () => {
+    mockFetch({ no_show_count: 2, no_show_limite: 5, inasistencias_restantes: 3 });
+    const res = await reportsApi.verInasistencias('j@soyudemedellin.edu.co');
+    expect(res.inasistencias_restantes).toBe(3);
+    expect(global.fetch.mock.calls[0][0]).toContain('/reports/personal/?email=');
+  });
+
+  it('daily devuelve los totales del reporte general diario (RF16)', async () => {
+    mockFetch({ totales: { asistencias: 4, cancelaciones: 1, inasistencias: 2, estudiantes_penalizados: 1 } });
+    const res = await reportsApi.verRegistroEntrenador('coach@udem.edu.co');
+    expect(res.totales.asistencias).toBe(4);
+    expect(global.fetch.mock.calls[0][0]).toContain('/reports/daily/entrenador/?actor_email=');
+  });
+
+  it('lanza Error con el mensaje del servidor cuando !ok', async () => {
+    mockFetch({ error: 'No hay cupos disponibles en este horario.' }, false);
+    await expect(reservationsApi.reservarMañana({ email: 'j@soyudemedellin.edu.co', slotId: 1 }))
+      .rejects.toThrow('No hay cupos disponibles');
+  });
+});
