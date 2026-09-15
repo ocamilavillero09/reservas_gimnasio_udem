@@ -1,33 +1,43 @@
-version: '3.8'
-
 services:
-  mongodb:
-    image: mongo:6
-    container_name: gym-mongodb
-    hostname: mongodb
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
     restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - MONGO_URI=mongodb://database:27017
+      - MONGO_DB=gym_udem
+    depends_on:
+      - database
+    restart: unless-stopped
+
+  database:
+    build:
+      context: ./database
+      dockerfile: Dockerfile
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: password
-      MONGO_INITDB_DATABASE: gym_reservas_universitario
     volumes:
       - mongodb_data:/data/db
-      - ./init.mongodb.js:/docker-entrypoint-initdb.d/init.mongodb.js:ro
-    networks:
-      - gym-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh --username admin --password password --authenticationDatabase admin --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+    restart: unless-stopped
 
 volumes:
   mongodb_data:
-    driver: local
-
-networks:
-  gym-network:
-    driver: bridge

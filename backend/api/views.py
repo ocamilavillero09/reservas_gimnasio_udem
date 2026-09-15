@@ -8,13 +8,13 @@ from .db import (
     ahora_utc,
     get_db, seed_slots, hash_password, verify_password, serialize,
     asegurar_disponibilidad, tomar_cupo, devolver_cupo,
-    BLOQUES_HORARIOS, AFORO_POR_DEFECTO, DOCUMENTO_MIN, NO_SHOW_ALERTA,
+    BLOQUES_HORARIOS, AFORO_POR_DEFECTO, DOCUMENTO_LONGITUD, NO_SHOW_ALERTA,
     PERFIL_RANGOS, META_MAX,
     ROLES, DOMINIOS_ROL, role_for_email,
     fecha_reserva, formato_fecha_es,
     normalizar_documento, inasistencias_restantes, alerta_inasistencias,
     MAX_RESERVAS_POR_DIA, NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
-    DOCUMENTO_MIN,
+    error_de_documento,
 )
 
 
@@ -67,13 +67,18 @@ def consultar_configuracion(request):
             for i, inicio, fin in BLOQUES_HORARIOS
         ],
         'aforo_por_defecto': AFORO_POR_DEFECTO,
-        # RN02 — longitud mínima del documento de identidad.
-        'documento_min': DOCUMENTO_MIN,
+
+        # RN02 — el documento de identidad debe tener exactamente
+        # la longitud definida por el backend.
+        'documento_longitud': DOCUMENTO_LONGITUD,
+
         # RN05 — una reserva por estudiante y por día.
         'max_reservas_por_dia': MAX_RESERVAS_POR_DIA,
+
         # RN08 — cinco inasistencias penalizan, y se avisa cuando faltan dos.
         'no_show_limite': NO_SHOW_LIMITE,
         'no_show_alerta': NO_SHOW_ALERTA,
+
         # RF03 — rangos admitidos en el perfil físico.
         'perfil_rangos': {
             campo: {'minimo': minimo, 'maximo': maximo}
@@ -86,7 +91,10 @@ def consultar_configuracion(request):
 
 def _dominios_texto() -> str:
     """'@soyudemedellin.edu.co (Estudiante), @udem.edu.co (Entrenador), ...'"""
-    return ', '.join(f'{d} ({ETIQUETA_ROL[r].lower()})' for d, r in DOMINIOS_ROL.items())
+    return ', '.join(
+        f'{d} ({ETIQUETA_ROL[r].lower()})'
+        for d, r in DOMINIOS_ROL.items()
+    )
 
 
 def _perfil_sesion(user: dict) -> dict:
@@ -96,12 +104,13 @@ def _perfil_sesion(user: dict) -> dict:
     es lo que consultan entrenadores y administradores en su perfil.
     """
     return {
-        'name':      user['name'],
-        'email':     user['email'],
+        'name': user['name'],
+        'email': user['email'],
         'documento': user.get('documento', ''),
-        'role':      user.get('role', 'ESTUDIANTE'),
-        'estado':    user.get('estado', 'ACTIVO'),
+        'role': user.get('role', 'ESTUDIANTE'),
+        'estado': user.get('estado', 'ACTIVO'),
         'es_principal': bool(user.get('es_principal')),
+
         # RN08 — inasistencias acumuladas y cuántas faltan para la penalización.
         'no_show_count': user.get('no_show_count', 0),
         'inasistencias_restantes': inasistencias_restantes(user),
@@ -116,7 +125,9 @@ def _leer_documento(data) -> str:
     El campo se llama `documento`; se acepta `password` como alias porque el
     documento ES la contraseña con la que la persona inicia sesión.
     """
-    return normalizar_documento(data.get('documento') or data.get('password') or '')
+    return normalizar_documento(
+        data.get('documento') or data.get('password') or ''
+    )
 
 
 # ──────────────────────────────────────────
@@ -130,15 +141,50 @@ def _leer_documento(data) -> str:
         type=openapi.TYPE_OBJECT,
         required=['name', 'email', 'documento'],
         properties={
-            'name': openapi.Schema(type=openapi.TYPE_STRING, example='Juan Pérez'),
-            'email': openapi.Schema(type=openapi.TYPE_STRING, example='juan.perez@soyudemedellin.edu.co'),
-            'documento': openapi.Schema(type=openapi.TYPE_STRING, example='1001234567', description='Documento de identidad: es también la contraseña.'),
+            'name': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                example='Juan Pérez'
+            ),
+            'email': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                example='juan.perez@soyudemedellin.edu.co'
+            ),
+            'documento': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                example='1001234567',
+                description='Documento de identidad: es también la contraseña.'
+            ),
         }
     ),
     responses={
-        201: openapi.Response('Registro exitoso.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'message': openapi.Schema(type=openapi.TYPE_STRING), 'role': openapi.Schema(type=openapi.TYPE_STRING)})),
-        400: openapi.Response('Datos inválidos.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
-        409: openapi.Response('Correo ya existe.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
+        201: openapi.Response(
+            'Registro exitoso.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                    'role': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        400: openapi.Response(
+            'Datos inválidos.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        409: openapi.Response(
+            'Correo ya existe.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
     }
 )
 @api_view(['POST'])
@@ -152,60 +198,88 @@ def registrar_cuenta(request):
     pueda buscarlo (RF10), y cifrado, para validar el inicio de sesión (RN02).
     """
     # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO CRÍTICO #1 — REGISTRO CON CORREO INSTITUCIONAL          ║
-    # ║ Crítico porque es el control de acceso: solo miembros de la         ║
-    # ║ universidad pueden crear cuenta, la contraseña se almacena HASHEADA ║
-    # ║ (PBKDF2, nunca en claro) y el correo es único.                      ║
-    # ║ RN01 — El ROL SE DEDUCE DEL DOMINIO (tres tipos de correo):         ║
-    # ║   @soyudemedellin.edu.co -> ESTUDIANTE                              ║
-    # ║   @udem.edu.co           -> ENTRENADOR (profesor)                   ║
-    # ║   @udemedellin.edu.co    -> ADMIN                                   ║
-    # ║ El cliente NO puede elegir el rol: así nadie se auto-asigna         ║
-    # ║ privilegios de profesor o administrador al registrarse.             ║
+    # ║ CASO DE USO CRÍTICO #1 — REGISTRO CON CORREO INSTITUCIONAL      ║
+    # ║ Crítico porque es el control de acceso: solo miembros de la      ║
+    # ║ universidad pueden crear cuenta, la contraseña se almacena       ║
+    # ║ HASHEADA (PBKDF2, nunca en claro) y el correo es único.           ║
+    # ║ RN01 — El ROL SE DEDUCE DEL DOMINIO (tres tipos de correo):      ║
+    # ║   @soyudemedellin.edu.co -> ESTUDIANTE                          ║
+    # ║   @udem.edu.co           -> ENTRENADOR                          ║
+    # ║   @udemedellin.edu.co    -> ADMIN                               ║
+    # ║ El cliente NO puede elegir el rol: así nadie se auto-asigna      ║
+    # ║ privilegios de profesor o administrador al registrarse.           ║
     # ╚══════════════════════════════════════════════════════════════════╝
+
     db = get_db()
-    name      = request.data.get('name', '').strip()
-    email     = request.data.get('email', '').strip().lower()
+
+    name = request.data.get('name', '').strip()
+    email = request.data.get('email', '').strip().lower()
     documento = _leer_documento(request.data)
 
     if not name or not email or not documento:
         return Response(
-            {'error': 'Nombre, correo institucional y documento de identidad son obligatorios.'},
+            {
+                'error': (
+                    'Nombre, correo institucional y documento '
+                    'de identidad son obligatorios.'
+                )
+            },
             status=400,
         )
 
-    # RF01 — El documento de identidad es además la contraseña (RF02).
-    if len(documento) < DOCUMENTO_MIN:
+    # RN02 — El documento debe cumplir la validación centralizada
+    # definida en db.py.
+    problema = error_de_documento(documento)
+    if problema:
         return Response(
-            {'error': f'El documento de identidad debe tener al menos {DOCUMENTO_MIN} caracteres.'},
+            {'error': problema},
             status=400,
         )
 
     role = role_for_email(email)
+
     if role is None:
         return Response(
-            {'error': f'Debes usar un correo institucional válido: {_dominios_texto()}.'},
+            {
+                'error': (
+                    f'Debes usar un correo institucional válido: '
+                    f'{_dominios_texto()}.'
+                )
+            },
             status=400,
         )
 
     if db.users.find_one({'email': email}):
-        return Response({'error': 'Ya existe una cuenta con este correo.'}, status=409)
+        return Response(
+            {'error': 'Ya existe una cuenta con este correo.'},
+            status=409,
+        )
 
     if db.users.find_one({'documento': documento}):
-        return Response({'error': 'Ya existe una cuenta con este documento de identidad.'}, status=409)
+        return Response(
+            {
+                'error': (
+                    'Ya existe una cuenta con este documento de identidad.'
+                )
+            },
+            status=409,
+        )
 
     # RF21 — El PRIMER administrador del sistema es el administrador principal:
     # es quien puede crear y gestionar las cuentas de los demás administradores.
-    es_principal = role == 'ADMIN' and db.users.count_documents({'role': 'ADMIN'}) == 0
+    es_principal = (
+        role == 'ADMIN'
+        and db.users.count_documents({'role': 'ADMIN'}) == 0
+    )
 
     db.users.insert_one({
-        'name':       name,
-        'email':      email,
-        'documento':  documento,         # RF01/RF11 — se busca al estudiante por él
-        'password':   hash_password(documento),   # RF02 — documento como contraseña
-        'role':       role,
-        'estado':     'ACTIVO',          # RN09: ACTIVO | PENALIZADO | INACTIVO
-        'es_principal': es_principal,    # RF21/RF22 — administrador principal
+        'name': name,
+        'email': email,
+        'documento': documento,
+        'password': hash_password(documento),
+        'role': role,
+        'estado': 'ACTIVO',
+        'es_principal': es_principal,
         'no_show_count': 0,
         'penalizado_hasta': None,
         'created_at': ahora_utc(),
@@ -226,13 +300,37 @@ def registrar_cuenta(request):
         type=openapi.TYPE_OBJECT,
         required=['email', 'documento'],
         properties={
-            'email': openapi.Schema(type=openapi.TYPE_STRING, example='juan.perez@soyudemedellin.edu.co'),
-            'documento': openapi.Schema(type=openapi.TYPE_STRING, example='1001234567', description='Documento de identidad usado como contraseña.'),
+            'email': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                example='juan.perez@soyudemedellin.edu.co'
+            ),
+            'documento': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                example='1001234567',
+                description='Documento de identidad usado como contraseña.'
+            ),
         }
     ),
     responses={
-        200: openapi.Response('Login exitoso.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'name': openapi.Schema(type=openapi.TYPE_STRING), 'email': openapi.Schema(type=openapi.TYPE_STRING)})),
-        401: openapi.Response('Credenciales incorrectas.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
+        200: openapi.Response(
+            'Login exitoso.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'name': openapi.Schema(type=openapi.TYPE_STRING),
+                    'email': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        401: openapi.Response(
+            'Credenciales incorrectas.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
     }
 )
 @api_view(['POST'])
@@ -242,35 +340,31 @@ def iniciar_sesion(request):
     Autentica con el correo institucional y el documento de identidad como
     contraseña (RN02), y devuelve el rol ALMACENADO en la cuenta para que la
     interfaz muestre las herramientas de ese perfil.
-
-    El rol no se recalcula a partir del dominio del correo en cada entrada: si
-    se recalculara, una cuenta a la que el administrador principal le retiró el
-    rol (RF23) lo recuperaría sola en el siguiente inicio de sesión.
-
-    Una cuenta penalizada entra con normalidad y ve su estado: la penalización
-    limita reservar, no entrar (RN09).
     """
-    # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO CRÍTICO #2 — INICIO DE SESIÓN                          ║
-    # ║ Crítico por seguridad: la verificación compara el hash PBKDF2       ║
-    # ║ almacenado (verify_password) sin exponer la contraseña, y devuelve  ║
-    # ║ un mensaje genérico ante correo o clave incorrectos para no revelar ║
-    # ║ si el correo existe (mitiga enumeración de usuarios).               ║
-    # ╚══════════════════════════════════════════════════════════════════╝
     db = get_db()
-    email     = request.data.get('email', '').strip().lower()
+
+    email = request.data.get('email', '').strip().lower()
     documento = _leer_documento(request.data)
 
     user = db.users.find_one({'email': email})
+
     if not user or not verify_password(user['password'], documento):
-        return Response({'error': 'Correo o documento de identidad incorrectos.'}, status=401)
+        return Response(
+            {'error': 'Correo o documento de identidad incorrectos.'},
+            status=401,
+        )
 
     # RF22 — A esta cuenta le retiraron el rol: ya no puede entrar al sistema.
     if user.get('estado') == 'INACTIVO' or user.get('role') == 'SIN_ROL':
-        return Response({'error': 'Tu cuenta fue desactivada por el administrador principal.'}, status=403)
+        return Response(
+            {
+                'error': (
+                    'Tu cuenta fue desactivada por el administrador principal.'
+                )
+            },
+            status=403,
+        )
 
-    # Se devuelve rol, estado y contadores para que el frontend muestre las
-    # herramientas de cada perfil y la alerta de cancelaciones (RN10).
     return Response(_perfil_sesion(user))
 
 
@@ -278,29 +372,45 @@ def iniciar_sesion(request):
     method='get',
     operation_description="Devuelve la sesión actualizada de un usuario (se usa al recargar la página).",
     manual_parameters=[
-        openapi.Parameter('email', openapi.IN_QUERY, description="Correo del usuario", type=openapi.TYPE_STRING, required=True),
+        openapi.Parameter(
+            'email',
+            openapi.IN_QUERY,
+            description="Correo del usuario",
+            type=openapi.TYPE_STRING,
+            required=True
+        ),
     ],
     responses={
-        200: openapi.Response('Sesión vigente.', openapi.Schema(type=openapi.TYPE_OBJECT)),
-        404: openapi.Response('Usuario no encontrado.', openapi.Schema(type=openapi.TYPE_OBJECT)),
+        200: openapi.Response(
+            'Sesión vigente.',
+            openapi.Schema(type=openapi.TYPE_OBJECT)
+        ),
+        404: openapi.Response(
+            'Usuario no encontrado.',
+            openapi.Schema(type=openapi.TYPE_OBJECT)
+        ),
     }
 )
 @api_view(['GET'])
 def session(request):
-    """Rehidrata la sesión tras recargar la página.
-
-    El frontend guarda la sesión en localStorage; al recargar consulta este
-    endpoint para traer datos frescos (rol, estado, cancelaciones) en vez de
-    confiar ciegamente en lo guardado en el navegador.
-    """
+    """Rehidrata la sesión tras recargar la página."""
     email = request.query_params.get('email', '').strip().lower()
-    if not email:
-        return Response({'error': 'Parámetro email requerido.'}, status=400)
-    user = get_db().users.find_one({'email': email})
-    if not user:
-        return Response({'error': 'Usuario no encontrado.'}, status=404)
-    return Response(_perfil_sesion(user))
 
+    if not email:
+        return Response(
+            {'error': 'Parámetro email requerido.'},
+            status=400
+        )
+
+    user = get_db().users.find_one({'email': email})
+
+    if not user:
+        return Response(
+            {'error': 'Usuario no encontrado.'},
+            status=404
+        )
+
+    return Response(_perfil_sesion(user))
 
 
 # ──────────────────────────────────────────
@@ -311,52 +421,59 @@ def session(request):
     method='get',
     operation_description="Bloques horarios y cupos disponibles para la fecha de reserva (el día siguiente).",
     responses={
-        200: openapi.Response('Disponibilidad del día siguiente.', openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'fecha': openapi.Schema(type=openapi.TYPE_STRING, example='2026-08-17'),
-                'fecha_label': openapi.Schema(type=openapi.TYPE_STRING, example='lunes 17 de agosto de 2026'),
-                'slots': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
-            }
-        )),
+        200: openapi.Response(
+            'Disponibilidad del día siguiente.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'fecha': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        example='2026-08-17'
+                    ),
+                    'fecha_label': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        example='lunes 17 de agosto de 2026'
+                    ),
+                    'slots': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT
+                        )
+                    ),
+                }
+            )
+        ),
     }
 )
 @api_view(['GET'])
 def consultar_horarios(request):
-    """RF06 — Consultar los bloques horarios con sus cupos.
-
-    Devuelve los seis bloques de la jornada siguiente, cada uno con su aforo y
-    los cupos que quedan libres (RN03 y RN04). Es la misma consulta para los tres
-    roles: lo único que cambia es que la interfaz no ofrece la acción de reservar
-    a quien no es estudiante (RN10).
-
-    Los cupos NO viven en el catálogo de bloques sino en la disponibilidad de
-    cada jornada. Si vivieran en el catálogo, el contador sería el mismo para
-    todos los días: lo que se reserva hoy para mañana descontaría también el
-    aforo de pasado mañana, y el gimnasio quedaría lleno para siempre.
-    """
-    # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO CRÍTICO #3 — CONSULTA DE CUPOS EN TIEMPO REAL           ║
-    # ║ Crítico para la consistencia: la interfaz muestra la disponibilidad ║
-    # ║ y decide qué bloques se pueden reservar a partir de este valor.     ║
-    # ╚══════════════════════════════════════════════════════════════════╝
+    """RF06 — Consultar los bloques horarios con sus cupos."""
     fecha = fecha_reserva()
     fecha_iso = fecha.isoformat()
+
     asegurar_disponibilidad(fecha_iso)
 
     db = get_db()
-    catalogo = {b['slotId']: b for b in db.slots.find({}, {'_id': 0})}
+
+    catalogo = {
+        b['slotId']: b
+        for b in db.slots.find({}, {'_id': 0})
+    }
+
     slots = [
         {
-            'id':        d['slotId'],
-            'hour':      catalogo[d['slotId']]['hour'],
-            'hora_fin':  catalogo[d['slotId']].get('hora_fin', ''),
+            'id': d['slotId'],
+            'hour': catalogo[d['slotId']]['hour'],
+            'hora_fin': catalogo[d['slotId']].get('hora_fin', ''),
             'available': d['cupos_disponibles'],
-            'total':     d['aforo_maximo'],
+            'total': d['aforo_maximo'],
         }
-        for d in db.disponibilidad.find({'fecha': fecha_iso}).sort('slotId', 1)
+        for d in db.disponibilidad.find(
+            {'fecha': fecha_iso}
+        ).sort('slotId', 1)
         if d['slotId'] in catalogo
     ]
+
     return Response({
         'fecha': fecha_iso,
         'fecha_label': formato_fecha_es(fecha),
@@ -372,11 +489,31 @@ def consultar_horarios(request):
     method='get',
     operation_description="Lista las reservas activas de un estudiante.",
     manual_parameters=[
-        openapi.Parameter('email', openapi.IN_QUERY, description="Correo del usuario", type=openapi.TYPE_STRING, required=True),
+        openapi.Parameter(
+            'email',
+            openapi.IN_QUERY,
+            description="Correo del usuario",
+            type=openapi.TYPE_STRING,
+            required=True
+        ),
     ],
     responses={
-        200: openapi.Response('Lista de reservas.', openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT))),
-        400: openapi.Response('Parámetro email requerido.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
+        200: openapi.Response(
+            'Lista de reservas.',
+            openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_OBJECT)
+            )
+        ),
+        400: openapi.Response(
+            'Parámetro email requerido.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
     }
 )
 @swagger_auto_schema(
@@ -386,137 +523,235 @@ def consultar_horarios(request):
         type=openapi.TYPE_OBJECT,
         required=['email', 'slotId'],
         properties={
-            'email': openapi.Schema(type=openapi.TYPE_STRING, example='juan.perez@soyudemedellin.edu.co'),
-            'slotId': openapi.Schema(type=openapi.TYPE_INTEGER, example=1),
+            'email': openapi.Schema(
+                type=openapi.TYPE_STRING,
+                example='juan.perez@soyudemedellin.edu.co'
+            ),
+            'slotId': openapi.Schema(
+                type=openapi.TYPE_INTEGER,
+                example=1
+            ),
         }
     ),
     responses={
-        201: openapi.Response('Reserva creada.', openapi.Schema(type=openapi.TYPE_OBJECT)),
-        400: openapi.Response('Datos inválidos.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
-        403: openapi.Response('Perfil sin permiso de reserva.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
-        404: openapi.Response('Horario no encontrado.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
-        409: openapi.Response('Sin cupos o ya reservó hoy.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
+        201: openapi.Response(
+            'Reserva creada.',
+            openapi.Schema(type=openapi.TYPE_OBJECT)
+        ),
+        400: openapi.Response(
+            'Datos inválidos.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        403: openapi.Response(
+            'Perfil sin permiso de reserva.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        404: openapi.Response(
+            'Horario no encontrado.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        409: openapi.Response(
+            'Sin cupos o ya reservó hoy.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
     }
 )
 @api_view(['GET', 'POST'])
 def reservations(request):
-    """Punto de entrada de /api/reservations/.
-
-    Delega en el requisito que corresponde según el método: RF08 para consultar
-    la reserva vigente y RF07 para crearla.
-    """
+    """Punto de entrada de /api/reservations/."""
     if request.method == 'GET':
         return consultar_reserva(request)
+
     return reservar_mañana(request)
 
 
 def consultar_reserva(request):
-    """RF08 — Consultar mis reservas.
-
-    Devuelve la reserva vigente del estudiante con su bloque, su fecha y su
-    estado. Solo se listan las ACTIVA: las canceladas, las completadas y las
-    inasistencias pertenecen al historial (RF14), no a esta consulta.
-    """
+    """RF08 — Consultar mis reservas."""
     email = request.query_params.get('email', '').lower()
+
     if not email:
-        return Response({'error': 'Parámetro email requerido.'}, status=400)
-    docs = [serialize(r) for r in get_db().reservations.find({'email': email, 'estado': 'ACTIVA'})]
+        return Response(
+            {'error': 'Parámetro email requerido.'},
+            status=400
+        )
+
+    docs = [
+        serialize(r)
+        for r in get_db().reservations.find({
+            'email': email,
+            'estado': 'ACTIVA'
+        })
+    ]
+
     return Response(docs)
 
 
 def reservar_mañana(request):
-    """RF07 — Reservar un bloque para el día siguiente.
-
-    Aplica en orden las reglas RN10 (solo el estudiante reserva), RN09 (la
-    cuenta penalizada no reserva), RN04 (la fecha es siempre la del día
-    siguiente), RN05 (una reserva por día) y RN06 (el cupo se descuenta sin que
-    dos personas puedan tomar el mismo).
-    """
-    # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO CRÍTICO #4 — CREAR RESERVA SIN SOBRECUPO                ║
-    # ║ El más crítico del sistema. Si el cupo se comprobara primero y se    ║
-    # ║ descontara después, dos estudiantes que reservan en el mismo         ║
-    # ║ instante leerían los dos que queda un lugar y lo ocuparían los dos.  ║
-    # ║ Por eso comprobar y descontar van en UNA sola operación condicionada ║
-    # ║ (tomar_cupo). La reserva se inserta solo DESPUÉS de ganar el cupo.   ║
-    # ╚══════════════════════════════════════════════════════════════════╝
+    """RF07 — Reservar un bloque para el día siguiente."""
     db = get_db()
-    email   = request.data.get('email', '').strip().lower()
+
+    email = request.data.get('email', '').strip().lower()
     slot_id = request.data.get('slotId')
 
     if not email or slot_id is None:
-        return Response({'error': 'email y slotId son obligatorios.'}, status=400)
+        return Response(
+            {'error': 'email y slotId son obligatorios.'},
+            status=400
+        )
+
     try:
         slot_id = int(slot_id)
     except (TypeError, ValueError):
-        return Response({'error': 'slotId debe ser un número.'}, status=400)
+        return Response(
+            {'error': 'slotId debe ser un número.'},
+            status=400
+        )
 
     owner = db.users.find_one({'email': email})
-    if not owner:
-        return Response({'error': 'El usuario de la reserva no existe.'}, status=404)
 
-    # RN10 — Entrenadores y administradores consultan el aforo, no lo ocupan.
+    if not owner:
+        return Response(
+            {'error': 'El usuario de la reserva no existe.'},
+            status=404
+        )
+
+    # RN10 — Entrenadores y administradores consultan el aforo,
+    # no lo ocupan.
     if owner.get('role') != 'ESTUDIANTE':
         return Response(
-            {'error': 'Los entrenadores y administradores no reservan cupos: solo consultan la disponibilidad.'},
+            {
+                'error': (
+                    'Los entrenadores y administradores no reservan cupos: '
+                    'solo consultan la disponibilidad.'
+                )
+            },
             status=403,
         )
 
     # RN09 — Una cuenta penalizada no reserva mientras dure la penalización.
     if owner.get('estado') == 'PENALIZADO':
         hasta = owner.get('penalizado_hasta')
+
         if hasta and hasta > ahora_utc():
             return Response(
-                {'error': 'Tu cuenta está penalizada por inasistencias. No puedes reservar por ahora.'},
+                {
+                    'error': (
+                        'Tu cuenta está penalizada por inasistencias. '
+                        'No puedes reservar por ahora.'
+                    )
+                },
                 status=403,
             )
+
         # Penalización vencida: la cuenta vuelve a estar activa.
         db.users.update_one(
             {'email': email},
-            {'$set': {'estado': 'ACTIVO', 'no_show_count': 0, 'penalizado_hasta': None}},
+            {
+                '$set': {
+                    'estado': 'ACTIVO',
+                    'no_show_count': 0,
+                    'penalizado_hasta': None
+                }
+            },
         )
 
     # RN04 — La fecha la calcula el sistema: siempre el día siguiente.
     fecha = fecha_reserva()
     fecha_iso = fecha.isoformat()
     fecha_label = formato_fecha_es(fecha)
+
     asegurar_disponibilidad(fecha_iso)
 
     slot = db.slots.find_one({'slotId': slot_id})
-    if not slot:
-        return Response({'error': 'Horario no encontrado.'}, status=404)
 
-    # RN05 — Una sola reserva por estudiante y por día. Se comprueba ANTES de
-    # tocar el aforo, para que un intento duplicado no descuente ningún cupo.
-    if db.reservations.count_documents(
-            {'email': email, 'estado': 'ACTIVA', 'reserva_date': fecha_iso}) >= MAX_RESERVAS_POR_DIA:
-        aviso = (f'Ya tienes una reserva para el {fecha_label}. '
-                 'Solo se permite una reserva por día: cancela la actual si quieres cambiar de horario.')
-        return Response({'error': aviso, 'notificacion': aviso, 'tipo': 'RESERVA_DUPLICADA'}, status=409)
+    if not slot:
+        return Response(
+            {'error': 'Horario no encontrado.'},
+            status=404
+        )
+
+    # RN05 — Una sola reserva por estudiante y por día.
+    if db.reservations.count_documents({
+        'email': email,
+        'estado': 'ACTIVA',
+        'reserva_date': fecha_iso
+    }) >= MAX_RESERVAS_POR_DIA:
+
+        aviso = (
+            f'Ya tienes una reserva para el {fecha_label}. '
+            'Solo se permite una reserva por día: '
+            'cancela la actual si quieres cambiar de horario.'
+        )
+
+        return Response(
+            {
+                'error': aviso,
+                'notificacion': aviso,
+                'tipo': 'RESERVA_DUPLICADA'
+            },
+            status=409
+        )
 
     # RN06 — Comprobar y descontar en una sola operación.
     if not tomar_cupo(fecha_iso, slot_id):
-        aviso = f"El bloque de las {slot['hour']} se quedó sin cupos."
-        return Response({'error': aviso, 'notificacion': aviso, 'tipo': 'SIN_CUPOS'}, status=409)
+        aviso = (
+            f"El bloque de las {slot['hour']} se quedó sin cupos."
+        )
+
+        return Response(
+            {
+                'error': aviso,
+                'notificacion': aviso,
+                'tipo': 'SIN_CUPOS'
+            },
+            status=409
+        )
 
     result = db.reservations.insert_one({
-        'email':        email,
-        'slotId':       slot_id,
-        'hour':         slot['hour'],
-        'reserva_date': fecha_iso,        # RN04 — la jornada siguiente
-        'date':         fecha_label,      # la misma fecha, escrita en palabras
-        'estado':       'ACTIVA',
-        'created_by':   email,
-        'created_at':   ahora_utc(),
+        'email': email,
+        'slotId': slot_id,
+        'hour': slot['hour'],
+        'reserva_date': fecha_iso,
+        'date': fecha_label,
+        'estado': 'ACTIVA',
+        'created_by': email,
+        'created_at': ahora_utc(),
     })
 
-    # RN11 — La confirmación la produce el backend, no la interfaz.
-    nueva = serialize(db.reservations.find_one({'_id': result.inserted_id}))
+    # RN11 — La confirmación la produce el backend.
+    nueva = serialize(
+        db.reservations.find_one({
+            '_id': result.inserted_id
+        })
+    )
+
     nueva['notificacion'] = (
         f"Reserva confirmada para las {slot['hour']} del {fecha_label}. "
         'Si no vas a asistir, cancélala para liberar el cupo.'
     )
+
     nueva['tipo'] = 'RESERVA_CONFIRMADA'
+
     return Response(nueva, status=201)
 
 
@@ -524,12 +759,42 @@ def reservar_mañana(request):
     method='delete',
     operation_description="Cancela reserva y libera cupo inmediatamente. Suma al contador de cancelaciones (RN10).",
     manual_parameters=[
-        openapi.Parameter('reservation_id', openapi.IN_PATH, description="ID de la reserva (ObjectId)", type=openapi.TYPE_STRING, required=True),
+        openapi.Parameter(
+            'reservation_id',
+            openapi.IN_PATH,
+            description="ID de la reserva (ObjectId)",
+            type=openapi.TYPE_STRING,
+            required=True
+        ),
     ],
     responses={
-        200: openapi.Response('Reserva cancelada.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'message': openapi.Schema(type=openapi.TYPE_STRING)})),
-        400: openapi.Response('ID inválido.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
-        404: openapi.Response('Reserva no encontrada.', openapi.Schema(type=openapi.TYPE_OBJECT, properties={'error': openapi.Schema(type=openapi.TYPE_STRING)})),
+        200: openapi.Response(
+            'Reserva cancelada.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        400: openapi.Response(
+            'ID inválido.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
+        404: openapi.Response(
+            'Reserva no encontrada.',
+            openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING)
+                }
+            )
+        ),
     }
 )
 @api_view(['DELETE'])
@@ -539,41 +804,59 @@ def cancelar_reserva(request, reservation_id):
     Anula la reserva vigente y devuelve el cupo al bloque en la misma operación,
     para que otro estudiante lo vea disponible enseguida (RN07).
 
-    Cancelar a tiempo NO penaliza. Es justo la conducta que el sistema quiere
-    fomentar: la penalización es por no presentarse habiendo reservado (RN08),
-    no por avisar con antelación que no se va a ir.
+    Cancelar a tiempo NO penaliza. La penalización es por no presentarse
+    habiendo reservado (RN08).
     """
-    # ╔══════════════════════════════════════════════════════════════════╗
-    # ║ CASO DE USO CRÍTICO #5 — CANCELAR Y LIBERAR EL CUPO                 ║
-    # ║ Crítico para no perder ni inventar cupos. El paso de ACTIVA a        ║
-    # ║ CANCELADA es una sola operación condicionada: si la reserva ya no     ║
-    # ║ estaba activa, no se ejecuta y el cupo no se devuelve dos veces.      ║
-    # ╚══════════════════════════════════════════════════════════════════╝
     db = get_db()
+
     try:
         oid = ObjectId(reservation_id)
     except Exception:
-        return Response({'error': 'ID de reserva inválido.'}, status=400)
+        return Response(
+            {'error': 'ID de reserva inválido.'},
+            status=400
+        )
 
-    # La condición sobre el estado es la guardia: de dos peticiones simultáneas
-    # de cancelación, solo una encuentra la reserva todavía ACTIVA.
+    # La condición sobre el estado es la guardia: de dos peticiones
+    # simultáneas de cancelación, solo una encuentra la reserva ACTIVA.
     reservation = db.reservations.find_one_and_update(
-        {'_id': oid, 'estado': 'ACTIVA'},
-        {'$set': {'estado': 'CANCELADA', 'cancelled_at': ahora_utc()}},
+        {
+            '_id': oid,
+            'estado': 'ACTIVA'
+        },
+        {
+            '$set': {
+                'estado': 'CANCELADA',
+                'cancelled_at': ahora_utc()
+            }
+        },
     )
+
     if reservation is None:
         if db.reservations.find_one({'_id': oid}):
-            return Response({'error': 'La reserva ya no está activa.'}, status=409)
-        return Response({'error': 'Reserva no encontrada.'}, status=404)
+            return Response(
+                {'error': 'La reserva ya no está activa.'},
+                status=409
+            )
 
-    # RN07 — El cupo vuelve al bloque de ESA jornada, no a un contador global.
-    devolver_cupo(reservation['reserva_date'], reservation['slotId'])
+        return Response(
+            {'error': 'Reserva no encontrada.'},
+            status=404
+        )
 
-    # RN11 — La confirmación la produce el backend, no la interfaz.
+    # RN07 — El cupo vuelve al bloque de ESA jornada.
+    devolver_cupo(
+        reservation['reserva_date'],
+        reservation['slotId']
+    )
+
+    # RN11 — La confirmación la produce el backend.
     return Response({
         'message': 'Reserva cancelada. Cupo liberado.',
-        'notificacion': (f"Cancelaste tu reserva de las {reservation['hour']} "
-                         f"del {reservation.get('date', '')}. El cupo quedó liberado "
-                         'para otro compañero.'),
+        'notificacion': (
+            f"Cancelaste tu reserva de las {reservation['hour']} "
+            f"del {reservation.get('date', '')}. "
+            'El cupo quedó liberado para otro compañero.'
+        ),
         'tipo': 'RESERVA_CANCELADA',
     })
