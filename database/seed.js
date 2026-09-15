@@ -85,7 +85,7 @@ db.users.insertMany(PERSONAS.map(function (p) {
 var HORAS     = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00'];
 var HORAS_FIN = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00'];
 var AFORO = NumberInt(20);
-if (db.slots.countDocuments({}) === 20) {
+if (db.slots.countDocuments({}) === 0) {
   db.slots.insertMany(HORAS.map(function (hora, i) {
     return { slotId: NumberInt(i + 1), hour: hora, hora_fin: HORAS_FIN[i], total: AFORO };
   }));
@@ -140,7 +140,7 @@ db.reservations.insertMany([
       { $set: {
           fecha: fecha,
           slotId: b.slotId,
-          cupos_disponibles: NumberInt(0),
+          cupos_disponibles: NumberInt(b.total - activas),
           aforo_maximo: b.total
       } },
       { upsert: true }

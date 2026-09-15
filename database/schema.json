@@ -27,7 +27,7 @@
           "tipo": "string",
           "obligatorio": true,
           "unico": true,
-          "descripcion": "Documento normalizado, sin puntos ni espacios. Dato de busqueda del entrenador (RN02, RF10)."
+          "descripcion": "Cedula de diez digitos exactos, sin puntos ni espacios. Es la contrasena y el dato de busqueda del entrenador (RN02, RF10)."
         },
         "password": {
           "tipo": "string",

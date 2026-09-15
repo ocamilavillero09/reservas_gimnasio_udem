@@ -27,7 +27,7 @@ from drf_yasg import openapi
 
 from .db import (
     ahora_utc, get_db, hash_password,
-    DOCUMENTO_MIN, ROLES, role_for_email,
+    ROLES, role_for_email, error_de_documento,
 )
 # Ayudantes que se quedan en sus módulos porque los comparten requisitos que sí
 # se prueban: la lectura del documento y el texto de los dominios (views), y el
@@ -109,11 +109,9 @@ def crear_administrador(request):
     documento = _leer_documento(request.data)
     if not name or not email or not documento:
         return Response({'error': 'Nombre, correo y documento de identidad son obligatorios.'}, status=400)
-    if len(documento) < DOCUMENTO_MIN:
-        return Response(
-            {'error': f'El documento de identidad debe tener al menos {DOCUMENTO_MIN} caracteres.'},
-            status=400,
-        )
+    problema = error_de_documento(documento)
+    if problema:
+        return Response({'error': problema}, status=400)
 
     role = role_for_email(email)
     if role is None:

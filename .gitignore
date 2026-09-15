@@ -23,6 +23,7 @@ Thumbs.db
 coverage/
 htmlcov/
 .coverage
+coverage.xml
 test-results/
 playwright-report/
 .playwright/

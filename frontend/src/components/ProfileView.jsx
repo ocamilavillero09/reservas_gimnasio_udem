@@ -26,6 +26,21 @@ const ROLE_LABEL = {
  */
 export default function ProfileView({ user, showToast }) {
   const config = useConfig();
+  // RNF06 — Los rangos válidos los publica el backend; aquí solo se muestran.
+  const rangos = config?.perfil_rangos;
+
+  // Un input de tipo `number` deja teclear la e del exponente, el signo menos y
+  // el más, y no avisa hasta que el servidor rechaza el dato. Estos campos pasan
+  // a ser de texto y se filtra lo que se escribe o se pega: la edad admite solo
+  // dígitos y el peso y la altura admiten además un punto decimal.
+  const soloEntero  = (v) => v.replace(/\D/g, '').slice(0, 3);
+  const soloDecimal = (v) => {
+    const limpio = v.replace(/[^\d.]/g, '');
+    const [entera, ...resto] = limpio.split('.');
+    return resto.length ? `${entera.slice(0, 3)}.${resto.join('').slice(0, 1)}` : entera.slice(0, 3);
+  };
+  const ayuda = (campo, unidad) =>
+    rangos?.[campo] ? `Entre ${rangos[campo].minimo} y ${rangos[campo].maximo} ${unidad}.` : '';
   const [edad, setEdad] = useState('');
   const [peso, setPeso] = useState('');
   const [altura, setAltura] = useState('');
@@ -172,15 +187,18 @@ export default function ProfileView({ user, showToast }) {
           </div>
           <div>
             <label htmlFor="perfil-edad" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Edad (años)</label>
-            <input type="number" min="1" id="perfil-edad" value={edad} onChange={(e) => setEdad(e.target.value)} style={inputStyle} />
+            <input type="text" inputMode="numeric" id="perfil-edad" value={edad} onChange={(e) => setEdad(soloEntero(e.target.value))} style={inputStyle} />
+            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('edad', 'años')}</p>
           </div>
           <div>
             <label htmlFor="perfil-peso" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Peso (kg)</label>
-            <input type="number" id="perfil-peso" value={peso} onChange={(e) => setPeso(e.target.value)} style={inputStyle} />
+            <input type="text" inputMode="decimal" id="perfil-peso" value={peso} onChange={(e) => setPeso(soloDecimal(e.target.value))} style={inputStyle} />
+            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('peso', 'kg')}</p>
           </div>
           <div>
             <label htmlFor="perfil-altura" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Altura (cm)</label>
-            <input type="number" id="perfil-altura" value={altura} onChange={(e) => setAltura(e.target.value)} style={inputStyle} />
+            <input type="text" inputMode="decimal" id="perfil-altura" value={altura} onChange={(e) => setAltura(soloDecimal(e.target.value))} style={inputStyle} />
+            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('altura', 'cm')}</p>
           </div>
           <div>
             <label htmlFor="perfil-meta" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Objetivo de entrenamiento</label>

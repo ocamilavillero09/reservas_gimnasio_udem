@@ -50,6 +50,31 @@ describe('Login', () => {
     expect(screen.getByText(/Tu documento de identidad es tu contraseña/i)).toBeInTheDocument();
   });
 
+  it('tras registrarse, el formulario de ingreso aparece con el correo vacío', async () => {
+    // El campo arrastraba el correo de la cuenta recién creada, así que quien
+    // entraba con otra cuenta tenía que borrarlo a mano.
+    global.fetch = vi.fn((url) =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve(
+          String(url).includes('/config/') ? CONFIG : { message: 'Registro exitoso.' }),
+      }));
+    render(<Login onLogin={() => {}} />);
+    fireEvent.click(screen.getByText('Registrarse'));
+
+    const correo = await screen.findByPlaceholderText(/nombre@soyudemedellin/i);
+    fireEvent.change(correo, { target: { value: 'nueva@soyudemedellin.edu.co' } });
+    fireEvent.change(screen.getByPlaceholderText(/María García/i), { target: { value: 'Nueva' } });
+    fireEvent.change(screen.getByPlaceholderText('Ej: 1001234567'), { target: { value: '1001234567' } });
+    fireEvent.click(screen.getByText(/Crear cuenta →/));
+
+    const volver = await screen.findByText(/Ir a iniciar sesión/);
+    fireEvent.click(volver);
+
+    await waitFor(() =>
+      expect(screen.getByPlaceholderText(/nombre@soyudemedellin/i)).toHaveValue(''));
+  });
+
   it('al escribir el correo en el registro indica el rol que se asignará', async () => {
     render(<Login onLogin={() => {}} />);
     fireEvent.click(screen.getByText('Registrarse'));

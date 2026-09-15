@@ -59,7 +59,8 @@ export default defineConfig({
     include: ['../tests/frontend/**/*.test.{js,jsx}'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
+      // lcov es el formato que lee SonarQube Cloud.
+      reporter: ['text', 'html', 'lcov'],
       // Se mide el código de la aplicación, que sigue viviendo en src/.
       // `all` hace que aparezcan también los ficheros que ninguna prueba
       // importa: sin esto el informe solo mostraría lo ya cubierto.

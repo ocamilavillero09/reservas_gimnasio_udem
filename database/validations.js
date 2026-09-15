@@ -26,7 +26,7 @@ var VALIDADORES = {
     properties: {
       name:      { bsonType: 'string', minLength: 2, maxLength: 100 },
       email:     { bsonType: 'string', pattern: PATRON_CORREO },
-      documento: { bsonType: 'string', minLength: 6, maxLength: 20, pattern: '^[A-Za-z0-9]+$' },
+      documento: { bsonType: 'string', minLength: 10, maxLength: 10, pattern: '^[0-9]{10}$' },
       password:  { bsonType: 'string', pattern: '^[0-9a-f]{64}:[0-9a-f]{64}$' },
       role:      { enum: ['ESTUDIANTE', 'ENTRENADOR', 'ADMIN', 'SIN_ROL'] },
       estado:    { enum: ['ACTIVO', 'PENALIZADO', 'INACTIVO'] },

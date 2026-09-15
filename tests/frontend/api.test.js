@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { configApi, authApi, slotsApi, reservationsApi, attendanceApi, reportsApi } from '../../frontend/src/services/api';
+import { configApi, authApi, slotsApi, reservationsApi, attendanceApi, reportsApi, buzonApi } from '../../frontend/src/services/api';
 import { mockFetch } from './helpers';
 
 describe('api service', () => {
@@ -93,6 +93,15 @@ describe('api service', () => {
     const res = await reportsApi.verRegistroEntrenador('coach@udem.edu.co');
     expect(res.totales.asistencias).toBe(4);
     expect(global.fetch.mock.calls[0][0]).toContain('/reports/daily/entrenador/?actor_email=');
+  });
+
+  it('eliminarSugerencia borra un mensaje del buzón con DELETE (RF21)', async () => {
+    mockFetch({ message: 'Mensaje borrado del buzón.', total: 0 });
+    const res = await buzonApi.eliminarSugerencia('abc123', 'jefe@udemedellin.edu.co');
+    expect(res.total).toBe(0);
+    const [url, opts] = global.fetch.mock.calls[0];
+    expect(url).toContain('/suggestions/abc123/?actor_email=');
+    expect(opts.method).toBe('DELETE');
   });
 
   it('lanza Error con el mensaje del servidor cuando !ok', async () => {

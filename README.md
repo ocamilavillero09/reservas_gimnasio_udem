@@ -17,7 +17,7 @@ Sistema de gestión de reservas para el gimnasio de la Universidad de Medellín.
 | Código | Regla |
 |---|---|
 | RN01 | El dominio del correo determina el rol, que se asigna una sola vez en el registro |
-| RN02 | El documento de identidad es la credencial y el identificador de búsqueda |
+| RN02 | El documento de identidad es la credencial y el identificador de búsqueda. Es una cédula: diez dígitos exactos, sin letras |
 | RN03 | Seis bloques de dos horas en horas pares, de 06:00 a 18:00 |
 | RN04 | Las reservas son siempre para el día siguiente |
 | RN05 | Una reserva por estudiante por día |

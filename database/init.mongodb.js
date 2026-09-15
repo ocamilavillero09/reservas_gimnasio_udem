@@ -42,8 +42,8 @@ db.createCollection('users', {
           description: 'Correo institucional. Su dominio determina el rol (RN01).'
         },
         documento: {
-          bsonType: 'string', minLength: 6, maxLength: 20, pattern: '^[A-Za-z0-9]+$',
-          description: 'Documento normalizado, sin puntos ni espacios. Es el dato de busqueda del entrenador (RN02).'
+          bsonType: 'string', minLength: 10, maxLength: 10, pattern: '^[0-9]{10}$',
+          description: 'Cedula de diez digitos, sin puntos ni espacios. Es la contrasena y el dato de busqueda del entrenador (RN02).'
         },
         password: {
           bsonType: 'string', pattern: '^[0-9a-f]{64}:[0-9a-f]{64}$',

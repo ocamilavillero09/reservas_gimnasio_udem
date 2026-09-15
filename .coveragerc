@@ -12,7 +12,14 @@
 source = backend/api
 omit =
     */migrations/*
+# Rutas relativas a la raíz en el informe. Sin esto, coverage.xml guarda la ruta
+# absoluta de la máquina donde corrió, y SonarQube Cloud no la reconoce.
+relative_files = True
 
 [report]
 show_missing = True
 skip_covered = False
+
+[xml]
+# El informe que lee SonarQube Cloud: `coverage xml` lo deja en la raíz.
+output = coverage.xml

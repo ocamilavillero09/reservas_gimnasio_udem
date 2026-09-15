@@ -97,6 +97,10 @@ export const buzonApi = {
   // RF20 — Reportar una falla o enviar una sugerencia (backend: fallo_sugerencia).
   falloSugerencia: (body) => request('/suggestions/', { method: 'POST', body: JSON.stringify(body) }),
   // RF21 — Consultar el buzón (backend: consultar_buzon). Solo el administrador.
+  // RF21 — Borrar un mensaje ya atendido (backend: eliminar_sugerencia).
+  eliminarSugerencia: (id, actorEmail) =>
+    request(`/suggestions/${encodeURIComponent(id)}/?actor_email=${encodeURIComponent(actorEmail)}`,
+            { method: 'DELETE' }),
   consultarBuzon: (actorEmail) =>
     request(`/suggestions/inbox/?actor_email=${encodeURIComponent(actorEmail)}`),
 };
