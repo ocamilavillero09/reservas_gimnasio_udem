@@ -67,11 +67,8 @@ def consultar_configuracion(request):
             for i, inicio, fin in BLOQUES_HORARIOS
         ],
         'aforo_por_defecto': AFORO_POR_DEFECTO,
-
-        # RN02 — el documento de identidad debe tener exactamente
-        # la longitud definida por el backend.
+        # RN02 — el documento de identidad es una cédula de diez dígitos.
         'documento_longitud': DOCUMENTO_LONGITUD,
-
         # RN05 — una reserva por estudiante y por día.
         'max_reservas_por_dia': MAX_RESERVAS_POR_DIA,
 
@@ -227,14 +224,10 @@ def registrar_cuenta(request):
             status=400,
         )
 
-    # RN02 — El documento debe cumplir la validación centralizada
-    # definida en db.py.
+    # RF01 — El documento de identidad es además la contraseña (RF02).
     problema = error_de_documento(documento)
     if problema:
-        return Response(
-            {'error': problema},
-            status=400,
-        )
+        return Response({'error': problema}, status=400)
 
     role = role_for_email(email)
 

@@ -52,55 +52,60 @@ process = psutil.Process(os.getpid())
 
 
 # ============================================================
-# FUNCIÓN PARA MEDIR RF06
+# MEDICIÓN COMÚN A TODOS LOS REQUISITOS
 # ============================================================
 
-def medir_rf06():
+def encabezado(requisito, descripcion):
     print("\n========================================")
-    print("MÉTRICAS DE RF06")
-    print("Consultar los bloques horarios con sus cupos")
+    print(f"MÉTRICAS DE {requisito}")
+    print(descripcion)
     print("========================================")
 
-    tiempos = []
-    tiempos_cpu = []
-    memorias = []
 
-    for i in range(REPETICIONES):
+def tiempo_cpu_total():
+    cpu = process.cpu_times()
+    return cpu.user + cpu.system
 
-        request = factory.get("/api/horarios/")
 
-        # Memoria antes de ejecutar el requisito
-        memoria_antes = process.memory_info().rss
+def medir_ejecucion(ejecutar):
+    """Ejecuta el requisito una vez y devuelve (tiempo, tiempo de CPU, memoria)."""
+    memoria_antes = process.memory_info().rss
+    cpu_antes = tiempo_cpu_total()
+    inicio = time.perf_counter()
 
-        # CPU antes
-        cpu_antes = process.cpu_times()
-        cpu_antes_total = cpu_antes.user + cpu_antes.system
+    # EJECUCIÓN REAL DEL REQUISITO
+    ejecutar()
 
-        # Tiempo inicial
-        inicio = time.perf_counter()
+    fin = time.perf_counter()
+    cpu_despues = tiempo_cpu_total()
+    memoria_despues = process.memory_info().rss
 
-        # EJECUCIÓN REAL DEL REQUISITO RF06
-        views.consultar_horarios(request)
+    return fin - inicio, cpu_despues - cpu_antes, memoria_despues - memoria_antes
 
-        # Tiempo final
-        fin = time.perf_counter()
 
-        # CPU después
-        cpu_despues = process.cpu_times()
-        cpu_despues_total = cpu_despues.user + cpu_despues.system
+def medir_repeticiones(preparar, ejecutar, despues=None):
+    """Repite la medición REPETICIONES veces.
 
-        # Memoria después
-        memoria_despues = process.memory_info().rss
+    preparar() deja los datos listos y devuelve la solicitud; ejecutar(request)
+    llama al requisito; despues() limpia lo que haya cambiado la ejecución.
+    """
+    tiempos, tiempos_cpu, memorias = [], [], []
 
-        # Cálculos
-        tiempo = fin - inicio
-        tiempo_cpu = cpu_despues_total - cpu_antes_total
-        memoria = memoria_despues - memoria_antes
+    for _ in range(REPETICIONES):
+        request = preparar()
+        tiempo, tiempo_cpu, memoria = medir_ejecucion(lambda: ejecutar(request))
 
         tiempos.append(tiempo)
         tiempos_cpu.append(tiempo_cpu)
         memorias.append(memoria)
 
+        if despues:
+            despues()
+
+    return tiempos, tiempos_cpu, memorias
+
+
+def imprimir_resultados(tiempos, tiempos_cpu, memorias):
     # Promedios
     tiempo_promedio = sum(tiempos) / len(tiempos)
     cpu_promedio = sum(tiempos_cpu) / len(tiempos_cpu)
@@ -123,6 +128,27 @@ def medir_rf06():
     print(f"Memoria utilizada: {memoria_mb:.4f} MB")
     print(f"Memoria total: {memoria_total_gb:.2f} GB")
     print(f"Uso de memoria: {uso_memoria:.6f}%")
+
+
+def consulta_con_email(ruta, email):
+    """GET con ?email=, con query_params puestos: la vista se llama directamente."""
+    request = factory.get(ruta, {"email": email})
+    request.query_params = request.GET
+    return request
+
+
+# ============================================================
+# FUNCIÓN PARA MEDIR RF06
+# ============================================================
+
+def medir_rf06():
+    encabezado("RF06", "Consultar los bloques horarios con sus cupos")
+
+    resultados = medir_repeticiones(
+        preparar=lambda: factory.get("/api/horarios/"),
+        ejecutar=views.consultar_horarios,
+    )
+    imprimir_resultados(*resultados)
 
 
 # ============================================================
@@ -130,193 +156,48 @@ def medir_rf06():
 # ============================================================
 
 def medir_rf07():
-    print("\n========================================")
-    print("MÉTRICAS DE RF07")
-    print("Reservar un bloque para el día siguiente")
-    print("========================================")
-
-    tiempos = []
-    tiempos_cpu = []
-    memorias = []
+    encabezado("RF07", "Reservar un bloque para el día siguiente")
 
     # Datos usados para realizar la reserva
     email = "estudiante@udem.edu.co"
     slot_id = 1
 
-    # Base de datos
     db = views.get_db()
 
-    for i in range(REPETICIONES):
+    def limpiar():
+        db.reservations.delete_many({"email": email})
 
-    # ----------------------------------------------------
-    # LIMPIEZA
-    # ----------------------------------------------------
-     db.reservations.delete_many({
-        "email": email
-    })
+    def preparar():
+        limpiar()
+        data = {"email": email, "slotId": slot_id}
+        request = factory.post("/api/reservations/", data, format="json")
+        request.data = data
+        return request
 
-    data = {
-        "email": email,
-        "slotId": slot_id
-    }
+    resultados = medir_repeticiones(preparar, views.reservar_mañana, despues=limpiar)
+    imprimir_resultados(*resultados)
 
-    request = factory.post(
-        "/api/reservations/",
-        data,
-        format="json"
-    )
 
-    request.data = data
-
-    # Memoria antes
-    memoria_antes = process.memory_info().rss
-
-    # CPU antes
-    cpu_antes = process.cpu_times()
-    cpu_antes_total = cpu_antes.user + cpu_antes.system
-
-    # Tiempo inicial
-    inicio = time.perf_counter()
-
-    # EJECUCIÓN REAL DEL RF07
-    views.reservar_mañana(request)
-
-    # Tiempo final
-    fin = time.perf_counter()
-
-    # CPU después
-    cpu_despues = process.cpu_times()
-    cpu_despues_total = cpu_despues.user + cpu_despues.system
-
-    # Memoria después
-    memoria_despues = process.memory_info().rss
-
-    tiempo = fin - inicio
-    tiempo_cpu = cpu_despues_total - cpu_antes_total
-    memoria = memoria_despues - memoria_antes
-
-    tiempos.append(tiempo)
-    tiempos_cpu.append(tiempo_cpu)
-    memorias.append(memoria)
-
-    # Limpieza
-    db.reservations.delete_many({
-        "email": email
-    })
-
-    # Promedios
-    tiempo_promedio = sum(tiempos) / len(tiempos)
-    cpu_promedio = sum(tiempos_cpu) / len(tiempos_cpu)
-    memoria_promedio = sum(memorias) / len(memorias)
-
-    # CPU %
-    uso_cpu = (cpu_promedio / tiempo_promedio) * 100
-
-    # Memoria
-    memoria_mb = memoria_promedio / (1024 * 1024)
-    memoria_total_gb = psutil.virtual_memory().total / (1024 ** 3)
-    memoria_total_mb = memoria_total_gb * 1024
-
-    uso_memoria = (memoria_mb / memoria_total_mb) * 100
-
-    print(f"Repeticiones: {REPETICIONES}")
-    print(f"Tiempo promedio: {tiempo_promedio:.6f} segundos")
-    print(f"Tiempo CPU promedio: {cpu_promedio:.6f} segundos")
-    print(f"Uso CPU: {uso_cpu:.4f}%")
-    print(f"Memoria utilizada: {memoria_mb:.4f} MB")
-    print(f"Memoria total: {memoria_total_gb:.2f} GB")
-    print(f"Uso de memoria: {uso_memoria:.6f}%")
-    
 # ============================================================
 # FUNCIÓN PARA MEDIR RF08
 # ============================================================
 
 def medir_rf08():
-    print("\n========================================")
-    print("MÉTRICAS DE RF08")
-    print("Consultar mi reserva vigente")
-    print("========================================")
+    encabezado("RF08", "Consultar mi reserva vigente")
 
-    tiempos = []
-    tiempos_cpu = []
-    memorias = []
+    resultados = medir_repeticiones(
+        preparar=lambda: consulta_con_email("/api/reservations/", "estudiante@udem.edu.co"),
+        ejecutar=views.consultar_reserva,
+    )
+    imprimir_resultados(*resultados)
 
-    # Correo usado para consultar la reserva
-    email = "estudiante@udem.edu.co"
 
-    for i in range(REPETICIONES):
+# ============================================================
+# FUNCIÓN PARA MEDIR RF09
+# ============================================================
 
-        request = factory.get(
-            "/api/reservations/",
-            {"email": email}
-        )
-
-        # RF08 se ejecuta directamente y necesita query_params
-        request.query_params = request.GET
-
-        # Memoria antes
-        memoria_antes = process.memory_info().rss
-
-        # CPU antes
-        cpu_antes = process.cpu_times()
-        cpu_antes_total = cpu_antes.user + cpu_antes.system
-
-        # Tiempo inicial
-        inicio = time.perf_counter()
-
-        # EJECUCIÓN REAL DEL RF08
-        views.consultar_reserva(request)
-
-        # Tiempo final
-        fin = time.perf_counter()
-
-        # CPU después
-        cpu_despues = process.cpu_times()
-        cpu_despues_total = cpu_despues.user + cpu_despues.system
-
-        # Memoria después
-        memoria_despues = process.memory_info().rss
-
-        tiempo = fin - inicio
-        tiempo_cpu = cpu_despues_total - cpu_antes_total
-        memoria = memoria_despues - memoria_antes
-
-        tiempos.append(tiempo)
-        tiempos_cpu.append(tiempo_cpu)
-        memorias.append(memoria)
-
-    # Promedios
-    tiempo_promedio = sum(tiempos) / len(tiempos)
-    cpu_promedio = sum(tiempos_cpu) / len(tiempos_cpu)
-    memoria_promedio = sum(memorias) / len(memorias)
-
-    # CPU %
-    uso_cpu = (cpu_promedio / tiempo_promedio) * 100
-
-    # Memoria
-    memoria_mb = memoria_promedio / (1024 * 1024)
-    memoria_total_gb = psutil.virtual_memory().total / (1024 ** 3)
-    memoria_total_mb = memoria_total_gb * 1024
-
-    uso_memoria = (memoria_mb / memoria_total_mb) * 100
-
-    print(f"Repeticiones: {REPETICIONES}")
-    print(f"Tiempo promedio: {tiempo_promedio:.6f} segundos")
-    print(f"Tiempo CPU promedio: {cpu_promedio:.6f} segundos")
-    print(f"Uso CPU: {uso_cpu:.4f}%")
-    print(f"Memoria utilizada: {memoria_mb:.4f} MB")
-    print(f"Memoria total: {memoria_total_gb:.2f} GB")
-    print(f"Uso de memoria: {uso_memoria:.6f}%")
-    
 def medir_rf09():
-    print("\n========================================")
-    print("MÉTRICAS DE RF09")
-    print("Cancelar mi reserva vigente")
-    print("========================================")
-
-    tiempos = []
-    tiempos_cpu = []
-    memorias = []
+    encabezado("RF09", "Cancelar mi reserva vigente")
 
     db = views.get_db()
 
@@ -328,92 +209,42 @@ def medir_rf09():
         return
 
     reservation_id = str(reserva_base["_id"])
-    reserva_date = reserva_base["reserva_date"]
-    slot_id = reserva_base["slotId"]
 
-    for i in range(REPETICIONES):
-
-        # Asegurar que la reserva esté activa antes de medir
+    def activar_reserva():
         db.reservations.update_one(
             {"_id": reserva_base["_id"]},
             {"$set": {"estado": "ACTIVA"}}
         )
 
-        # Preparar la solicitud
-        request = factory.delete(
-            f"/api/reservations/{reservation_id}/"
-        )
+    def preparar():
+        # Asegurar que la reserva esté activa antes de medir
+        activar_reserva()
+        return factory.delete(f"/api/reservations/{reservation_id}/")
 
-        memoria_antes = process.memory_info().rss
-
-        cpu_antes = process.cpu_times()
-        cpu_antes_total = cpu_antes.user + cpu_antes.system
-
-        inicio = time.perf_counter()
-
-        views.cancelar_reserva(request, reservation_id)
-
-        fin = time.perf_counter()
-
-        cpu_despues = process.cpu_times()
-        cpu_despues_total = cpu_despues.user + cpu_despues.system
-
-        memoria_despues = process.memory_info().rss
-
-        tiempo = fin - inicio
-        tiempo_cpu = cpu_despues_total - cpu_antes_total
-        memoria = memoria_despues - memoria_antes
-
-        tiempos.append(tiempo)
-        tiempos_cpu.append(tiempo_cpu)
-        memorias.append(memoria)
-
+    def restaurar_cupo():
         # Restaurar el cupo que devolver_cupo() acaba de liberar
         db.disponibilidad.update_one(
-            {"fecha": reserva_date, "slotId": slot_id},
+            {"fecha": reserva_base["reserva_date"], "slotId": reserva_base["slotId"]},
             {"$inc": {"cupos_disponibles": -1}}
         )
 
-    tiempo_promedio = sum(tiempos) / len(tiempos)
-    cpu_promedio = sum(tiempos_cpu) / len(tiempos_cpu)
-    memoria_promedio = sum(memorias) / len(memorias)
-
-    uso_cpu = (cpu_promedio / tiempo_promedio) * 100
-
-    memoria_mb = memoria_promedio / (1024 * 1024)
-
-    memoria_total_gb = psutil.virtual_memory().total / (1024 ** 3)
-    memoria_total_mb = memoria_total_gb * 1024
-
-    uso_memoria = (memoria_mb / memoria_total_mb) * 100
-
-    print(f"Repeticiones: {REPETICIONES}")
-    print(f"Tiempo promedio: {tiempo_promedio:.6f} segundos")
-    print(f"Tiempo CPU promedio: {cpu_promedio:.6f} segundos")
-    print(f"Uso CPU: {uso_cpu:.4f}%")
-    print(f"Memoria utilizada: {memoria_mb:.4f} MB")
-    print(f"Memoria total: {memoria_total_gb:.2f} GB")
-    print(f"Uso de memoria: {uso_memoria:.6f}%")
+    resultados = medir_repeticiones(
+        preparar,
+        lambda request: views.cancelar_reserva(request, reservation_id),
+        despues=restaurar_cupo,
+    )
+    imprimir_resultados(*resultados)
 
     # Dejar la reserva nuevamente activa al terminar
-    db.reservations.update_one(
-        {"_id": reserva_base["_id"]},
-        {"$set": {"estado": "ACTIVA"}}
-    )
-    
+    activar_reserva()
+
+
 # ============================================================
 # FUNCIÓN PARA MEDIR RF10
 # ============================================================
 
 def medir_rf10():
-    print("\n========================================")
-    print("MÉTRICAS DE RF10")
-    print("Buscar reserva de estudiante por documento")
-    print("========================================")
-
-    tiempos = []
-    tiempos_cpu = []
-    memorias = []
+    encabezado("RF10", "Buscar reserva de estudiante por documento")
 
     db = views.get_db()
 
@@ -441,26 +272,21 @@ def medir_rf10():
         "estado": "ACTIVA"
     }
 
+    class ReservasMock:
+        def sort(self, *args, **kwargs):
+            return [reserva]
+
     # Guardar métodos originales
     users_find_one_original = db.users.find_one
     reservations_find_original = db.reservations.find
 
-    for i in range(REPETICIONES):
-
-        # Simular las búsquedas de usuario
+    def preparar():
+        # Simular las búsquedas de usuario y las reservas
         resultados_usuario = [staff, student]
-
         db.users.find_one = lambda *args, _resultados=resultados_usuario, **kwargs: _resultados.pop(0)
-
-        # Simular las reservas
-        class ReservasMock:
-            def sort(self, *args, **kwargs):
-                return [reserva]
-
         db.reservations.find = lambda *args, **kwargs: ReservasMock()
 
-        # Crear solicitud
-        request = factory.get(
+        return factory.get(
             "/api/students/lookup/",
             {
                 "documento": "1001234567",
@@ -468,149 +294,27 @@ def medir_rf10():
             }
         )
 
-        # Memoria antes
-        memoria_antes = process.memory_info().rss
-
-        # CPU antes
-        cpu_antes = process.cpu_times()
-        cpu_antes_total = cpu_antes.user + cpu_antes.system
-
-        # Tiempo inicial
-        inicio = time.perf_counter()
-
-        # EJECUCIÓN REAL DEL RF10
-        attendance.buscar_reserva(request)
-
-        # Tiempo final
-        fin = time.perf_counter()
-
-        # CPU después
-        cpu_despues = process.cpu_times()
-        cpu_despues_total = cpu_despues.user + cpu_despues.system
-
-        # Memoria después
-        memoria_despues = process.memory_info().rss
-
-        # Cálculos
-        tiempo = fin - inicio
-        tiempo_cpu = cpu_despues_total - cpu_antes_total
-        memoria = memoria_despues - memoria_antes
-
-        tiempos.append(tiempo)
-        tiempos_cpu.append(tiempo_cpu)
-        memorias.append(memoria)
+    resultados = medir_repeticiones(preparar, attendance.buscar_reserva)
 
     # Restaurar métodos originales
     db.users.find_one = users_find_one_original
     db.reservations.find = reservations_find_original
 
-    # Promedios
-    tiempo_promedio = sum(tiempos) / len(tiempos)
-    cpu_promedio = sum(tiempos_cpu) / len(tiempos_cpu)
-    memoria_promedio = sum(memorias) / len(memorias)
+    imprimir_resultados(*resultados)
 
-    # CPU %
-    uso_cpu = (cpu_promedio / tiempo_promedio) * 100
 
-    # Memoria
-    memoria_mb = memoria_promedio / (1024 * 1024)
-    memoria_total_gb = psutil.virtual_memory().total / (1024 ** 3)
-    memoria_total_mb = memoria_total_gb * 1024
-
-    uso_memoria = (memoria_mb / memoria_total_mb) * 100
-
-    print(f"Repeticiones: {REPETICIONES}")
-    print(f"Tiempo promedio: {tiempo_promedio:.6f} segundos")
-    print(f"Tiempo CPU promedio: {cpu_promedio:.6f} segundos")
-    print(f"Uso CPU: {uso_cpu:.4f}%")
-    print(f"Memoria utilizada: {memoria_mb:.4f} MB")
-    print(f"Memoria total: {memoria_total_gb:.2f} GB")
-    print(f"Uso de memoria: {uso_memoria:.6f}%")
-    
-    # ============================================================
+# ============================================================
 # FUNCIÓN PARA MEDIR RF14
 # ============================================================
 
 def medir_rf14():
-    print("\n========================================")
-    print("MÉTRICAS DE RF14")
-    print("Consultar historial de entrenamiento")
-    print("========================================")
+    encabezado("RF14", "Consultar historial de entrenamiento")
 
-    tiempos = []
-    tiempos_cpu = []
-    memorias = []
-
-    email = "estudiante@udem.edu.co"
-
-    for i in range(REPETICIONES):
-
-        request = factory.get(
-            "/api/historial/",
-            {
-                "email": email
-            }
-        )
-
-        # RF14 utiliza request.query_params
-        request.query_params = request.GET
-
-        # Memoria antes
-        memoria_antes = process.memory_info().rss
-
-        # CPU antes
-        cpu_antes = process.cpu_times()
-        cpu_antes_total = cpu_antes.user + cpu_antes.system
-
-        # Tiempo inicial
-        inicio = time.perf_counter()
-
-        # EJECUCIÓN REAL DEL RF14
-        features.ver_historial(request)
-
-        # Tiempo final
-        fin = time.perf_counter()
-
-        # CPU después
-        cpu_despues = process.cpu_times()
-        cpu_despues_total = cpu_despues.user + cpu_despues.system
-
-        # Memoria después
-        memoria_despues = process.memory_info().rss
-
-        # Cálculos
-        tiempo = fin - inicio
-        tiempo_cpu = cpu_despues_total - cpu_antes_total
-        memoria = memoria_despues - memoria_antes
-
-        tiempos.append(tiempo)
-        tiempos_cpu.append(tiempo_cpu)
-        memorias.append(memoria)
-
-    # Promedios
-    tiempo_promedio = sum(tiempos) / len(tiempos)
-    cpu_promedio = sum(tiempos_cpu) / len(tiempos_cpu)
-    memoria_promedio = sum(memorias) / len(memorias)
-
-    # CPU %
-    uso_cpu = (cpu_promedio / tiempo_promedio) * 100
-
-    # Memoria
-    memoria_mb = memoria_promedio / (1024 * 1024)
-    memoria_total_gb = psutil.virtual_memory().total / (1024 ** 3)
-    memoria_total_mb = memoria_total_gb * 1024
-
-    uso_memoria = (memoria_mb / memoria_total_mb) * 100
-
-    print(f"Repeticiones: {REPETICIONES}")
-    print(f"Tiempo promedio: {tiempo_promedio:.6f} segundos")
-    print(f"Tiempo CPU promedio: {cpu_promedio:.6f} segundos")
-    print(f"Uso CPU: {uso_cpu:.4f}%")
-    print(f"Memoria utilizada: {memoria_mb:.4f} MB")
-    print(f"Memoria total: {memoria_total_gb:.2f} GB")
-    print(f"Uso de memoria: {uso_memoria:.6f}%")
-    
-
+    resultados = medir_repeticiones(
+        preparar=lambda: consulta_con_email("/api/historial/", "estudiante@udem.edu.co"),
+        ejecutar=features.ver_historial,
+    )
+    imprimir_resultados(*resultados)
 
 
 # ============================================================
@@ -629,10 +333,7 @@ if __name__ == "__main__":
     medir_rf09()
     medir_rf10()
     medir_rf14()
-    
-        
+
     print("\n========================================")
     print("MEDICIÓN FINALIZADA")
     print("========================================")
-    
-    

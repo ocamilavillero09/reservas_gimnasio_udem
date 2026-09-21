@@ -61,12 +61,12 @@ export default defineConfig({
       provider: 'v8',
       // lcov es el formato que lee SonarQube Cloud.
       reporter: ['text', 'html', 'lcov'],
-      // Se mide el código de la aplicación, que sigue viviendo en src/.
-      // `all` hace que aparezcan también los ficheros que ninguna prueba
-      // importa: sin esto el informe solo mostraría lo ya cubierto.
+      // Solo el cliente de los 18 requisitos funcionales de la entrega. La
+      // interfaz React y Nousadas.js (RF17-19, RF22-23) no cuentan: debe
+      // coincidir con sonar.coverage.exclusions.
+      // `all` hace que aparezca aunque ninguna prueba lo importe.
       all: true,
-      include: ['src/**/*.{js,jsx}'],
-      exclude: ['src/index.jsx'],
+      include: ['src/services/api.js'],
     },
   },
 });

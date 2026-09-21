@@ -10,8 +10,12 @@
 # Se mide el código de la aplicación. Al estar las pruebas fuera de este
 # directorio, no hace falta excluirlas del informe.
 source = backend/api
+# Tampoco cuentan urls.py (rutas, sin lógica que probar) ni Nousadas.py
+# (RF17, RF18, RF19, RF22 y RF23, fuera de los 18 requisitos de la entrega).
 omit =
     */migrations/*
+    backend/api/urls.py
+    backend/api/Nousadas.py
 # Rutas relativas a la raíz en el informe. Sin esto, coverage.xml guarda la ruta
 # absoluta de la máquina donde corrió, y SonarQube Cloud no la reconoce.
 relative_files = True
