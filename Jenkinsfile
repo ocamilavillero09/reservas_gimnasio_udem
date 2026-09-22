@@ -28,14 +28,31 @@ pipeline {
                     pip3 install --break-system-packages -r backend/requirements.txt
                     pip3 install --break-system-packages "setuptools<81"
 
-                    echo "=== Verificando setuptools y pkg_resources ==="
-                    python3 -c "import setuptools; print(setuptools.__version__); import pkg_resources; print('pkg_resources OK')"
-
                     echo "=== Ejecutando tests backend ==="
                     coverage run backend/manage.py test tests.backend
 
-                    echo "=== Generando reporte de cobertura ==="
+                    echo "=== Generando reporte de cobertura backend ==="
                     coverage xml
+                '''
+            }
+        }
+
+        stage('Frontend Tests') {
+            steps {
+                sh '''
+                    echo "=== Instalando dependencias frontend ==="
+                    docker run --rm \
+                        -v "$WORKSPACE/frontend:/app" \
+                        -w /app \
+                        node:22-alpine \
+                        npm ci
+
+                    echo "=== Ejecutando tests frontend ==="
+                    docker run --rm \
+                        -v "$WORKSPACE/frontend:/app" \
+                        -w /app \
+                        node:22-alpine \
+                        npm run test:coverage
                 '''
             }
         }
