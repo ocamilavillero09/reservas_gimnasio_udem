@@ -28,6 +28,9 @@ pipeline {
                     pip3 install --break-system-packages -r backend/requirements.txt
                     pip3 install --break-system-packages setuptools
 
+                    echo "=== Verificando setuptools y pkg_resources ==="
+                    python3 -c "import setuptools; print(setuptools.__version__); import pkg_resources; print('pkg_resources OK')"
+
                     echo "=== Ejecutando tests backend ==="
                     coverage run backend/manage.py test tests.backend
 
