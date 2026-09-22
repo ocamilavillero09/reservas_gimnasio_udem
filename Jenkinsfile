@@ -26,7 +26,7 @@ pipeline {
                 sh '''
                     echo "=== Instalando dependencias backend ==="
                     pip3 install --break-system-packages -r backend/requirements.txt
-                    pip3 install --break-system-packages setuptools
+                    pip3 install --break-system-packages "setuptools<81"
 
                     echo "=== Verificando setuptools y pkg_resources ==="
                     python3 -c "import setuptools; print(setuptools.__version__); import pkg_resources; print('pkg_resources OK')"
