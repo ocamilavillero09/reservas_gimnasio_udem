@@ -20,5 +20,20 @@ pipeline {
                 '''
             }
         }
+
+        stage('Backend Tests') {
+            steps {
+                sh '''
+                    echo "=== Instalando dependencias backend ==="
+                    pip3 install -r backend/requirements.txt
+
+                    echo "=== Ejecutando tests backend ==="
+                    coverage run backend/manage.py test tests.backend
+
+                    echo "=== Generando reporte de cobertura ==="
+                    coverage xml
+                '''
+            }
+        }
     }
 }
