@@ -25,7 +25,7 @@ pipeline {
             steps {
                 sh '''
                     echo "=== Instalando dependencias backend ==="
-                    pip3 install -r backend/requirements.txt
+                    pip3 install --break-system-packages -r backend/requirements.txt
 
                     echo "=== Ejecutando tests backend ==="
                     coverage run backend/manage.py test tests.backend
