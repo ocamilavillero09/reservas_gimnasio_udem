@@ -38,22 +38,34 @@ pipeline {
         }
 
         stage('Frontend Tests') {
-        steps {
-            sh '''
-                echo "=== Instalando dependencias frontend ==="
-                docker run --rm \
-                    --volumes-from jenkins \
-                    -w "$WORKSPACE/frontend" \
-                    node:22-alpine \
-                    npm install
+            steps {
+                sh '''
+                    echo "=== Instalando dependencias frontend ==="
+                    docker run --rm \
+                        --volumes-from jenkins \
+                        -w "$WORKSPACE/frontend" \
+                        node:22-alpine \
+                        npm install
 
-                echo "=== Ejecutando tests frontend ==="
-                docker run --rm \
-                    --volumes-from jenkins \
-                    -w "$WORKSPACE/frontend" \
-                    node:22-alpine \
-                    npm run test:coverage
-            '''
+                    echo "=== Ejecutando tests frontend ==="
+                    docker run --rm \
+                        --volumes-from jenkins \
+                        -w "$WORKSPACE/frontend" \
+                        node:22-alpine \
+                        npm run test:coverage
+                '''
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
+                }
             }
         }
     }
