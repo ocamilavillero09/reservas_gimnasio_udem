@@ -38,22 +38,22 @@ pipeline {
         }
 
         stage('Frontend Tests') {
-    steps {
-        sh '''
-            echo "=== Instalando dependencias frontend ==="
-            docker run --rm \
-                -v "$WORKSPACE/frontend:/app" \
-                -w /app \
-                node:22-alpine \
-                npm install
+        steps {
+            sh '''
+                echo "=== Instalando dependencias frontend ==="
+                docker run --rm \
+                    --volumes-from jenkins \
+                    -w "$WORKSPACE/frontend" \
+                    node:22-alpine \
+                    npm install
 
-            echo "=== Ejecutando tests frontend ==="
-            docker run --rm \
-                -v "$WORKSPACE/frontend:/app" \
-                -w /app \
-                node:22-alpine \
-                npm run test:coverage
-        '''
+                echo "=== Ejecutando tests frontend ==="
+                docker run --rm \
+                    --volumes-from jenkins \
+                    -w "$WORKSPACE/frontend" \
+                    node:22-alpine \
+                    npm run test:coverage
+            '''
             }
         }
     }
