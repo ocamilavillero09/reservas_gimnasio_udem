@@ -85,5 +85,16 @@ pipeline {
                 '''
             }
         }
+
+        stage('Deploy Application') {
+            steps {
+                sh '''
+                    docker compose down --remove-orphans || true
+                    docker compose up -d
+                '''
+            }
+        }
+
+
     }
 }
