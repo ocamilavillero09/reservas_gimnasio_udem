@@ -81,6 +81,7 @@ pipeline {
             steps {
                 sh '''
                     docker build -t reservas-gimnasio-udem-backend:latest ./backend
+                    docker build -t reservas-gimnasio-udem-frontend:latest ./frontend
                 '''
             }
         }
