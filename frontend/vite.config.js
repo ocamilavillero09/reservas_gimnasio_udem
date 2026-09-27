@@ -52,7 +52,7 @@ export default defineConfig({
       { find: /^react-dom\/(.*)$/, replacement: modulos('react-dom/$1') },
       { find: /^@testing-library\/(.*)$/, replacement: modulos('@testing-library/$1') },
     ],
-    setupFiles: '../tests/frontend/setup.js',
+    setupFiles: '../regression_testing/frontend/setup.js',
     css: false,
     // Las pruebas están en tests/ (raíz), no dentro de src/. Vitest solo corre
     // los *.test.*; los *.spec.* de tests/e2e son de Playwright.
