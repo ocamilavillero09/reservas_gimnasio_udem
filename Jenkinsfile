@@ -29,7 +29,7 @@ pipeline {
                     pip3 install --break-system-packages "setuptools<81"
 
                     echo "=== Ejecutando tests backend ==="
-                    coverage run backend/manage.py test tests.backend
+                    coverage run backend/manage.py test regression_testing.backend
 
                     echo "=== Generando reporte de cobertura backend ==="
                     coverage xml

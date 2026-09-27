@@ -55,7 +55,7 @@ _MESES = ('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
 # registra y, además, la contraseña con la que inicia sesión. Se guarda en
 # claro para poder buscarlo (RF11: el entrenador busca al estudiante por su
 # documento) y hasheado en el campo `password` para validar el inicio de sesión.
-DOCUMENTO_LONGITUD = 10       # la cédula colombiana tiene diez dígitos exactos
+DOCUMENTO_LONGITUD = 10     # la cédula colombiana tiene diez dígitos exactos
 NO_SHOW_ALERTA = 2            # RF15: avisar cuando falten 2 inasistencias
 
 
