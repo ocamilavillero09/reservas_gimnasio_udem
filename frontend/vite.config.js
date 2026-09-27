@@ -56,7 +56,7 @@ export default defineConfig({
     css: false,
     // Las pruebas están en tests/ (raíz), no dentro de src/. Vitest solo corre
     // los *.test.*; los *.spec.* de tests/e2e son de Playwright.
-    include: ['../tests/frontend/**/*.test.{js,jsx}'],
+    include: ['../regression_testing/frontend/**/*.test.{js,jsx}'],
     coverage: {
       provider: 'v8',
       // lcov es el formato que lee SonarQube Cloud.
