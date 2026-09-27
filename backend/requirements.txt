@@ -7,3 +7,4 @@ drf-yasg==1.21.7
 mongomock==4.1.2
 coverage==7.4.4
 reportlab==4.1.0
+PyHamcrest==2.1.0
