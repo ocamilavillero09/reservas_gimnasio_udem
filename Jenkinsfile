@@ -77,6 +77,31 @@ pipeline {
             }
         }
 
+        // La misma cobertura, enviada también a SonarQube Cloud. El análisis
+        // automático de la nube no ejecuta pruebas y nunca informa cobertura;
+        // por eso se analiza desde aquí. Requiere la credencial 'sonarcloud-token'
+        // en Jenkins y el análisis automático apagado en SonarQube Cloud. Si
+        // falta algo, la etapa queda en amarillo sin detener el despliegue.
+        stage('SonarQube Cloud Analysis') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    script {
+                        def scannerHome = tool 'SonarScanner'
+
+                        withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                            sh """
+                                ${scannerHome}/bin/sonar-scanner \
+                                    -Dsonar.host.url=https://sonarcloud.io \
+                                    -Dsonar.organization=ocamilavillero09-1 \
+                                    -Dsonar.projectKey=ocamilavillero09_reservas_gimnasio_udem2 \
+                                    -Dsonar.token=\$SONAR_TOKEN
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 sh '''
