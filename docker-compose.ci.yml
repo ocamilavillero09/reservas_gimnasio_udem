@@ -1,6 +1,6 @@
 services:
   backend:
-    volumes: []
+    volumes: !reset []
 
   frontend:
-    volumes: []
+    volumes: !reset []
