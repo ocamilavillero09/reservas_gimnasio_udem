@@ -59,14 +59,21 @@ export default defineConfig({
     include: ['../regression_testing/frontend/**/*.test.{js,jsx}'],
     coverage: {
       provider: 'v8',
-      // lcov es el formato que lee SonarQube Cloud.
-      reporter: ['text', 'html', 'lcov'],
-      // Solo el cliente de los 18 requisitos funcionales de la entrega. La
-      // interfaz React y Nousadas.js (RF17-19, RF22-23) no cuentan: debe
+      // lcov es el formato que lee SonarQube. SonarQube se lanza desde la raíz
+      // del repositorio, así que las rutas del informe tienen que empezar por
+      // frontend/ (projectRoot '..'); con 'src/...' no encuentra los ficheros
+      // y descarta la cobertura sin avisar.
+      reporter: ['text', 'html', ['lcov', { projectRoot: '..' }]],
+      // El cliente HTTP y los componentes donde viven las funciones de los 18
+      // requisitos funcionales de la entrega, repartidos entre los integrantes.
+      // Nousadas.js (RF17-19, RF22-23), Navbar, App e index no cuentan: debe
       // coincidir con sonar.coverage.exclusions.
       // `all` hace que aparezca aunque ninguna prueba lo importe.
       all: true,
-      include: ['src/services/api.js'],
+      include: [
+        'src/services/api.js',
+        'src/components/{AdminPanel,Dashboard,HistoryView,Login,MyReservations,ProfileView,TrainerPanel}.jsx',
+      ],
     },
   },
 });

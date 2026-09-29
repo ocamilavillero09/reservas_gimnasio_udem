@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
+from contextlib import ExitStack
 from unittest.mock import MagicMock, patch
 
 from django.test import SimpleTestCase
@@ -40,6 +41,20 @@ class CaminosBase(SimpleTestCase):
     def request_delete(self, path):
         return self.factory.delete(path)
 
+    def parches_views(self, **valores):
+        """Simula las funciones de api.views que usan las vistas de reservas.
+
+        Cada clave es el nombre de la función y su valor, lo que devuelve. Se
+        devuelve la pila de parches (para usarla en un `with`) y los simulados.
+        """
+        base = {"get_db": self.db, "fecha_reserva": FECHA,
+                "formato_fecha_es": FECHA_LABEL, "asegurar_disponibilidad": None}
+        base.update(valores)
+        pila = ExitStack()
+        simulados = {nombre: pila.enter_context(patch(f"api.views.{nombre}", return_value=valor))
+                     for nombre, valor in base.items()}
+        return pila, simulados
+
     def slot(self, hour="08:00"):
         return {"slotId": SLOT_ID, "hour": hour}
 
@@ -55,55 +70,55 @@ class CaminosBase(SimpleTestCase):
         }
 
 class RF06Caminos(CaminosBase):
-    def test_rf06_c1_bloque_no_esta_en_catalogo(self):
-        """C1: disponibilidad recorrida -> if NO -> omitir bloque -> fin."""
-
+    def _consultar_horarios(self, disponibilidad):
         self.db.slots.find.return_value = [
             {"slotId": 1, "hour": "06:00", "hora_fin": "08:00"},
         ]
-        self.db.disponibilidad.find.return_value.sort.return_value = [
-            {"slotId": 99, "cupos_disponibles": 0, "aforo_maximo": 20},
-        ]
+        self.db.disponibilidad.find.return_value.sort.return_value = [disponibilidad]
+        pila, simulados = self.parches_views()
+        with pila:
+            response = views.consultar_horarios(self.request_get("/api/slots/"))
+        simulados["asegurar_disponibilidad"].assert_called_once_with(FECHA_ISO)
+        return response
 
-        request = self.request_get("/api/slots/")
-        with patch("api.views.fecha_reserva", return_value=FECHA), \
-             patch("api.views.formato_fecha_es", return_value=FECHA_LABEL), \
-             patch("api.views.asegurar_disponibilidad") as asegurar, \
-             patch("api.views.get_db", return_value=self.db):
-            response = views.consultar_horarios(request)
+    def test_rf06_c1_bloque_no_esta_en_catalogo(self):
+        """C1: disponibilidad recorrida -> if NO -> omitir bloque -> fin."""
+        response = self._consultar_horarios(
+            {"slotId": 99, "cupos_disponibles": 0, "aforo_maximo": 20})
 
         assert_that(response.status_code, equal_to(status.HTTP_200_OK))
         assert_that(response.data["fecha"], equal_to(FECHA_ISO))
         assert_that(response.data["slots"], equal_to([]))
-        asegurar.assert_called_once_with(FECHA_ISO)
 
     def test_rf06_c2_bloque_esta_en_catalogo(self):
         """C2: disponibilidad recorrida -> if SI -> agregar/almacenar bloque."""
-        self.db.slots.find.return_value = [
-            {"slotId": 1, "hour": "06:00", "hora_fin": "08:00"},
-        ]
-        self.db.disponibilidad.find.return_value.sort.return_value = [
-            {"slotId": 1, "cupos_disponibles": 17, "aforo_maximo": 20},
-        ]
-
-        request = self.request_get("/api/slots/")
-        with patch("api.views.fecha_reserva", return_value=FECHA), \
-             patch("api.views.formato_fecha_es", return_value=FECHA_LABEL), \
-             patch("api.views.asegurar_disponibilidad") as asegurar, \
-             patch("api.views.get_db", return_value=self.db):
-            response = views.consultar_horarios(request)
+        response = self._consultar_horarios(
+            {"slotId": 1, "cupos_disponibles": 17, "aforo_maximo": 20})
 
         assert_that(response.status_code, equal_to(status.HTTP_200_OK))
         assert_that(len(response.data["slots"]), equal_to(1))
         assert_that(response.data["slots"][0]["id"], equal_to(SLOT_ID))
         assert_that(response.data["slots"][0]["available"], equal_to(17))
         assert_that(response.data["slots"][0]["total"], equal_to(20))
-        asegurar.assert_called_once_with(FECHA_ISO)
 
 
 class RF07Caminos(CaminosBase):
+    ESTUDIANTE_ACTIVO = {"email": EMAIL, "role": "ESTUDIANTE", "estado": "ACTIVO"}
+
     def _request(self, email=EMAIL, slot_id=SLOT_ID):
         return self.request_post("/api/reservations/", {"email": email, "slotId": slot_id})
+
+    def _reservar(self, usuario=None, hay_horario=True, reservas_del_dia=0, **parches):
+        """Recorre reservar_mañana hasta el final con los parches comunes.
+
+        `parches` añade o reemplaza lo que devuelve cada función de api.views.
+        """
+        self.db.users.find_one.return_value = usuario or dict(self.ESTUDIANTE_ACTIVO)
+        self.db.slots.find_one.return_value = self.slot() if hay_horario else None
+        self.db.reservations.count_documents.return_value = reservas_del_dia
+        pila, _ = self.parches_views(**parches)
+        with pila:
+            return views.reservar_mañana(self._request())
 
     def test_rf07_c1_datos_obligatorios_invalidos(self):
         request = self.request_post("/api/reservations/", {"email": "", "slotId": None})
@@ -144,80 +159,36 @@ class RF07Caminos(CaminosBase):
         self.db.slots.find_one.assert_not_called()
 
     def test_rf07_c5_penalizacion_vencida_reactiva_y_continua(self):
-        hasta = self.ahora - timedelta(days=1)
-        self.db.users.find_one.return_value = {
+        penalizado = {
             "email": EMAIL, "role": "ESTUDIANTE", "estado": "PENALIZADO",
-            "penalizado_hasta": hasta,
+            "penalizado_hasta": self.ahora - timedelta(days=1),
         }
-        self.db.slots.find_one.return_value = self.slot()
-        self.db.reservations.count_documents.return_value = 0
-        request = self._request()
-        with patch("api.views.get_db", return_value=self.db), \
-             patch("api.views.ahora_utc", return_value=self.ahora), \
-             patch("api.views.fecha_reserva", return_value=FECHA), \
-             patch("api.views.formato_fecha_es", return_value=FECHA_LABEL), \
-             patch("api.views.asegurar_disponibilidad"), \
-             patch("api.views.tomar_cupo", return_value=False):
-            response = views.reservar_mañana(request)
+        response = self._reservar(usuario=penalizado, ahora_utc=self.ahora, tomar_cupo=False)
         assert_that(response.status_code, equal_to(409))
         self.db.users.update_one.assert_called_once()
         assert_that(self.db.users.update_one.call_args.args[1]["$set"]["estado"], equal_to("ACTIVO"))
 
     def test_rf07_c6_horario_no_existe(self):
-        self.db.users.find_one.return_value = {"email": EMAIL, "role": "ESTUDIANTE", "estado": "ACTIVO"}
-        self.db.slots.find_one.return_value = None
-        request = self._request()
-        with patch("api.views.get_db", return_value=self.db), \
-             patch("api.views.fecha_reserva", return_value=FECHA), \
-             patch("api.views.formato_fecha_es", return_value=FECHA_LABEL), \
-             patch("api.views.asegurar_disponibilidad"):
-            response = views.reservar_mañana(request)
+        response = self._reservar(hay_horario=False)
         assert_that(response.status_code, equal_to(404))
         assert_that(response.data["error"], contains_string("Horario no encontrado"))
 
     def test_rf07_c7_reserva_duplicada(self):
-        self.db.users.find_one.return_value = {"email": EMAIL, "role": "ESTUDIANTE", "estado": "ACTIVO"}
-        self.db.slots.find_one.return_value = self.slot()
-        self.db.reservations.count_documents.return_value = 1
-        request = self._request()
-        with patch("api.views.get_db", return_value=self.db), \
-             patch("api.views.fecha_reserva", return_value=FECHA), \
-             patch("api.views.formato_fecha_es", return_value=FECHA_LABEL), \
-             patch("api.views.asegurar_disponibilidad"):
-            response = views.reservar_mañana(request)
+        response = self._reservar(reservas_del_dia=1)
         assert_that(response.status_code, equal_to(409))
         assert_that(response.data["tipo"], equal_to("RESERVA_DUPLICADA"))
         self.db.reservations.insert_one.assert_not_called()
 
     def test_rf07_c8_sin_cupo(self):
-        self.db.users.find_one.return_value = {"email": EMAIL, "role": "ESTUDIANTE", "estado": "ACTIVO"}
-        self.db.slots.find_one.return_value = self.slot()
-        self.db.reservations.count_documents.return_value = 0
-        request = self._request()
-        with patch("api.views.get_db", return_value=self.db), \
-             patch("api.views.fecha_reserva", return_value=FECHA), \
-             patch("api.views.formato_fecha_es", return_value=FECHA_LABEL), \
-             patch("api.views.asegurar_disponibilidad"), \
-             patch("api.views.tomar_cupo", return_value=False):
-            response = views.reservar_mañana(request)
+        response = self._reservar(tomar_cupo=False)
         assert_that(response.status_code, equal_to(409))
         assert_that(response.data["tipo"], equal_to("SIN_CUPOS"))
         self.db.reservations.insert_one.assert_not_called()
 
     def test_rf07_c9_reserva_exitosa(self):
-        self.db.users.find_one.return_value = {"email": EMAIL, "role": "ESTUDIANTE", "estado": "ACTIVO"}
-        self.db.slots.find_one.return_value = self.slot()
-        self.db.reservations.count_documents.return_value = 0
         self.db.reservations.insert_one.return_value.inserted_id = "res-1"
-        request = self._request()
-        with patch("api.views.get_db", return_value=self.db), \
-             patch("api.views.fecha_reserva", return_value=FECHA), \
-             patch("api.views.formato_fecha_es", return_value=FECHA_LABEL), \
-             patch("api.views.asegurar_disponibilidad"), \
-             patch("api.views.tomar_cupo", return_value=True), \
-             patch("api.views.ahora_utc", return_value=self.ahora), \
-             patch("api.views.serialize", return_value=self.active_reservation()):
-            response = views.reservar_mañana(request)
+        response = self._reservar(tomar_cupo=True, ahora_utc=self.ahora,
+                                  serialize=self.active_reservation())
         assert_that(response.status_code, equal_to(201))
         assert_that(response.data["tipo"], equal_to("RESERVA_CONFIRMADA"))
         self.db.reservations.insert_one.assert_called_once()
