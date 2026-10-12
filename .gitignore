@@ -33,3 +33,6 @@ playwright-report/
 
 # Copias locales de Pages
 *.pages
+
+regression_testing/serenityjs/reports/
+.pytest_cache/

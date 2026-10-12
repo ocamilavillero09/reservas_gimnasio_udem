@@ -1,0 +1,7 @@
+screenpy>=4.2.5,<5
+screenpy-selenium>=4.0.4,<5
+selenium>=4.20,<5
+pytest>=8.3,<10
+pytest-html>=4.1,<5
+requests>=2.31
+

@@ -19,7 +19,7 @@ from .db import (
     ahora_utc,
     get_db, add_business_days, hoy_local, formato_fecha_es, normalizar_documento,
     inasistencias_restantes, alerta_inasistencias, ventana_asistencia,
-    NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES,
+    NO_SHOW_LIMITE, PENALIZACION_DIAS_HABILES, error_de_documento,
 )
 
 ROLES_STAFF = ('ENTRENADOR', 'ADMIN')
@@ -101,6 +101,10 @@ def buscar_reserva(request):
     documento = normalizar_documento(request.query_params.get('documento'))
     if not documento:
         return Response({'error': 'Debes indicar el documento de identidad.'}, status=400)
+
+    error = error_de_documento(documento)
+    if error:
+        return Response({'error': error}, status=400)
 
     db = get_db()
     student = db.users.find_one({'documento': documento, 'role': 'ESTUDIANTE'})
