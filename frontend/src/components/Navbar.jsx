@@ -76,7 +76,7 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
             </NavBtn>
           )}
 
-          <NavBtn active={view === 'profile'} onClick={() => onNavigate('profile')}>
+          <NavBtn id="nav-perfil" active={view === 'profile'} onClick={() => onNavigate('profile')}>
             Perfil
           </NavBtn>
 
@@ -117,9 +117,9 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
   );
 }
 
-function NavBtn({ active, onClick, children }) {
+function NavBtn({ id, active, onClick, children }) {
   return (
-    <button onClick={onClick} style={{
+    <button id={id} onClick={onClick} style={{
       padding: '8px 18px', border: 'none', borderRadius: 10, cursor: 'pointer',
       backgroundColor: active ? 'rgba(255,255,255,0.22)' : 'transparent',
       color: 'white',
