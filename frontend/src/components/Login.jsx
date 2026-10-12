@@ -72,7 +72,7 @@ export default function Login({ onLogin }) {
           <div style={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 40 }}>
             ✅
           </div>
-          <h2 style={{ fontSize: 24, fontWeight: 900, color: '#1A1A1A', marginBottom: 10 }}>
+          <h2 id="registro-exitoso" style={{ fontSize: 24, fontWeight: 900, color: '#1A1A1A', marginBottom: 10 }}>
             ¡Registro exitoso!
           </h2>
           <p style={{ color: '#555', fontSize: 15, lineHeight: 1.7, marginBottom: 8 }}>
@@ -167,7 +167,7 @@ export default function Login({ onLogin }) {
                 { id: 'login',    label: 'Iniciar sesión' },
                 { id: 'register', label: 'Registrarse' },
               ].map(t => (
-                <button key={t.id} onClick={() => { setTab(t.id); setError(''); }} style={{
+                <button key={t.id} id={`tab-${t.id}`} onClick={() => { setTab(t.id); setError(''); }} style={{
                   flex: 1, padding: '10px 0', border: 'none', borderRadius: 9, cursor: 'pointer',
                   backgroundColor: tab === t.id ? 'white' : 'transparent',
                   color: tab === t.id ? RED : '#888',
@@ -217,7 +217,7 @@ export default function Login({ onLogin }) {
                 />
                 {/* RN01 — se avisa en vivo qué rol otorga el dominio escrito */}
                 {tab === 'register' && email.trim() !== '' && config && (
-                  <p style={{ fontSize: 12, marginTop: 6, color: dominioDetectado ? '#15803D' : '#991B1B' }}>
+                  <p id="login-aviso-dominio" style={{ fontSize: 12, marginTop: 6, color: dominioDetectado ? '#15803D' : '#991B1B' }}>
                     {dominioDetectado
                       ? `✓ Entrarás como ${dominioDetectado.etiqueta.toUpperCase()}`
                       : '⚠ Ese dominio no es institucional'}
@@ -252,11 +252,11 @@ export default function Login({ onLogin }) {
 
               {error && (
                 <div style={{ backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 10, padding: '10px 14px' }}>
-                  <p style={{ color: '#991b1b', fontSize: 13, margin: 0 }}>⚠ {error}</p>
+                  <p id="login-error" style={{ color: '#991b1b', fontSize: 13, margin: 0 }}>⚠ {error}</p>
                 </div>
               )}
 
-              <button type="submit" disabled={submitting} style={{
+              <button id="login-enviar" type="submit" disabled={submitting} style={{
                 width: '100%', padding: 15, backgroundColor: RED, color: 'white',
                 border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15,
                 cursor: submitting ? 'not-allowed' : 'pointer', marginTop: 4,

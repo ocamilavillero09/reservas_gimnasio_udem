@@ -99,7 +99,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
 
   return (
     <div style={{ maxWidth: 860, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
-      <h2 style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Panel del gimnasio</h2>
+      <h2 id="panel-titulo" style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Panel del gimnasio</h2>
       <p style={{ color: '#999', fontSize: 15, marginBottom: 28 }}>
         {esAdmin ? 'Administrador' : 'Entrenador'} · {user.name}
       </p>

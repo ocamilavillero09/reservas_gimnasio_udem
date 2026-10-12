@@ -97,7 +97,7 @@ export default function ProfileView({ user, showToast }) {
 
   return (
     <div style={{ maxWidth: 620, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
-      <h2 style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Mi perfil</h2>
+      <h2 id="perfil-titulo" style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Mi perfil</h2>
       <p style={{ color: '#999', fontSize: 15, marginBottom: 28 }}>
         Datos de tu cuenta en el sistema de reservas
       </p>
@@ -204,7 +204,7 @@ export default function ProfileView({ user, showToast }) {
             <label htmlFor="perfil-meta" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Objetivo de entrenamiento</label>
             <input type="text" id="perfil-meta" value={meta} onChange={(e) => setMeta(e.target.value)} placeholder="Ej: Ganar resistencia" style={inputStyle} />
           </div>
-          <button type="submit" style={{ padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
+          <button type="submit" id="perfil-guardar" style={{ padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
             Guardar perfil
           </button>
         </form>

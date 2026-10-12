@@ -57,7 +57,7 @@ function Toast({ message, type, onClose }) {
       animation: 'toastIn 0.3s ease',
     }}>
       <span style={{ fontSize: 18, color: c.border, flexShrink: 0, marginTop: 1 }}>{c.icon}</span>
-      <p style={{ margin: 0, color: c.text, fontSize: 14, lineHeight: 1.6, flex: 1 }}>{message}</p>
+      <p id="toast-mensaje" style={{ margin: 0, color: c.text, fontSize: 14, lineHeight: 1.6, flex: 1 }}>{message}</p>
       <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: c.text, fontSize: 20, lineHeight: 1, flexShrink: 0 }}>×</button>
     </div>
   );
