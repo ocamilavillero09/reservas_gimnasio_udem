@@ -11,7 +11,7 @@ Dónde está la evidencia de cada criterio. Todas las pruebas documentan **objet
 | Pruebas reproducibles con Cypress | `cypress/`: 101 pruebas de regresión (53 de API, 21 E2E, 27 de componentes). Cada caso parte de una base limpia y crea sus propios datos |
 | Casos positivos y negativos | API: 200/201, 400, 403, 404 y 409 por endpoint de RF11, RF12, RF13, RF16, RF20 y RF21 |
 | Aserciones pertinentes | Sobre la respuesta y sobre el efecto en la base de datos (estado de la reserva, contador de inasistencias, mensajes) y, en componentes, sobre el cuerpo y los parámetros de cada petición |
-| Evidencias que permiten identificar regresiones | `cypress/reports/*/index.html` (informes con capturas), `cypress/evidencias/` (capturas y videos) y las suites de Django (89) y Vitest (85) en `resultados-unitarias/` |
+| Evidencias que permiten identificar regresiones | `cypress/reports/*/index.html` (informes con capturas), `cypress/evidencias/` (capturas y videos) y las suites de Django (149: 143 pasan y 6 son hallazgos de seguridad pendientes, marcados como fallo esperado) y Vitest (85) en `resultados-unitarias/` |
 
 ## 2. Seguridad y rendimiento → [`INFORME_SEGURIDAD_RENDIMIENTO.md`](INFORME_SEGURIDAD_RENDIMIENTO.md)
 
@@ -39,6 +39,12 @@ Dónde está la evidencia de cada criterio. Todas las pruebas documentan **objet
 
 Pendiente: no forma parte de esta entrega.
 
-## 5. E2E con Katalon
+## 5. E2E con Katalon → [`katalon/README.md`](katalon/README.md)
 
-Lo hace el equipo. **Importante:** revisen el aviso de §7 de `ux/INFORME_UX.md`. Algunos textos de la interfaz cambiaron con las correcciones y pueden afectar localizadores.
+| Lo que pide el nivel alto | Evidencia |
+|---|---|
+| Flujos completos automatizados | `katalon/E2E_RF11_RF21.krecorder`: 11 casos de RF11, RF12, RF13, RF16, RF20 y RF21 con los tres roles (entrenador, administrador y estudiante) |
+| Casos positivos y negativos | Documento con letras, documento inexistente, administrador sin permiso para cerrar la jornada y mensaje vacío |
+| Datos de prueba controlados | `katalon/00_preparacion.krecorder` crea las cuentas y las reservas. Las reservas se pasan al día de la prueba con mongosh, porque la aplicación solo permite reservar para el día siguiente |
+| Verificaciones | Cada caso verifica el mensaje, el estado de la tabla o las cifras del registro diario; no solo hace clics |
+| Evidencias | Una captura por caso (`katalon/capturas/`), el log de la ejecución y la tabla de resultados en `katalon/README.md` |
