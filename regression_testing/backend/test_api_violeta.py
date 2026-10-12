@@ -1,7 +1,6 @@
-from hamcrest import assert_that, equal_to, has_key, none
+from hamcrest import assert_that, equal_to, has_key, none, is_not
 from api import db as db_module
-from .test_violeta import GymApiTestCase, ESTUDIANTE, PROFESOR
-
+from .test_violeta import GymApiTestCase, ESTUDIANTE, PROFESOR, ADMIN
 
 class ApiRegistroTest(GymApiTestCase):
     def test_api_responde_correctamente_registro(self):
@@ -204,3 +203,43 @@ class ApiReporteInasistencias(GymApiTestCase):
         resp = self.client.get('/api/reports/personal/')
         assert_that(resp.status_code, equal_to(400))
         assert_that(resp.data, has_key('error'))
+        
+    def test_estudiante_con_inasistencias_ve_el_detalle_y_la_alerta(self):
+        self._register()
+        db_module.get_db().users.update_one(
+            {'email': ESTUDIANTE},
+            {'$set': {'no_show_count': 4}},
+        )
+        db_module.get_db().reservations.insert_one({
+            'email': ESTUDIANTE, 'hour': '08:00', 'date': '2026-01-15',
+            'reserva_date': '2026-01-15', 'estado': 'NO_SHOW',
+        })
+
+        resp = self.client.get('/api/reports/personal/', {'email': ESTUDIANTE})
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(resp.data['no_show_count'], equal_to(4))
+        assert_that(resp.data['inasistencias_restantes'], equal_to(1))
+        assert_that(resp.data['alerta_inasistencias'], equal_to(
+            'Llevas 4 inasistencias. Estás a 1 inasistencia de ser penalizado.'))
+        assert_that(resp.data['penalizado'], equal_to(False))
+        assert_that(len(resp.data['inasistencias']), equal_to(1))
+        assert_that(resp.data['inasistencias'][0]['hour'], equal_to('08:00'))
+
+    def test_estudiante_penalizado_ve_la_penalizacion(self):
+        self._register()
+        db_module.get_db().users.update_one(
+            {'email': ESTUDIANTE},
+            {'$set': {'no_show_count': 5, 'estado': 'PENALIZADO',
+                      'penalizado_hasta': db_module.ahora_utc()}},
+        )
+
+        resp = self.client.get('/api/reports/personal/', {'email': ESTUDIANTE})
+
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(resp.data['estado'], equal_to('PENALIZADO'))
+        assert_that(resp.data['inasistencias_restantes'], equal_to(0))
+        assert_that(resp.data['alerta_inasistencias'], equal_to(
+            'Alcanzaste el límite de 5 inasistencias. Tu cuenta quedó penalizada.'))
+        assert_that(resp.data['penalizado'], equal_to(True))
+        assert_that(resp.data['penalizado_hasta'], is_not(none()))

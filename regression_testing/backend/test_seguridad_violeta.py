@@ -1,8 +1,7 @@
 import unittest
-from hamcrest import assert_that, equal_to, is_not, has_key, is_in
+from hamcrest import assert_that, equal_to, is_not, has_key, is_in, is_, none
 from api import db as db_module
-from .test_violeta import GymApiTestCase, ESTUDIANTE
-
+from .test_violeta import GymApiTestCase, ESTUDIANTE, PROFESOR, ADMIN
 
 # SEGURIDAD RF01
 class SeguridadRegistroTests(GymApiTestCase):
@@ -92,7 +91,7 @@ class SeguridadLoginTests(GymApiTestCase):
     @unittest.expectedFailure
     def test_bloquear_despues_de_muchos_intentos(self):
         self._register()
-        for _ in range(30):
+        for _ in range(10):
             self._login(ESTUDIANTE, documento='0000000000')
         resp = self._login(ESTUDIANTE)
         assert_that(resp.status_code, is_in([403, 423, 429]))
@@ -105,30 +104,140 @@ class SeguridadLoginTests(GymApiTestCase):
             format='json',
         )
         assert_that(resp.status_code, equal_to(400))
-        
-    # PERFIL RF03
+
+
+# PERFIL RF03
 class SeguridadPerfilTests(GymApiTestCase):
 
     def setUp(self):
         super().setUp()
         self.client.raise_request_exception = False
-        
-    def test_perfil_ignora_campo_role(self):
+
+    def test_perfil_ignora_el_rol_que_manda_el_cliente(self):
         self._register()
         self.client.put(
-            '',
+            '/api/users/profile/',
             {'email': ESTUDIANTE, 'peso': 70, 'role': 'ADMIN'},
             format='json',
         )
         guardada = db_module.get_db().users.find_one({'email': ESTUDIANTE})
-        assert_that(guardada['ROLE'], equal_to('ESTUDIANTE'))
-        
-    def test_ignora_documento_nuevo(self):
+        assert_that(guardada['role'], equal_to('ESTUDIANTE'))
+
+    def test_perfil_ignora_un_documento_nuevo(self):
         self._register()
         self.client.put(
             '/api/users/profile/',
-            {'email': ESTUDIANTE, 'peso': 70, 'documento': 123},
+            {'email': ESTUDIANTE, 'peso': 70, 'documento': '123'},
             format='json',
         )
         guardada = db_module.get_db().users.find_one({'email': ESTUDIANTE})
         assert_that(guardada['documento'], equal_to('1001234567'))
+
+    def test_perfil_rechaza_pesos_hostiles(self):
+        self._register()
+        for valor in ['NaN', 'Infinity', '70 kg', '1e999']:
+            resp = self.client.put(
+                '/api/users/profile/',
+                {'email': ESTUDIANTE, 'peso': valor},
+                format='json',
+            )
+            assert_that(resp.status_code, equal_to(400), f'peso={valor!r}')
+        guardada = db_module.get_db().users.find_one({'email': ESTUDIANTE})
+        assert_that(guardada.get('peso'), is_(none()))
+
+    def test_un_campo_invalido_no_guarda_los_validos(self):
+        self._register()
+        resp = self.client.put(
+            '/api/users/profile/',
+            {'email': ESTUDIANTE, 'peso': 70, 'altura': 9999},
+            format='json',
+        )
+        assert_that(resp.status_code, equal_to(400))
+        guardada = db_module.get_db().users.find_one({'email': ESTUDIANTE})
+        assert_that(guardada.get('peso'), is_(none()))
+
+    # hallazgos
+    @unittest.expectedFailure
+    def test_hallazgo_perfil_ajeno_no_se_lee_sin_credencial(self):
+        self._register()
+        resp = self.client.get('/api/users/profile/', {'email': ESTUDIANTE})
+        assert_that(resp.status_code, is_in([401, 403]))
+
+    @unittest.expectedFailure
+    def test_hallazgo_perfil_ajeno_no_se_modifica_sin_credencial(self):
+        self._register()
+        resp = self.client.put(
+            '/api/users/profile/',
+            {'email': ESTUDIANTE, 'peso': 41},
+            format='json',
+        )
+        assert_that(resp.status_code, is_in([401, 403]))
+
+    @unittest.expectedFailure
+    def test_hallazgo_perfil_con_email_como_objeto_responde_400(self):
+        resp = self.client.put(
+            '/api/users/profile/',
+            {'email': {'$ne': ''}, 'peso': 70},
+            format='json',
+        )
+        assert_that(resp.status_code, equal_to(400))
+
+
+# PERFIL DEL ENTRENADOR RF04
+class SeguridadEntrenadorTests(GymApiTestCase):
+
+    def test_estudiante_no_puede_usar_el_perfil_de_entrenador(self):
+        self._register()
+        resp = self.client.get('/api/users/entrenador/', {'email': ESTUDIANTE})
+        assert_that(resp.status_code, equal_to(403))
+
+    @unittest.expectedFailure
+    def test_hallazgo_perfil_de_entrenador_no_se_lee_sin_credencial(self):
+        self._register(email=PROFESOR, name='Coach')
+        resp = self.client.get('/api/users/entrenador/', {'email': PROFESOR})
+        assert_that(resp.status_code, is_in([401, 403]))
+
+
+# PERFIL DEL ADMINISTRADOR RF05
+class SeguridadAdministradorTests(GymApiTestCase):
+
+    def test_entrenador_no_puede_usar_el_perfil_de_administrador(self):
+        self._register(email=PROFESOR, name='Coach')
+        resp = self.client.get('/api/users/administrador/', {'email': PROFESOR})
+        assert_that(resp.status_code, equal_to(403))
+
+    @unittest.expectedFailure
+    def test_hallazgo_perfil_de_administrador_no_se_lee_sin_credencial(self):
+        self._register(email=ADMIN, name='Jefa')
+        resp = self.client.get('/api/users/administrador/', {'email': ADMIN})
+        assert_that(resp.status_code, is_in([401, 403]))
+
+
+# REPORTE DE INASISTENCIAS RF15
+class SeguridadInasistenciasTests(GymApiTestCase):
+
+    def test_reporte_no_mezcla_inasistencias_de_otro_estudiante(self):
+        self._register()
+        self._register(email='otra@soyudemedellin.edu.co', name='Otra',
+                       documento='1009998887')
+        db_module.get_db().reservations.insert_one({
+            'email': 'otra@soyudemedellin.edu.co', 'estado': 'NO_SHOW',
+            'hour': '06:00', 'date': '2026-09-14',
+            'reserva_date': '2026-09-15',
+        })
+        resp = self.client.get('/api/reports/personal/', {'email': ESTUDIANTE})
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(resp.data['inasistencias'], equal_to([]))
+
+    def test_reporte_no_devuelve_contrasena_ni_id_interno(self):
+        self._register()
+        resp = self.client.get('/api/reports/personal/', {'email': ESTUDIANTE})
+        assert_that(resp.status_code, equal_to(200))
+        assert_that(resp.data, is_not(has_key('password')))
+        assert_that(resp.data, is_not(has_key('_id')))
+
+    @unittest.expectedFailure
+    def test_hallazgo_reporte_ajeno_no_se_lee_sin_credencial(self):
+        self._register()
+        resp = self.client.get('/api/reports/personal/', {'email': ESTUDIANTE})
+        assert_that(resp.status_code, is_in([401, 403]))

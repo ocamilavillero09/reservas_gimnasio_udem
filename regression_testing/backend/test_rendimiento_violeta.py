@@ -6,7 +6,6 @@ from rest_framework.test import APIClient
 from api import db as db_module
 from .test_violeta import GymApiTestCase, ESTUDIANTE, PROFESOR, ADMIN
 
-
 # RENDIMIENTO RF01
 class RendimientoRegistroTests(GymApiTestCase):
 
