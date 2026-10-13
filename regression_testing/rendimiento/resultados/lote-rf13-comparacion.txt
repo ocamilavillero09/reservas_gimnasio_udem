@@ -1,0 +1,10 @@
+RF13 — Cerrar una jornada llena (120 reservas sin asistencia)
+Seis ejecuciones intercaladas, mismo equipo, misma base sembrada antes de cada una.
+
+Código original (commit ebcc601):  686  870  410  540  401  234 ms   mediana 475 ms
+Código corregido:                  796  531  727  869  200  322 ms   mediana 629 ms
+
+Lectura: los rangos se solapan por completo (200–870 ms en ambos); la diferencia
+entre medianas está dentro del ruido del equipo de prueba (2 CPU compartidas con
+k6 y MongoDB). El cambio en RF13 fue solo validar la fecha, que no afecta el
+proceso por lotes. Ambos cumplen con holgura el criterio de 5 s.

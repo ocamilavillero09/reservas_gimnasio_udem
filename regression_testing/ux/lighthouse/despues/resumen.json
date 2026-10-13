@@ -1,0 +1,42 @@
+[
+  {
+    "pantalla": "login",
+    "modo": "navegación",
+    "performance": 100,
+    "accessibility": 100,
+    "best-practices": 100,
+    "fallas_accesibilidad": [],
+    "fallas_buenas_practicas": [],
+    "LCP_ms": 709,
+    "TBT_ms": 4,
+    "CLS": 0
+  },
+  {
+    "pantalla": "panel-entrenador",
+    "modo": "navegación",
+    "performance": 100,
+    "accessibility": 100,
+    "best-practices": 100,
+    "fallas_accesibilidad": [],
+    "fallas_buenas_practicas": [],
+    "LCP_ms": 808,
+    "TBT_ms": 5,
+    "CLS": 0.009
+  },
+  {
+    "pantalla": "historial-reporte",
+    "modo": "snapshot",
+    "accessibility": 100,
+    "best-practices": 100,
+    "fallas_accesibilidad": [],
+    "fallas_buenas_practicas": []
+  },
+  {
+    "pantalla": "buzon-admin",
+    "modo": "snapshot",
+    "accessibility": 100,
+    "best-practices": 100,
+    "fallas_accesibilidad": [],
+    "fallas_buenas_practicas": []
+  }
+]

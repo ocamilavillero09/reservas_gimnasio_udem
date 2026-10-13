@@ -24,6 +24,14 @@ const ROLE_BADGE = {
  *   RF23 — El administrador principal retira el rol. La cuenta NO se borra:
  *          queda sin rol y conserva su historial.
  */
+// DEF-04 — Fecha y hora en la zona del gimnasio, con el mismo formato de antes
+// (AAAA-MM-DD HH:MM). El backend guarda en UTC.
+function fechaColombia(iso) {
+  const fecha = new Date(iso);
+  if (Number.isNaN(fecha.getTime())) return iso;
+  return fecha.toLocaleString('sv-SE', { timeZone: 'America/Bogota' }).slice(0, 16);
+}
+
 export default function AdminPanel({ user, showToast }) {
   const [users, setUsers] = useState([]);
   const [name, setName] = useState('');
@@ -31,11 +39,14 @@ export default function AdminPanel({ user, showToast }) {
   const [documento, setDocumento] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [buzon, setBuzon] = useState(null);   // RF21
+  const [errorBuzon, setErrorBuzon] = useState(false);   // DEF-07
 
   const cargar = useCallback(() => {
     adminApi.listarUsuarios(user.email).then(setUsers).catch(() => setUsers([]));
     // RF21 — La bandeja de reportes que envían los estudiantes.
-    buzonApi.consultarBuzon(user.email).then(setBuzon).catch(() => setBuzon(null));
+    buzonApi.consultarBuzon(user.email)
+      .then((b) => { setBuzon(b); setErrorBuzon(false); })
+      .catch(() => { setBuzon(null); setErrorBuzon(true); });
   }, [user.email]);
 
   useEffect(cargar, [cargar]);
@@ -104,7 +115,7 @@ export default function AdminPanel({ user, showToast }) {
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
       <h2 style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Gestión de usuarios</h2>
-      <p style={{ color: '#999', fontSize: 15, marginBottom: 28 }}>
+      <p style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>
         {esPrincipal ? 'Administrador principal' : 'Administrador'} · {user.email}
       </p>
 
@@ -120,7 +131,7 @@ export default function AdminPanel({ user, showToast }) {
       {/* Crear usuario (incluye nuevos administradores) */}
       <div style={card}>
         <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>➕ Crear usuario</h3>
-        <p style={{ color: '#777', fontSize: 13, marginBottom: 18, lineHeight: 1.6 }}>
+        <p style={{ color: '#595959', fontSize: 13, marginBottom: 18, lineHeight: 1.6 }}>
           El rol se asigna automáticamente según el dominio del correo (RN01). Para crear
           otro <strong>administrador</strong> (RF22), usa un correo del dominio
           administrativo{dominioAdmin ? <strong> {dominioAdmin.dominio}</strong> : null}.
@@ -191,13 +202,13 @@ export default function AdminPanel({ user, showToast }) {
       <div style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
           <h3 style={{ fontSize: 18, fontWeight: 800 }}>👥 Usuarios registrados ({users.length})</h3>
-          <span style={{ fontSize: 12, color: '#777' }}>
+          <span style={{ fontSize: 12, color: '#595959' }}>
             {porRol('ESTUDIANTE')} estudiantes · {porRol('ENTRENADOR')} profesores · {porRol('ADMIN')} administradores
           </span>
         </div>
 
         {users.length === 0 ? (
-          <p style={{ color: '#999', fontSize: 14 }}>Sin usuarios para mostrar.</p>
+          <p style={{ color: '#666666', fontSize: 14 }}>Sin usuarios para mostrar.</p>
         ) : users.map((u) => {
           const b = ROLE_BADGE[u.role] || { bg: '#eee', fg: '#555', label: u.role };
           return (
@@ -209,7 +220,7 @@ export default function AdminPanel({ user, showToast }) {
                     <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: RED }}>★ PRINCIPAL</span>
                   )}
                 </p>
-                <p style={{ fontSize: 12, color: '#999', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <p style={{ fontSize: 12, color: '#666666', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {u.email} · doc. {u.documento || '—'}
                 </p>
               </div>
@@ -246,7 +257,7 @@ export default function AdminPanel({ user, showToast }) {
       {/* RF21 — Buzón de sugerencias. Solo el administrador lo ve. */}
       <div style={{ ...card, marginTop: 24 }}>
         <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
-          💬 Buzón de sugerencias
+          <span aria-hidden="true">💬</span> Buzón de sugerencias
           {buzon?.total ? (
             <span style={{
               marginLeft: 10, background: '#FEE2E2', color: RED, fontSize: 12,
@@ -254,27 +265,39 @@ export default function AdminPanel({ user, showToast }) {
             }}>{buzon.total}</span>
           ) : null}
         </h3>
-        <p style={{ fontSize: 13, color: '#777', marginBottom: 16 }}>
+        <p style={{ fontSize: 13, color: '#595959', marginBottom: 16 }}>
           Fallas y mejoras que reportan los estudiantes desde su historial. Borra
           los que ya hayas atendido para no perder de vista los que faltan.
         </p>
 
-        {!buzon || buzon.mensajes.length === 0 ? (
-          <p style={{ color: '#999', fontSize: 14 }}>Todavía no hay mensajes.</p>
+        {errorBuzon ? (
+          // DEF-07 — Antes un fallo de carga se mostraba como "Todavía no hay mensajes".
+          <div role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 16px' }}>
+            <span style={{ color: '#991B1B', fontSize: 14, fontWeight: 600 }}>No se pudo cargar el buzón.</span>
+            <button onClick={cargar} style={{ padding: '8px 14px', border: '1.5px solid #991B1B', borderRadius: 10, background: 'white', color: '#991B1B', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+              Reintentar
+            </button>
+          </div>
+        ) : !buzon || buzon.mensajes.length === 0 ? (
+          <p style={{ color: '#666666', fontSize: 14 }}>Todavía no hay mensajes.</p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {buzon.mensajes.map((m) => (
               <div key={m.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 700, fontSize: 14 }}>{m.autor_nombre}</span>
-                  <span style={{ fontSize: 12, color: '#999' }}>{m.fecha.slice(0, 16).replace('T', ' ')}</span>
+                  <span id={`autor-${m.id}`} style={{ fontWeight: 700, fontSize: 14 }}>{m.autor_nombre}</span>
+                  {/* DEF-04 — La fecha llega en UTC; antes se cortaba el texto sin
+                      convertirla y salía cinco horas adelantada. */}
+                  <span style={{ fontSize: 12, color: '#666666' }}>{fechaColombia(m.fecha)}</span>
                 </div>
-                <p style={{ fontSize: 12, color: '#999', margin: '2px 0 10px' }}>{m.autor_email}</p>
+                <p style={{ fontSize: 12, color: '#666666', margin: '2px 0 10px' }}>{m.autor_email}</p>
                 <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{m.mensaje}</p>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-                  <button onClick={() => borrarMensaje(m)} style={{
-                    padding: '6px 12px', border: '1.5px solid #fca5a5', borderRadius: 8,
-                    background: 'white', color: RED, fontSize: 11, fontWeight: 800, cursor: 'pointer',
+                  {/* H-20 — Antes medía 26 px de alto con letra de 11 px y no decía
+                      de quién era el mensaje para un lector de pantalla. */}
+                  <button onClick={() => borrarMensaje(m)} aria-describedby={`autor-${m.id}`} style={{
+                    padding: '9px 16px', minHeight: 36, border: '1.5px solid #fca5a5', borderRadius: 8,
+                    background: 'white', color: RED, fontSize: 13, fontWeight: 800, cursor: 'pointer',
                   }}>
                     Borrar
                   </button>

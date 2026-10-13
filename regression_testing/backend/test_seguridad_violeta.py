@@ -42,7 +42,7 @@ class SeguridadRegistroTests(GymApiTestCase):
         resp = self._post_registro(email='intruso@gmail.com@udemedellin.edu.co')
         assert_that(resp.status_code, equal_to(400))
 
-    @unittest.expectedFailure
+    # Corregido: api/seguridad.py (ProteccionAPI / bloqueo por intentos).
     def test_hallazgo_registro_con_email_como_objeto_responde_400(self):
         resp = self._post_registro(email={'$ne': ''})
         assert_that(resp.status_code, equal_to(400))
@@ -62,7 +62,9 @@ class SeguridadLoginTests(GymApiTestCase):
             {'email': ESTUDIANTE, 'documento': {'$ne': ''}},
             format='json',
         )
-        assert_that(resp.status_code, equal_to(401))
+        # Desde la corrección, ProteccionAPI rechaza el objeto antes de llegar a
+        # la vista (400). Lo importante es que el truco no inicie sesión.
+        assert_that(resp.status_code, is_in([400, 401]))
 
     def test_login_no_revela_que_el_correo_existe(self):
         self._register()
@@ -88,7 +90,7 @@ class SeguridadLoginTests(GymApiTestCase):
         assert_that(resp.status_code, equal_to(403))
 
     # hallazgos
-    @unittest.expectedFailure
+    # Corregido: api/seguridad.py (ProteccionAPI / bloqueo por intentos).
     def test_bloquear_despues_de_muchos_intentos(self):
         self._register()
         for _ in range(10):
@@ -96,7 +98,7 @@ class SeguridadLoginTests(GymApiTestCase):
         resp = self._login(ESTUDIANTE)
         assert_that(resp.status_code, is_in([403, 423, 429]))
 
-    @unittest.expectedFailure
+    # Corregido: api/seguridad.py (ProteccionAPI / bloqueo por intentos).
     def test_correo_que_no_es_texto(self):
         resp = self.client.post(
             '/api/auth/login/',
@@ -173,7 +175,7 @@ class SeguridadPerfilTests(GymApiTestCase):
         )
         assert_that(resp.status_code, is_in([401, 403]))
 
-    @unittest.expectedFailure
+    # Corregido: api/seguridad.py (ProteccionAPI / bloqueo por intentos).
     def test_hallazgo_perfil_con_email_como_objeto_responde_400(self):
         resp = self.client.put(
             '/api/users/profile/',

@@ -78,7 +78,7 @@ export default function Login({ onLogin }) {
           <p style={{ color: '#555', fontSize: 15, lineHeight: 1.7, marginBottom: 8 }}>
             Tu cuenta ha sido creada correctamente, <strong>{name}</strong>.
           </p>
-          <p style={{ color: '#888', fontSize: 14, lineHeight: 1.7, marginBottom: 32 }}>
+          <p style={{ color: '#595959', fontSize: 14, lineHeight: 1.7, marginBottom: 32 }}>
             Ya puedes iniciar sesión con tu correo <strong style={{ color: RED }}>{email}</strong> y tu
             documento de identidad como contraseña.
           </p>
@@ -155,7 +155,7 @@ export default function Login({ onLogin }) {
             <h2 style={{ color: '#1A1A1A', fontSize: 24, fontWeight: 800, marginBottom: 6 }}>
               {tab === 'login' ? 'Bienvenido de nuevo' : 'Crear cuenta'}
             </h2>
-            <p style={{ color: '#888', fontSize: 14, marginBottom: 28 }}>
+            <p style={{ color: '#595959', fontSize: 14, marginBottom: 28 }}>
               {tab === 'login'
                 ? 'Ingresa con tu correo institucional y tu documento de identidad'
                 : 'Regístrate con tu nombre, correo institucional y documento de identidad'}
@@ -170,7 +170,7 @@ export default function Login({ onLogin }) {
                 <button key={t.id} id={`tab-${t.id}`} onClick={() => { setTab(t.id); setError(''); }} style={{
                   flex: 1, padding: '10px 0', border: 'none', borderRadius: 9, cursor: 'pointer',
                   backgroundColor: tab === t.id ? 'white' : 'transparent',
-                  color: tab === t.id ? RED : '#888',
+                  color: tab === t.id ? RED : '#595959',
                   fontWeight: tab === t.id ? 700 : 400,
                   fontSize: 14,
                   boxShadow: tab === t.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
@@ -243,7 +243,7 @@ export default function Login({ onLogin }) {
                   maxLength={largoDocumento}
                   required
                 />
-                <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
+                <p style={{ fontSize: 12, color: '#595959', marginTop: 6 }}>
                   {tab === 'login'
                     ? 'Tu documento de identidad es tu contraseña.'
                     : `Con este documento iniciarás sesión. Son ${largoDocumento} dígitos.`}

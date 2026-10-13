@@ -4,6 +4,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from .seguridad import (
+    minutos_de_bloqueo, registrar_fallo, limpiar_fallos, respuesta_bloqueo,
+)
 from .db import (
     ahora_utc,
     get_db, seed_slots, hash_password, verify_password, serialize,
@@ -224,6 +227,14 @@ def registrar_cuenta(request):
             status=400,
         )
 
+    # VUL-08 — El nombre se valida aquí con los mismos límites que el
+    # validador de MongoDB; antes llegaba a la base y respondía un error 500.
+    if not 2 <= len(name) <= 100:
+        return Response(
+            {'error': 'El nombre debe tener entre 2 y 100 caracteres.'},
+            status=400,
+        )
+
     # RF01 — El documento de identidad es además la contraseña (RF02).
     problema = error_de_documento(documento)
     if problema:
@@ -277,6 +288,9 @@ def registrar_cuenta(request):
         'penalizado_hasta': None,
         'created_at': ahora_utc(),
     })
+
+    # Una cuenta nueva empieza sin intentos fallidos de inicio de sesión.
+    limpiar_fallos(email)
 
     return Response({
         'message': 'Registro exitoso.',
@@ -339,13 +353,25 @@ def iniciar_sesion(request):
     email = request.data.get('email', '').strip().lower()
     documento = _leer_documento(request.data)
 
+    # VUL-06 — Tras cinco intentos fallidos el correo queda bloqueado quince
+    # minutos, incluso con la contraseña correcta: así un ataque de fuerza bruta
+    # no puede probar los documentos uno tras otro.
+    bloqueo = minutos_de_bloqueo(email)
+    if bloqueo:
+        return respuesta_bloqueo(bloqueo)
+
     user = db.users.find_one({'email': email})
 
     if not user or not verify_password(user['password'], documento):
+        bloqueo = registrar_fallo(email)
+        if bloqueo:
+            return respuesta_bloqueo(bloqueo)
         return Response(
             {'error': 'Correo o documento de identidad incorrectos.'},
             status=401,
         )
+
+    limpiar_fallos(email)
 
     # RF22 — A esta cuenta le retiraron el rol: ya no puede entrar al sistema.
     if user.get('estado') == 'INACTIVO' or user.get('role') == 'SIN_ROL':

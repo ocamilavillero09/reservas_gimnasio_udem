@@ -10,6 +10,12 @@ se publican no llevan pruebas dentro.
 | `backend/`   | Reglas de negocio y casos de uso de la API (`backend/api/`) | Django `TestCase` + `mongomock` |
 | `frontend/`  | Componentes React y cliente HTTP (`frontend/src/`) | Vitest + Testing Library |
 | `e2e/`       | Recorridos completos contra el stack levantado | Playwright |
+| `cypress/`   | Regresión, API y componentes de RF11, RF12, RF13, RF16, RF20 y RF21 más seguridad, accesibilidad, interfaz y hallazgos heurísticos (ver `cypress/README.md`) | Cypress |
+| `rendimiento/` | Carga, estrés y lote de RF13 (ver `INFORME_SEGURIDAD_RENDIMIENTO.md`) | k6 |
+| `ux/`        | Formulario de usabilidad, Lighthouse e informe de UX (ver `ux/INFORME_UX.md`) | Python, Lighthouse |
+| `herramientas/` | `backend_reloj_fijo.py`: backend con la hora fijada para correr pruebas de asistencia de madrugada | time-machine |
+
+Mapa de la rúbrica a las evidencias: [`RUBRICA.md`](RUBRICA.md).
 
 ## Cómo se ejecutan
 

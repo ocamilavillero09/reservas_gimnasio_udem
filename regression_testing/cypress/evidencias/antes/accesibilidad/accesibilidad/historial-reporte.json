@@ -1,0 +1,33 @@
+{
+  "pantalla": "historial-reporte",
+  "violaciones": [
+    {
+      "regla": "color-contrast",
+      "impacto": "serious",
+      "descripcion": "Elements must meet minimum color contrast ratio thresholds",
+      "ayuda": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "wcag": [
+        "wcag2aa",
+        "wcag143"
+      ],
+      "nodos": 4,
+      "ejemplos": [
+        {
+          "selector": "#root > div > div > p",
+          "html": "<p style=\"color: rgb(153, 153, 153); font-size: 15px; margin-bottom: 28px;\">Tus entrenamientos pasados</p>",
+          "resumen": "Fix any of the following:\n  Element has insufficient color contrast of 2.59 (foreground color: #999999, background color: #f4f4f6, font size: 11.3pt (15px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "selector": "div:nth-child(1) > span:nth-child(1) > span",
+          "html": "<span style=\"color: rgb(153, 153, 153); font-weight: 400; font-size: 13px;\">· 2026-10-02</span>",
+          "resumen": "Fix any of the following:\n  Element has insufficient color contrast of 2.84 (foreground color: #999999, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "selector": "div:nth-child(2) > span:nth-child(1) > span",
+          "html": "<span style=\"color: rgb(153, 153, 153); font-weight: 400; font-size: 13px;\">· 2026-10-01</span>",
+          "resumen": "Fix any of the following:\n  Element has insufficient color contrast of 2.84 (foreground color: #999999, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ]
+}
