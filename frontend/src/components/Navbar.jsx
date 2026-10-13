@@ -21,17 +21,21 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
       boxShadow: '0 2px 16px rgba(0,0,0,0.25)',
       position: 'sticky', top: 0, zIndex: 100,
     }}>
-      <div style={{
+      <div className="nav-contenedor" style={{
         maxWidth: 1100, margin: '0 auto', padding: '0 24px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 66,
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src="/logo-udem.png" alt="Universidad de Medellín" style={{ height: 38, filter: 'brightness(0) invert(1)' }} />
+          {/* H-27 — El filtro brightness(0) invert(1) convertía el logo (un PNG con
+              fondo blanco) en un rectángulo blanco. Se muestra tal cual, sobre una
+              placa blanca. */}
+          <img className="nav-logo" src="/logo-udem.png" alt="Universidad de Medellín"
+            style={{ height: 38, backgroundColor: 'white', borderRadius: 8, padding: '2px 6px' }} />
         </div>
 
         {/* Nav links + user */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div className="nav-enlaces" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {!staff && (
             <>
               <NavBtn active={view === 'dashboard'} onClick={() => onNavigate('dashboard')}>
@@ -80,7 +84,7 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
             Perfil
           </NavBtn>
 
-          <div style={{ width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.3)', margin: '0 6px' }} />
+          <div className="nav-separador" style={{ width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.3)', margin: '0 6px' }} />
 
           {/* Avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -93,7 +97,7 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
             }}>
               {initials}
             </div>
-            <div style={{ maxWidth: 150, overflow: 'hidden' }}>
+            <div className="nav-usuario-texto" style={{ maxWidth: 150, overflow: 'hidden' }}>
               <p style={{ color: 'white', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user?.name}
               </p>
@@ -119,7 +123,7 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
 
 function NavBtn({ id, active, onClick, children }) {
   return (
-    <button id={id} onClick={onClick} style={{
+    <button id={id} className="nav-boton" onClick={onClick} style={{
       padding: '8px 18px', border: 'none', borderRadius: 10, cursor: 'pointer',
       backgroundColor: active ? 'rgba(255,255,255,0.22)' : 'transparent',
       color: 'white',

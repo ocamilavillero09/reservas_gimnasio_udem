@@ -1,0 +1,8 @@
+{
+  "pantalla": "buzon-admin",
+  "campos_sin_foco_visible": [
+    "input \"Nombre completo\" (sombra: rgba(204, 0, 0, 0.1) 0px 0px 0px 3px)",
+    "input \"correo@udemedellin.edu.co\" (sombra: rgba(204, 0, 0, 0.1) 0px 0px 0px 3px)",
+    "input \"Documento de identidad (10 díg\" (sombra: rgba(204, 0, 0, 0.1) 0px 0px 0px 3px)"
+  ]
+}

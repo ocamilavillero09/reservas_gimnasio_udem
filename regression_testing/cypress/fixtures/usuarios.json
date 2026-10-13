@@ -1,0 +1,22 @@
+{
+  "admin": {
+    "name": "Ana Administradora",
+    "email": "ana.admin@udemedellin.edu.co",
+    "documento": "1000000001"
+  },
+  "entrenador": {
+    "name": "Tomás Entrenador",
+    "email": "tomas.coach@udem.edu.co",
+    "documento": "1000000002"
+  },
+  "estudiante": {
+    "name": "Laura Estudiante",
+    "email": "laura.est@soyudemedellin.edu.co",
+    "documento": "1000000003"
+  },
+  "estudiante2": {
+    "name": "Mateo Estudiante",
+    "email": "mateo.est@soyudemedellin.edu.co",
+    "documento": "1000000004"
+  }
+}

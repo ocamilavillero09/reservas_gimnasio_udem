@@ -1,0 +1,7 @@
+{
+  "pantalla": "login",
+  "campos_sin_foco_visible": [
+    "input \"nombre@soyudemedellin.edu.co\" (sombra: rgba(204, 0, 0, 0.1) 0px 0px 0px 3px)",
+    "input \"Ej: 1001234567\" (sombra: rgba(204, 0, 0, 0.1) 0px 0px 0px 3px)"
+  ]
+}

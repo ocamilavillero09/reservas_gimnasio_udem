@@ -6,8 +6,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-gym-udem-2024-change-in-production')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-ALLOWED_HOSTS = ['*']
+# VUL-09 — Apagado por defecto: con DEBUG encendido, cualquier error mostraba
+# al visitante la traza, la configuración y la lista de rutas internas. Para
+# desarrollar con el modo depuración hay que pedirlo: DEBUG=True.
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '*').split(',') if h.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',
@@ -20,8 +23,16 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # VUL-10 — Cabeceras de seguridad: X-Content-Type-Options: nosniff y
+    # Referrer-Policy (SecurityMiddleware) y X-Frame-Options: DENY, que impide
+    # meter la aplicación en un iframe de otro sitio (XFrameOptionsMiddleware).
+    'django.middleware.security.SecurityMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # VUL-07 / VUL-08 / VUL-09 — Valida la forma del cuerpo y responde JSON sin
+    # trazas ante cualquier error de la API (api/seguridad.py).
+    'api.seguridad.ProteccionAPI',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Protección contra peticiones falsificadas desde otro sitio.
     #
     # Las vistas de Django REST Framework quedan exentas por diseño del propio
@@ -62,8 +73,19 @@ DATABASES = {
     }
 }
 
-# CORS: permite que el frontend (React) llame al backend
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS — VUL-11. Antes se aceptaba cualquier origen, así que cualquier página
+# web podía llamar a la API desde el navegador de un usuario. Ahora solo los
+# orígenes de la lista. En producción el frontend y la API comparten dominio
+# (nginx hace de proxy de /api), así que allí CORS ni siquiera interviene.
+CORS_ALLOWED_ORIGINS = [
+    o.strip() for o in os.getenv(
+        'CORS_ALLOWED_ORIGINS',
+        'http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173',
+    ).split(',') if o.strip()
+]
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = 'same-origin'
+X_FRAME_OPTIONS = 'DENY'
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],

@@ -98,7 +98,7 @@ export default function ProfileView({ user, showToast }) {
   return (
     <div style={{ maxWidth: 620, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
       <h2 id="perfil-titulo" style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Mi perfil</h2>
-      <p style={{ color: '#999', fontSize: 15, marginBottom: 28 }}>
+      <p style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>
         Datos de tu cuenta en el sistema de reservas
       </p>
 
@@ -122,7 +122,7 @@ export default function ProfileView({ user, showToast }) {
           <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
             🚦 Mis inasistencias y penalizaciones
           </h3>
-          <p style={{ fontSize: 13, color: '#777', marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: '#595959', marginBottom: 16 }}>
             La cuenta se penaliza al llegar a {reporte.no_show_limite} inasistencias.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 14 }}>
@@ -168,7 +168,7 @@ export default function ProfileView({ user, showToast }) {
               {reporte.inasistencias.map((i) => (
                 <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F0F0F0', fontSize: 13 }}>
                   <span style={{ fontWeight: 700 }}>{i.hour}</span>
-                  <span style={{ color: '#999' }}>{i.date}</span>
+                  <span style={{ color: '#666666' }}>{i.date}</span>
                 </div>
               ))}
             </div>
@@ -181,24 +181,24 @@ export default function ProfileView({ user, showToast }) {
         <form onSubmit={save} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 800 }}>🏋️ Mi información de entrenamiento</h3>
-            <p style={{ fontSize: 13, color: '#777', marginTop: 4 }}>
+            <p style={{ fontSize: 13, color: '#595959', marginTop: 4 }}>
               Mantén actualizados tu edad, peso, altura y objetivo.
             </p>
           </div>
           <div>
             <label htmlFor="perfil-edad" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Edad (años)</label>
             <input type="text" inputMode="numeric" id="perfil-edad" value={edad} onChange={(e) => setEdad(soloEntero(e.target.value))} style={inputStyle} />
-            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('edad', 'años')}</p>
+            <p style={{ fontSize: 12, color: '#595959', margin: '4px 0 0' }}>{ayuda('edad', 'años')}</p>
           </div>
           <div>
             <label htmlFor="perfil-peso" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Peso (kg)</label>
             <input type="text" inputMode="decimal" id="perfil-peso" value={peso} onChange={(e) => setPeso(soloDecimal(e.target.value))} style={inputStyle} />
-            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('peso', 'kg')}</p>
+            <p style={{ fontSize: 12, color: '#595959', margin: '4px 0 0' }}>{ayuda('peso', 'kg')}</p>
           </div>
           <div>
             <label htmlFor="perfil-altura" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Altura (cm)</label>
             <input type="text" inputMode="decimal" id="perfil-altura" value={altura} onChange={(e) => setAltura(soloDecimal(e.target.value))} style={inputStyle} />
-            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('altura', 'cm')}</p>
+            <p style={{ fontSize: 12, color: '#595959', margin: '4px 0 0' }}>{ayuda('altura', 'cm')}</p>
           </div>
           <div>
             <label htmlFor="perfil-meta" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Objetivo de entrenamiento</label>
@@ -210,7 +210,7 @@ export default function ProfileView({ user, showToast }) {
         </form>
       ) : (
         <div style={card}>
-          <p style={{ fontSize: 13, color: '#777', lineHeight: 1.7, margin: 0 }}>
+          <p style={{ fontSize: 13, color: '#595959', lineHeight: 1.7, margin: 0 }}>
             Los entrenadores y administradores consultan aquí su nombre, documento de identidad
             y rol asignado. La información de entrenamiento (edad, peso, altura y objetivo) es
             exclusiva del perfil del estudiante.
@@ -224,7 +224,7 @@ export default function ProfileView({ user, showToast }) {
 function Dato({ label, valor, extra }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '10px 0', borderBottom: '1px solid #F0F0F0' }}>
-      <span style={{ fontSize: 13, color: '#777' }}>{label}</span>
+      <span style={{ fontSize: 13, color: '#595959' }}>{label}</span>
       <span style={{ fontSize: 14, fontWeight: 700, textAlign: 'right', wordBreak: 'break-all' }}>
         {valor || '—'}
         {extra && (
@@ -240,7 +240,7 @@ function Contador({ label, value, sub, alerta }) {
     <div style={{ border: `1px solid ${alerta ? '#FCD34D' : '#eee'}`, background: alerta ? '#FFFBEB' : 'white', borderRadius: 12, padding: 14 }}>
       <p style={{ fontSize: 28, fontWeight: 900, color: alerta ? '#B45309' : '#1A1A1A', lineHeight: 1 }}>{value}</p>
       <p style={{ fontSize: 12, fontWeight: 700, color: '#555', marginTop: 6 }}>{label}</p>
-      <p style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{sub}</p>
+      <p style={{ fontSize: 11, color: '#666666', marginTop: 2 }}>{sub}</p>
     </div>
   );
 }

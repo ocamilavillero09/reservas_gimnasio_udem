@@ -44,7 +44,7 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
       )}
 
       {/* Hora */}
-      <p style={{ fontSize: 13, color: '#AAA', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
+      <p style={{ fontSize: 13, color: '#666666', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
         Bloque
       </p>
       <div style={{ fontSize: 42, fontWeight: 900, color: '#1A1A1A', lineHeight: 1, marginBottom: 16 }}>
@@ -121,7 +121,7 @@ function ReserveModal({ slot, fechaLabel, onConfirm, onClose }) {
           backgroundColor: '#F4F4F6', borderRadius: 14, padding: '14px 18px',
           marginBottom: 18, textAlign: 'center',
         }}>
-          <p style={{ fontSize: 12, color: '#888', fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4 }}>
+          <p style={{ fontSize: 12, color: '#595959', fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4 }}>
             Reserva para mañana
           </p>
           <p style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A', textTransform: 'capitalize', margin: 0 }}>
@@ -197,7 +197,7 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
         <h2 style={{ fontSize: 30, fontWeight: 900, color: '#1A1A1A', marginBottom: 4, letterSpacing: -0.5 }}>
           Hola, {user?.name?.split(' ')[0]} 👋
         </h2>
-        <p style={{ color: '#999', fontSize: 15, textTransform: 'capitalize' }}>Hoy es {hoy}</p>
+        <p style={{ color: '#666666', fontSize: 15, textTransform: 'capitalize' }}>Hoy es {hoy}</p>
       </div>
 
       {/* RN03 — Banner de la fecha de reserva: se reserva para el DÍA SIGUIENTE */}
@@ -285,7 +285,7 @@ function StatCard({ icon, label, value, highlight }) {
       <div style={{ fontSize: 32 }}>{icon}</div>
       <div>
         <p style={{ fontSize: 26, fontWeight: 900, color: highlight ? '#B45309' : '#1A1A1A', lineHeight: 1 }}>{value}</p>
-        <p style={{ fontSize: 12, color: '#999', marginTop: 4 }}>{label}</p>
+        <p style={{ fontSize: 12, color: '#666666', marginTop: 4 }}>{label}</p>
       </div>
     </div>
   );

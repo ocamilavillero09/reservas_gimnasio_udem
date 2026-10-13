@@ -22,7 +22,7 @@ function CancelModal({ reservation, onConfirm, onClose }) {
         <p style={{ color: '#666', fontSize: 15, marginBottom: 8 }}>
           Bloque de las <strong style={{ color: RED }}>{reservation.hour}</strong>
         </p>
-        <p style={{ color: '#999', fontSize: 13, lineHeight: 1.7, marginBottom: 28 }}>
+        <p style={{ color: '#666666', fontSize: 13, lineHeight: 1.7, marginBottom: 28 }}>
           El cupo será liberado <strong>inmediatamente</strong> y otro estudiante
           podrá ocuparlo.
         </p>
@@ -61,7 +61,7 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
       <h2 style={{ fontSize: 30, fontWeight: 900, color: '#1A1A1A', marginBottom: 6, letterSpacing: -0.5 }}>
         Mis reservas
       </h2>
-      <p style={{ color: '#999', fontSize: 15, marginBottom: 32 }}>
+      <p style={{ color: '#666666', fontSize: 15, marginBottom: 32 }}>
         {/* RN03 — se deja explícito para qué día es la reserva */}
         Tu reserva de mañana
         {reservaFecha?.label && (
@@ -80,7 +80,7 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
           <h3 style={{ color: '#1A1A1A', fontSize: 22, fontWeight: 800, marginBottom: 10 }}>
             Sin reservas activas
           </h3>
-          <p style={{ color: '#999', fontSize: 14, marginBottom: 28, maxWidth: 280, margin: '0 auto 28px' }}>
+          <p style={{ color: '#666666', fontSize: 14, marginBottom: 28, maxWidth: 280, margin: '0 auto 28px' }}>
             No tienes ninguna reserva en este momento. ¡Asegura tu cupo ahora!
           </p>
           <button onClick={() => onNavigate('dashboard')} style={{
@@ -126,7 +126,7 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
                   <p style={{ fontSize: 26, fontWeight: 900, color: '#1A1A1A', lineHeight: 1, marginBottom: 4 }}>
                     {res.hour}
                   </p>
-                  <p style={{ fontSize: 13, color: '#999', marginBottom: 6, textTransform: 'capitalize' }}>
+                  <p style={{ fontSize: 13, color: '#666666', marginBottom: 6, textTransform: 'capitalize' }}>
                     {res.date}
                   </p>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>

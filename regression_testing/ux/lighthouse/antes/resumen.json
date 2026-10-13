@@ -1,0 +1,62 @@
+[
+  {
+    "pantalla": "login",
+    "modo": "navegación",
+    "performance": 100,
+    "accessibility": 91,
+    "best-practices": 93,
+    "fallas_accesibilidad": [
+      "Background and foreground colors do not have a sufficient contrast ratio."
+    ],
+    "fallas_buenas_practicas": [
+      "Does not have a `<meta name=\"viewport\">` tag with `width` or `initial-scale`",
+      "Document doesn't use legible font sizes"
+    ],
+    "LCP_ms": 675,
+    "TBT_ms": 0,
+    "CLS": 0
+  },
+  {
+    "pantalla": "panel-entrenador",
+    "modo": "navegación",
+    "performance": 92,
+    "accessibility": 92,
+    "best-practices": 93,
+    "fallas_accesibilidad": [
+      "Background and foreground colors do not have a sufficient contrast ratio."
+    ],
+    "fallas_buenas_practicas": [
+      "Does not have a `<meta name=\"viewport\">` tag with `width` or `initial-scale`",
+      "Document doesn't use legible font sizes"
+    ],
+    "LCP_ms": 799,
+    "TBT_ms": 19,
+    "CLS": 0.182
+  },
+  {
+    "pantalla": "historial-reporte",
+    "modo": "snapshot",
+    "accessibility": 91,
+    "best-practices": 75,
+    "fallas_accesibilidad": [
+      "Background and foreground colors do not have a sufficient contrast ratio."
+    ],
+    "fallas_buenas_practicas": [
+      "Does not have a `<meta name=\"viewport\">` tag with `width` or `initial-scale`",
+      "Document doesn't use legible font sizes"
+    ]
+  },
+  {
+    "pantalla": "buzon-admin",
+    "modo": "snapshot",
+    "accessibility": 91,
+    "best-practices": 75,
+    "fallas_accesibilidad": [
+      "Background and foreground colors do not have a sufficient contrast ratio."
+    ],
+    "fallas_buenas_practicas": [
+      "Does not have a `<meta name=\"viewport\">` tag with `width` or `initial-scale`",
+      "Document doesn't use legible font sizes"
+    ]
+  }
+]

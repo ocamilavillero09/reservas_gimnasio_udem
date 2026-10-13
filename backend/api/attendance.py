@@ -9,7 +9,7 @@ Asistencia, inasistencias y penalizaciones.
   RF16  Ver el registro diario — entrenador                  (ver_registro_entrenador)
   RF17  Ver el registro diario — administrador               (ver_registro_administrador)
 """
-from datetime import datetime
+from datetime import date, datetime
 
 from bson import ObjectId
 from rest_framework.decorators import api_view
@@ -81,6 +81,16 @@ def _fila_estudiante(user: dict) -> dict:
         'inasistencias_restantes': inasistencias_restantes(user),
         'no_show_limite': NO_SHOW_LIMITE,
     }
+
+
+def _usuarios_por_email(db, correos):
+    """Trae en UNA consulta a todos los usuarios de una lista de correos.
+
+    Mejora de rendimiento (pruebas de carga con k6): antes se hacía una
+    consulta por fila (patrón N+1), así que una jornada con 120 reservas eran
+    121 viajes a la base de datos.
+    """
+    return {u['email']: u for u in db.users.find({'email': {'$in': list(set(correos))}})}
 
 
 # ── RF11 / HU11 — BUSCAR AL ESTUDIANTE POR SU DOCUMENTO DE IDENTIDAD ────────
@@ -220,10 +230,12 @@ def consultar_reservas(request):
     fecha = _fecha_jornada(request)
     db = get_db()
     pendientes = []
-    for r in db.reservations.find(
+    reservas = list(db.reservations.find(
         {'estado': 'ACTIVA', 'reserva_date': {'$lte': fecha}}
-    ).sort('reserva_date', 1):
-        student = db.users.find_one({'email': r['email']}) or {}
+    ).sort('reserva_date', 1))
+    usuarios = _usuarios_por_email(db, [r['email'] for r in reservas])
+    for r in reservas:
+        student = usuarios.get(r['email'], {})
         pendientes.append({
             'id': str(r['_id']),
             'name': student.get('name', r['email']),
@@ -270,6 +282,18 @@ def procesar_inasistencia(request):
         )
 
     fecha = _fecha_jornada(request)
+    # VUL-05 / DEF-01 — Solo se cierran jornadas que ya llegaron. Antes se
+    # aceptaba cualquier fecha del cliente y una fecha futura convertía en
+    # inasistencias las reservas de mañana, penalizando a quien no había faltado.
+    try:
+        fecha_pedida = date.fromisoformat(fecha)
+    except ValueError:
+        return Response({'error': 'La fecha debe tener el formato AAAA-MM-DD.'}, status=400)
+    if fecha_pedida > hoy_local():
+        return Response(
+            {'error': 'No se puede cerrar una jornada que todavía no ha llegado.'},
+            status=400,
+        )
     db = get_db()
     procesados, penalizados = [], []
 
@@ -368,10 +392,20 @@ def build_daily_report(fecha_iso: str) -> dict:
     db = get_db()
     del_dia = {'reserva_date': fecha_iso}
 
+    # Mejora de rendimiento: las reservas del día se leen UNA vez y los
+    # estudiantes en UNA consulta. Antes eran cuatro lecturas de reservas, una
+    # consulta por fila y 18 conteos por bloque (más de 140 viajes a la base
+    # con el gimnasio lleno). Los totales y el detalle por bloque se calculan
+    # en memoria sobre esas mismas reservas.
+    reservas_dia = sorted(db.reservations.find(del_dia), key=lambda r: r['hour'])
+    usuarios = _usuarios_por_email(db, [r['email'] for r in reservas_dia])
+
     def _detalle(estado):
         filas = []
-        for r in db.reservations.find({**del_dia, 'estado': estado}).sort('hour', 1):
-            u = db.users.find_one({'email': r['email']}) or {}
+        for r in reservas_dia:
+            if r.get('estado') != estado:
+                continue
+            u = usuarios.get(r['email'], {})
             filas.append({
                 'name': u.get('name', r['email']), 'email': r['email'],
                 'documento': u.get('documento', ''), 'hour': r['hour'],
@@ -394,21 +428,19 @@ def build_daily_report(fecha_iso: str) -> dict:
     # Ocupación por bloque horario del día (RF07 aplicado al reporte).
     bloques = []
     for s in db.slots.find().sort('slotId', 1):
-        reservados = db.reservations.count_documents(
-            {**del_dia, 'slotId': s['slotId'], 'estado': {'$in': ['ACTIVA', 'COMPLETADA', 'NO_SHOW']}}
-        )
+        del_bloque = [r for r in reservas_dia if r.get('slotId') == s['slotId']]
         bloques.append({
             'slotId': s['slotId'], 'hour': s['hour'], 'total': s['total'],
-            'reservados': reservados,
-            'asistencias': db.reservations.count_documents({**del_dia, 'slotId': s['slotId'], 'estado': 'COMPLETADA'}),
-            'inasistencias': db.reservations.count_documents({**del_dia, 'slotId': s['slotId'], 'estado': 'NO_SHOW'}),
+            'reservados': sum(r.get('estado') in ('ACTIVA', 'COMPLETADA', 'NO_SHOW') for r in del_bloque),
+            'asistencias': sum(r.get('estado') == 'COMPLETADA' for r in del_bloque),
+            'inasistencias': sum(r.get('estado') == 'NO_SHOW' for r in del_bloque),
         })
 
     return {
         'fecha': fecha_iso,
         'fecha_label': _fecha_label(fecha_iso),
         'totales': {
-            'reservas': db.reservations.count_documents(del_dia),
+            'reservas': len(reservas_dia),
             'asistencias': len(asistencias),
             'cancelaciones': len(cancelaciones),
             'inasistencias': len(inasistencias),

@@ -27,7 +27,13 @@ export async function request(path, options = {}) {
     ...options,
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Error en el servidor');
+  if (!res.ok) {
+    // El código HTTP viaja con el error: la interfaz necesita distinguir, por
+    // ejemplo, "el usuario ya no existe" (404) de "el servidor no respondió".
+    const error = new Error(data.error || 'Error en el servidor');
+    error.status = res.status;
+    throw error;
+  }
   return data;
 }
 

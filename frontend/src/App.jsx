@@ -142,10 +142,18 @@ export default function App() {
         saveSession(fresh);
         setView((v) => (v === 'login' ? defaultView(fresh) : v));
         await refreshData(fresh.email);
-      } catch {
-        if (!cancelado) {
+      } catch (err) {
+        // DEF-03 — Antes, CUALQUIER fallo (incluso una petición cortada por
+        // recargar la página o un corte de red) borraba la sesión y sacaba al
+        // usuario. Ahora solo se cierra si el servidor responde que la cuenta
+        // ya no existe (404) o fue desactivada (403); ante un fallo de red se
+        // conserva la sesión guardada y se avisa.
+        if (cancelado) return;
+        if (err?.status === 404 || err?.status === 403) {
           saveSession(null);
           setView('login');
+        } else {
+          showToast('No se pudo actualizar la información. Revisa tu conexión e inténtalo de nuevo.', 'warning');
         }
       } finally {
         if (!cancelado) setLoading(false);
@@ -221,7 +229,24 @@ export default function App() {
         button { transition: filter 0.15s, transform 0.1s; }
         button:not(:disabled):hover  { filter: brightness(0.93); }
         button:not(:disabled):active { transform: scale(0.97); }
-        input:focus { border-color: #CC0000 !important; box-shadow: 0 0 0 3px rgba(204,0,0,0.1); outline: none; }
+        /* H-25 — Indicador de foco visible (WCAG 2.4.7 y 2.4.13): la sombra anterior,
+           al 10 % de opacidad, apenas se distinguía del fondo del campo. */
+        input:focus, textarea:focus { border-color: #CC0000 !important; box-shadow: 0 0 0 3px rgba(204,0,0,0.4); outline: none; }
+        button:focus-visible, a:focus-visible { outline: 3px solid #1A1A1A; outline-offset: 2px; }
+        /* H-23 — En el celular el panel decorativo del inicio de sesión ocupaba
+           media pantalla y empujaba el formulario fuera de ella. */
+        @media (max-width: 768px) {
+          .left-panel { display: none !important; }
+        }
+        /* H-24 — Barra de navegación en el celular: antes se salía por la derecha
+           y el botón "Salir" quedaba fuera de la pantalla. */
+        @media (max-width: 640px) {
+          .nav-contenedor { height: auto !important; flex-wrap: wrap; padding: 8px 12px !important; gap: 6px; }
+          .nav-enlaces { flex-wrap: wrap; justify-content: flex-end; gap: 4px !important; }
+          .nav-boton { padding: 8px 10px !important; font-size: 13px !important; }
+          .nav-usuario-texto, .nav-separador { display: none !important; }
+          .nav-logo { height: 30px !important; }
+        }
       `}</style>
 
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}
