@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+<title>E2E RF11 RF12 RF13 RF16 RF20 RF21</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF11-01 entrenador registra la asistencia del estudiante uno</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=panel-titulo<datalist><option>id=panel-titulo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Documento de identidad del estudiante&quot;]&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Documento de identidad del estudiante&quot;]&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Buscar&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Buscar&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//span[normalize-space()=&#x27;HOY&#x27;]<datalist><option>xpath=//span[normalize-space()=&#x27;HOY&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>xpath=//p[normalize-space()=&#x27;Katalon Estudiante Uno&#x27;]<datalist><option>xpath=//p[normalize-space()=&#x27;Katalon Estudiante Uno&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//span[normalize-space()=&#x27;HOY&#x27;]/ancestor::div[1]//button[normalize-space()=&#x27;Registrar asistencia&#x27;]<datalist><option>xpath=//span[normalize-space()=&#x27;HOY&#x27;]/ancestor::div[1]//button[normalize-space()=&#x27;Registrar asistencia&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF11-01<datalist><option>KT-RF11-01</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td>*Asistencia registrada para las 06:00*</td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF11-02 documento con letras muestra error sin buscar</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=panel-titulo<datalist><option>id=panel-titulo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Documento de identidad del estudiante&quot;]&#x27;); s.call(e,&#x27;12ab&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Documento de identidad del estudiante&quot;]&#x27;); s.call(e,&#x27;12ab&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Buscar&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Buscar&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=error-documento<datalist><option>id=error-documento</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF11-02<datalist><option>KT-RF11-02</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=error-documento<datalist><option>id=error-documento</option></datalist></td><td>*10 dígitos*</td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF11-03 documento que no existe</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=panel-titulo<datalist><option>id=panel-titulo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Documento de identidad del estudiante&quot;]&#x27;); s.call(e,&#x27;9999999999&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Documento de identidad del estudiante&quot;]&#x27;); s.call(e,&#x27;9999999999&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Buscar&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Buscar&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF11-03<datalist><option>KT-RF11-03</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td>*No hay ningún estudiante registrado con el documento 9999999999*</td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF12-01 pendientes muestra solo a quien no asistio y se puede filtrar</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]<datalist><option>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>assertElementNotPresent</td><td>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Uno&#x27;]<datalist><option>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Uno&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Filtrar pendientes&quot;]&#x27;); s.call(e,&#x27;1090000004&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Filtrar pendientes&quot;]&#x27;); s.call(e,&#x27;1090000004&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF12-01<datalist><option>KT-RF12-01</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]<datalist><option>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Filtrar pendientes&quot;]&#x27;); s.call(e,&#x27;nadie-con-este-nombre&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;input[aria-label=&quot;Filtrar pendientes&quot;]&#x27;); s.call(e,&#x27;nadie-con-este-nombre&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>assertElementNotPresent</td><td>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]<datalist><option>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF13-01 el administrador ve pendientes pero no puede cerrar la jornada</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]<datalist><option>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF13-01<datalist><option>KT-RF13-01</option></datalist></td><td></td></tr>
+<tr><td>assertElementNotPresent</td><td>xpath=//button[normalize-space()=&#x27;Cerrar jornada&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Cerrar jornada&#x27;]</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF13-02 entrenador cierra la jornada</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]<datalist><option>xpath=//table//div[normalize-space()=&#x27;Katalon Estudiante Dos&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>chooseOkOnNextConfirmation</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Cerrar jornada&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Cerrar jornada&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF13-02<datalist><option>KT-RF13-02</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td>*Se procesaron 1 inasistencias*</td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//p[contains(normalize-space(),&#x27;No hay estudiantes pendientes&#x27;)]<datalist><option>xpath=//p[contains(normalize-space(),&#x27;No hay estudiantes pendientes&#x27;)]</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF16-01 registro diario con los totales del dia</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=panel-titulo<datalist><option>id=panel-titulo</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF16-01<datalist><option>KT-RF16-01</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>xpath=//p[normalize-space()=&#x27;Asistencias&#x27;]/preceding-sibling::p<datalist><option>xpath=//p[normalize-space()=&#x27;Asistencias&#x27;]/preceding-sibling::p</option></datalist></td><td>1</td></tr>
+<tr><td>assertText</td><td>xpath=//p[normalize-space()=&#x27;Inasistencias&#x27;]/preceding-sibling::p<datalist><option>xpath=//p[normalize-space()=&#x27;Inasistencias&#x27;]/preceding-sibling::p</option></datalist></td><td>1</td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF20-01 estudiante envia un reporte al administrador</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Historial&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Historial&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=contador-mensaje<datalist><option>id=contador-mensaje</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;textarea[aria-label=&quot;Mensaje para el administrador&quot;]&#x27;); s.call(e,&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,&#x27;value&#x27;).set; var e=document.querySelector(&#x27;textarea[aria-label=&quot;Mensaje para el administrador&quot;]&#x27;); s.call(e,&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Enviar al administrador&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Enviar al administrador&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF20-01<datalist><option>KT-RF20-01</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td>*Tu reporte llegó al administrador*</td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF20-02 mensaje vacio no se puede enviar</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Historial&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Historial&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=contador-mensaje<datalist><option>id=contador-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF20-02<datalist><option>KT-RF20-02</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>xpath=//button[normalize-space()=&#x27;Enviar al administrador&#x27; and @disabled]<datalist><option>xpath=//button[normalize-space()=&#x27;Enviar al administrador&#x27; and @disabled]</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=contador-mensaje<datalist><option>id=contador-mensaje</option></datalist></td><td>0/2000</td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF21-01 el administrador ve el reporte en el buzon</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Usuarios&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Usuarios&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]<datalist><option>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF21-01<datalist><option>KT-RF21-01</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>xpath=//span[normalize-space()=&#x27;Katalon Estudiante Uno&#x27;]<datalist><option>xpath=//span[normalize-space()=&#x27;Katalon Estudiante Uno&#x27;]</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">KT-RF21-02 el administrador borra el mensaje del buzon</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Usuarios&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Usuarios&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]<datalist><option>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>chooseOkOnNextConfirmation</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]/following-sibling::div//button[normalize-space()=&#x27;Borrar&#x27;]<datalist><option>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]/following-sibling::div//button[normalize-space()=&#x27;Borrar&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>1000<datalist><option>1000</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>KT-RF21-02<datalist><option>KT-RF21-02</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td>*Mensaje borrado del buzón*</td></tr>
+<tr><td>assertElementNotPresent</td><td>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]<datalist><option>xpath=//p[normalize-space()=&#x27;Prueba Katalon RF20: el horario no se ve completo en el celular.&#x27;]</option></datalist></td><td></td></tr>
+</tbody></table>
+</body>
+</html>

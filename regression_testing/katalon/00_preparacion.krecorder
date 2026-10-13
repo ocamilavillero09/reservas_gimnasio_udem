@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
+<title>00 Preparacion (correr la noche anterior)</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">PREP-01 registrar entrenador</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=tab-register<datalist><option>id=tab-register</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-nombre<datalist><option>id=login-nombre</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Entrenador&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Entrenador&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.entrenador@udem.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000001&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>PREP_registro_entrenador<datalist><option>PREP_registro_entrenador</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">PREP-02 registrar administrador</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=tab-register<datalist><option>id=tab-register</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-nombre<datalist><option>id=login-nombre</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Administrador&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Administrador&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.admin@udemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000002&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>PREP_registro_admin<datalist><option>PREP_registro_admin</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">PREP-03 registrar estudiante uno</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=tab-register<datalist><option>id=tab-register</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-nombre<datalist><option>id=login-nombre</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Estudiante Uno&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Estudiante Uno&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>PREP_registro_est1<datalist><option>PREP_registro_est1</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">PREP-04 registrar estudiante dos</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=tab-register<datalist><option>id=tab-register</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-nombre<datalist><option>id=login-nombre</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Estudiante Dos&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-nombre&#x27;); s.call(e,&#x27;Katalon Estudiante Dos&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est2@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est2@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000004&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000004&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>PREP_registro_est2<datalist><option>PREP_registro_est2</option></datalist></td><td></td></tr>
+<tr><td>assertElementPresent</td><td>id=registro-exitoso<datalist><option>id=registro-exitoso</option></datalist></td><td></td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">PREP-05 estudiante uno reserva manana 06:00</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est1@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000003&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button<datalist><option>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button[normalize-space()=&#x27;Reservar cupo&#x27;]<datalist><option>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button[normalize-space()=&#x27;Reservar cupo&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>PREP_reserva_est1<datalist><option>PREP_reserva_est1</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td>*Reserva confirmada para las 06:00*</td></tr>
+</tbody></table>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3" data-tags="">PREP-06 estudiante dos reserva manana 06:00</td></tr>
+</thead>
+<tbody>
+<tr><td>open</td><td>http://localhost:5173/<datalist><option>http://localhost:5173/</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>2000<datalist><option>2000</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>localStorage.clear();<datalist><option>localStorage.clear();</option></datalist></td><td></td></tr>
+<tr><td>refresh</td><td><datalist></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=login-correo<datalist><option>id=login-correo</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est2@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-correo&#x27;); s.call(e,&#x27;katalon.est2@soyudemedellin.edu.co&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>runScript</td><td>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000004&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));<datalist><option>var s=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,&#x27;value&#x27;).set; var e=document.getElementById(&#x27;login-documento&#x27;); s.call(e,&#x27;1090000004&#x27;); e.dispatchEvent(new Event(&#x27;input&#x27;,{bubbles:true}));</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>id=login-enviar<datalist><option>id=login-enviar</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=nav-perfil<datalist><option>id=nav-perfil</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button<datalist><option>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button[normalize-space()=&#x27;Reservar cupo&#x27;]<datalist><option>xpath=//div[normalize-space()=&#x27;06:00&#x27;]/following-sibling::button[normalize-space()=&#x27;Reservar cupo&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>click</td><td>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]<datalist><option>xpath=//button[normalize-space()=&#x27;Confirmar ✓&#x27;]</option></datalist></td><td></td></tr>
+<tr><td>waitForElementPresent</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td></td></tr>
+<tr><td>pause</td><td>800<datalist><option>800</option></datalist></td><td></td></tr>
+<tr><td>captureEntirePageScreenshot</td><td>PREP_reserva_est2<datalist><option>PREP_reserva_est2</option></datalist></td><td></td></tr>
+<tr><td>assertText</td><td>id=toast-mensaje<datalist><option>id=toast-mensaje</option></datalist></td><td>*Reserva confirmada para las 06:00*</td></tr>
+</tbody></table>
+</body>
+</html>
