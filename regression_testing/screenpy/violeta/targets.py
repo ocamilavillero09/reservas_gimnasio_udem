@@ -1,5 +1,3 @@
-"""Targets de la interfaz. Los ids son los que ya usa Katalon; donde el
-frontend no tiene id se usa un XPath estable (texto visible o placeholder)."""
 from screenpy_selenium import Target
 from selenium.webdriver.common.by import By
 

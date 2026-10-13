@@ -18,6 +18,7 @@ class RegistrarCuenta:
 
     @classmethod
     def en(cls, nombre: str, correo: str, documento: str) -> "RegistrarCuenta":
+        #crea la tarea en la clase
         return cls(nombre, correo, documento)
 
     @beat("{} intenta registrar la cuenta {correo}.")

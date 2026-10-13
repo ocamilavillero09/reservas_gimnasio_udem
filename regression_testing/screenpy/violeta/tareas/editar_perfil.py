@@ -10,13 +10,12 @@ from ..targets import (
     PERFIL_PESO,
 )
 
-# Los campos son controlados por React: `clear()` no actualiza su estado, así
-# que se reemplaza el contenido con Ctrl+A y se teclea encima.
+
 _SELECCIONAR_TODO = Keys.CONTROL + "a" + Keys.NULL
 
 
 class EditarPerfil:
-    """RF03 — El estudiante actualiza edad, peso, altura y objetivo."""
+    #RF03 — El estudiante actualiza edad, peso, altura y objetivo.
 
     def __init__(
         self,
@@ -25,6 +24,7 @@ class EditarPerfil:
         altura: Optional[str] = None,
         meta: Optional[str] = None,
     ) -> None:
+        #lista de campos con el id del campo y que escribir
         self.campos = [
             (PERFIL_EDAD, edad),
             (PERFIL_PESO, peso),
@@ -33,6 +33,7 @@ class EditarPerfil:
         ]
 
     @classmethod
+    #diccionario valores
     def en(cls, **valores: str) -> "EditarPerfil":
         return cls(**valores)
 
@@ -43,6 +44,7 @@ class EditarPerfil:
             if valor is None:
                 continue
             actor.attempts_to(
+                #seleccionar tood: ctrl + a para escribir encima el nuevo valor o borrar
                 Enter.the_text(_SELECCIONAR_TODO + (valor or Keys.BACKSPACE))
                 .into_the(target)
             )

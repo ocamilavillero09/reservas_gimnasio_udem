@@ -42,7 +42,21 @@ var PERSONAS_E2E = [
   // Entrenador: no puede reservar (RN10) y si puede buscar estudiantes (RF10).
   { name: 'Entrenador E2E',       email: '3@udem.edu.co',            documento: '4444444444',
     cifrado: '5b1aa975fb07fe65ccbe75c8e1c28357559b5267a7ea40ffcb6b0b187d63f57b:53e2abcca7c38598b8e183034ba1f90ffb2b4310f47551a269a606607ea5efbd',
-    role: 'ENTRENADOR', estado: 'ACTIVO' }
+    role: 'ENTRENADOR', estado: 'ACTIVO' },
+
+  // Cuentas de las pruebas con Katalon (el documento es la contrasena).
+  { name: 'Kata Estudiante',      email: 'kata@soyudemedellin.edu.co',   documento: '1000192834',
+    cifrado: '6b00dcd91fd17f0b86dfc614bf93028f64fa389d9f665e68f00fcfb30b9920a5:35e20255ce065bb40fd6e784230174253c18e73a3614cdaebe14e1ec68cf61d5',
+    role: 'ESTUDIANTE', estado: 'ACTIVO' },
+  { name: 'Kata Uno',             email: 'kata1@soyudemedellin.edu.co',  documento: '1000192833',
+    cifrado: '7fa4cede3059a619fbb9ebfff57ecefe568b9796db47c3ae86a706f9293b4097:73594b919103bbf05b5a7b491bd62ac340a97259fe8ed154ae30ac37c9c8e8ce',
+    role: 'ESTUDIANTE', estado: 'ACTIVO' },
+  { name: 'Kata Entrenador',      email: 'kataen@udem.edu.co',           documento: '5555555555',
+    cifrado: '73472c07a9554aa0b1144990a7ae07a3d53857d927851e027ce540b66db3a476:0cf4ba925ecd934ab5efbd48249d1d020a6efde46de38ab4982c2d2ede072dfe',
+    role: 'ENTRENADOR', estado: 'ACTIVO' },
+  { name: 'Kata Admin',           email: 'kataad@udemedellin.edu.co', documento: '1111111111',
+    cifrado: 'bd8b2084ac9835aef30ccd88a813fb28a2c5149cb7fd1665e387ca04ac1058ca:f1551446704fb0ad994c271da96d8f5501878074cff2f63dbe455f66f912805f',
+    role: 'ADMIN', estado: 'ACTIVO' }
 ];
 
 // Reserva ya cancelada que usa la prueba "cancelar una reserva ya cancelada".
