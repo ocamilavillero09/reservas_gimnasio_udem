@@ -34,12 +34,12 @@ export default function HistoryView({ user, showToast }) {
   return (
     <div style={{ maxWidth: 720, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
       <h2 style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Mi historial</h2>
-      <p style={{ color: '#999', fontSize: 15, marginBottom: 28 }}>Tus entrenamientos pasados</p>
+      <p style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>Tus entrenamientos pasados</p>
 
       {history.length === 0 ? (
         <div style={{ background: 'white', borderRadius: 18, padding: 40, textAlign: 'center', boxShadow: '0 2px 14px rgba(0,0,0,0.07)' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>📖</div>
-          <p style={{ color: '#999' }}>Aún no tienes historial.</p>
+          <div aria-hidden="true" style={{ fontSize: 48, marginBottom: 12 }}>📖</div>
+          <p style={{ color: '#666666' }}>Aún no tienes historial.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
@@ -47,7 +47,7 @@ export default function HistoryView({ user, showToast }) {
             const b = BADGE[h.estado] || { bg: '#eee', fg: '#555', label: h.estado };
             return (
               <div key={h.id} style={{ background: 'white', borderRadius: 14, padding: '16px 20px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontWeight: 700 }}>{h.hour} <span style={{ color: '#999', fontWeight: 400, fontSize: 13 }}>· {h.date}</span></span>
+                <span style={{ fontWeight: 700 }}>{h.hour} <span style={{ color: '#666666', fontWeight: 400, fontSize: 13 }}>· {h.date}</span></span>
                 <span style={{ background: b.bg, color: b.fg, fontSize: 12, fontWeight: 800, padding: '4px 12px', borderRadius: 20 }}>{b.label}</span>
               </div>
             );
@@ -57,13 +57,16 @@ export default function HistoryView({ user, showToast }) {
 
       {/* RF20 — Reportar una falla o enviar una sugerencia al administrador */}
       <div style={{ background: 'white', borderRadius: 18, padding: 26, boxShadow: '0 2px 14px rgba(0,0,0,0.07)' }}>
-        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>💬 Reportar una falla</h3>
-        <p style={{ fontSize: 13, color: '#777', marginBottom: 16 }}>
+        {/* H-15 — El título solo hablaba de fallas, pero el buzón también recibe sugerencias. */}
+        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}><span aria-hidden="true">💬</span> Reportar una falla o sugerencia</h3>
+        <p style={{ fontSize: 13, color: '#595959', marginBottom: 16 }}>
           ¿Encontraste un problema en la aplicación o se te ocurre una mejora? Escríbelo aquí
           y le llegará al administrador del sistema.
         </p>
         <form onSubmit={enviarReporte} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <textarea
+            aria-label="Mensaje para el administrador"
+            aria-describedby="contador-mensaje"
             value={mensaje}
             onChange={(e) => setMensaje(e.target.value)}
             placeholder="Cuéntanos qué pasó o qué mejorarías"
@@ -72,6 +75,10 @@ export default function HistoryView({ user, showToast }) {
             required
             style={{ padding: 12, border: '1.5px solid #E5E7EB', borderRadius: 10, fontSize: 14, fontFamily: 'inherit' }}
           />
+          {/* H-16 — Contador: antes el límite de 2000 caracteres no se veía hasta chocar con él. */}
+          <p id="contador-mensaje" aria-live="polite" style={{ fontSize: 12, color: mensaje.length >= 1900 ? '#B45309' : '#595959', textAlign: 'right', marginTop: -8 }}>
+            {mensaje.length}/2000
+          </p>
           <button
             type="submit"
             disabled={enviando || mensaje.trim() === ''}

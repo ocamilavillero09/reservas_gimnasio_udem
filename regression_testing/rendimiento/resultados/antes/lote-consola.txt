@@ -1,0 +1,22 @@
+time="2026-10-11T23:33:11-05:00" level=info msg="Pendientes: 120 · procesadas: 120 · 220 ms" source=console
+
+     ✓ RF13 200
+     ✓ procesó todas las pendientes
+
+   ✓ checks.........................: 100.00% 2 out of 2
+     data_received..................: 53 kB   197 kB/s
+     data_sent......................: 328 B   1.2 kB/s
+     http_req_blocked...............: avg=231.94µs min=5.25µs   med=231.94µs max=458.63µs
+     http_req_connecting............: avg=169.61µs min=0s       med=169.61µs max=339.22µs
+     http_req_duration..............: avg=133.06ms min=45.64ms  med=133.06ms max=220.48ms
+       { expected_response:true }...: avg=133.06ms min=45.64ms  med=133.06ms max=220.48ms
+     ✓ { op:RF13_cerrar_jornada }...: avg=220.48ms min=220.48ms med=220.48ms max=220.48ms
+     http_req_failed................: 0.00%   0 out of 2
+     http_req_receiving.............: avg=21.21ms  min=172.83µs med=21.21ms  max=42.26ms 
+     http_req_sending...............: avg=34.72µs  min=25.87µs  med=34.72µs  max=43.58µs 
+     http_req_tls_handshaking.......: avg=0s       min=0s       med=0s       max=0s      
+     http_req_waiting...............: avg=111.8ms  min=45.42ms  med=111.8ms  max=178.19ms
+     http_reqs......................: 2       7.473317/s
+     iteration_duration.............: avg=267.46ms min=267.46ms med=267.46ms max=267.46ms
+     iterations.....................: 1       3.736659/s
+

@@ -96,49 +96,54 @@ export default function ProfileView({ user, showToast }) {
   const penalizado = (reporte?.estado ?? datos?.estado) === 'PENALIZADO';
 
   return (
-    <div style={{ maxWidth: 620, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
-      <h2 id="perfil-titulo" style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Mi perfil</h2>
-      <p style={{ color: '#999', fontSize: 15, marginBottom: 28 }}>
+    <div data-cy="perfil-contenedor" style={{ maxWidth: 620, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
+      <h2 id="perfil-titulo" data-cy="perfil-titulo" style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Mi perfil</h2>
+      <p style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>
         Datos de tu cuenta en el sistema de reservas
       </p>
 
       {/* RF05 — Nombre, documento de identidad y rol asignado (todos los roles) */}
-      <div style={card}>
+      <div data-cy="perfil-datos" style={card}>
         <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 16 }}>🪪 Mis datos</h3>
-        <Dato label="Nombre" valor={datos?.name ?? user.name} />
-        <Dato label="Correo institucional" valor={datos?.email ?? user.email} />
-        <Dato label="Documento de identidad" valor={datos?.documento || user.documento || '—'} />
+        <Dato dataCy="perfil-nombre" label="Nombre" valor={datos?.name ?? user.name} />
+        <Dato dataCy="perfil-correo" label="Correo institucional" valor={datos?.email ?? user.email} />
+        <Dato dataCy="perfil-documento" label="Documento de identidad" valor={datos?.documento || user.documento || '—'} />
         <Dato
+          dataCy="perfil-rol"
+          extraDataCy="perfil-principal"
           label="Rol asignado"
           valor={ROLE_LABEL[datos?.role ?? user.role] || (datos?.role ?? user.role)}
           extra={datos?.es_principal ? 'Administrador principal' : null}
         />
-        <Dato label="Estado de la cuenta" valor={datos?.estado ?? user.estado} />
+        <Dato dataCy="perfil-estado" label="Estado de la cuenta" valor={datos?.estado ?? user.estado} />
       </div>
 
       {/* RF18 / HU08 — Mis inasistencias y penalizaciones */}
       {esEstudiante && reporte && (
-        <div style={{ ...card, border: penalizado ? '1.5px solid #DC2626' : '1.5px solid transparent' }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
+        <div data-cy="perfil-inasistencias-contenedor" style={{ ...card, border: penalizado ? '1.5px solid #DC2626' : '1.5px solid transparent' }}>
+          <h3 data-cy="perfil-inasistencias-titulo" style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
             🚦 Mis inasistencias y penalizaciones
           </h3>
-          <p style={{ fontSize: 13, color: '#777', marginBottom: 16 }}>
+          <p style={{ fontSize: 13, color: '#595959', marginBottom: 16 }}>
             La cuenta se penaliza al llegar a {reporte.no_show_limite} inasistencias.
           </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 14 }}>
+          <div data-cy="perfil-inasistencias-contadores" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 14 }}>
             <Contador
+              dataCy="perfil-inasistencias-contador"
               label="Inasistencias"
               value={reporte.no_show_count}
               sub={`de ${reporte.no_show_limite} permitidas`}
               alerta={reporte.no_show_count > 0}
             />
             <Contador
+              dataCy="perfil-inasistencias-restantes"
               label="Me faltan"
               value={inasistenciasRestantes}
               sub="para la penalización"
               alerta={umbralAviso !== undefined && inasistenciasRestantes <= umbralAviso}
             />
             <Contador
+              dataCy="perfil-inasistencias-asistencias"
               label="Asistencias"
               value={reporte.total_asistencias}
               sub="entrenamientos cumplidos"
@@ -146,14 +151,14 @@ export default function ProfileView({ user, showToast }) {
           </div>
 
           {penalizado ? (
-            <div style={{ marginTop: 18, background: '#FEE2E2', border: '1.5px solid #DC2626', borderRadius: 12, padding: '14px 16px' }}>
+            <div data-cy="perfil-inasistencias-penalizada" style={{ marginTop: 18, background: '#FEE2E2', border: '1.5px solid #DC2626', borderRadius: 12, padding: '14px 16px' }}>
               <p style={{ fontSize: 13, lineHeight: 1.6, color: '#991B1B', margin: 0 }}>
                 🚫 Tu cuenta está <strong>PENALIZADA</strong> y no puedes reservar
                 {reporte.penalizado_hasta ? ` hasta el ${reporte.penalizado_hasta}` : ''}.
               </p>
             </div>
           ) : reporte.alerta_inasistencias && (
-            <div style={{ marginTop: 18, background: '#FFF7ED', border: '1.5px solid #F59E0B', borderRadius: 12, padding: '14px 16px' }}>
+            <div data-cy="perfil-inasistencias-alerta" style={{ marginTop: 18, background: '#FFF7ED', border: '1.5px solid #F59E0B', borderRadius: 12, padding: '14px 16px' }}>
               <p style={{ fontSize: 13, lineHeight: 1.6, color: '#78350F', margin: 0 }}>
                 ⚠️ {reporte.alerta_inasistencias}
               </p>
@@ -161,14 +166,14 @@ export default function ProfileView({ user, showToast }) {
           )}
 
           {reporte.inasistencias.length > 0 && (
-            <div style={{ marginTop: 18 }}>
+            <div data-cy="perfil-inasistencias-tabla" style={{ marginTop: 18 }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 8 }}>
                 Detalle de mis inasistencias
               </p>
               {reporte.inasistencias.map((i) => (
-                <div key={i.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F0F0F0', fontSize: 13 }}>
+                <div key={i.id} data-cy="perfil-inasistencias-fila" style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #F0F0F0', fontSize: 13 }}>
                   <span style={{ fontWeight: 700 }}>{i.hour}</span>
-                  <span style={{ color: '#999' }}>{i.date}</span>
+                  <span style={{ color: '#666666' }}>{i.date}</span>
                 </div>
               ))}
             </div>
@@ -178,39 +183,39 @@ export default function ProfileView({ user, showToast }) {
 
       {/* RF03 — Información personal de entrenamiento (solo estudiantes) */}
       {esEstudiante ? (
-        <form onSubmit={save} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <form data-cy="perfil-formulario" onSubmit={save} style={{ ...card, display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 800 }}>🏋️ Mi información de entrenamiento</h3>
-            <p style={{ fontSize: 13, color: '#777', marginTop: 4 }}>
+            <p style={{ fontSize: 13, color: '#595959', marginTop: 4 }}>
               Mantén actualizados tu edad, peso, altura y objetivo.
             </p>
           </div>
           <div>
             <label htmlFor="perfil-edad" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Edad (años)</label>
-            <input type="text" inputMode="numeric" id="perfil-edad" value={edad} onChange={(e) => setEdad(soloEntero(e.target.value))} style={inputStyle} />
-            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('edad', 'años')}</p>
+            <input type="text" inputMode="numeric" id="perfil-edad" data-cy="perfil-edad" value={edad} onChange={(e) => setEdad(soloEntero(e.target.value))} style={inputStyle} />
+            <p style={{ fontSize: 12, color: '#595959', margin: '4px 0 0' }}>{ayuda('edad', 'años')}</p>
           </div>
           <div>
             <label htmlFor="perfil-peso" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Peso (kg)</label>
-            <input type="text" inputMode="decimal" id="perfil-peso" value={peso} onChange={(e) => setPeso(soloDecimal(e.target.value))} style={inputStyle} />
-            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('peso', 'kg')}</p>
+            <input type="text" inputMode="decimal" id="perfil-peso" data-cy="perfil-peso" value={peso} onChange={(e) => setPeso(soloDecimal(e.target.value))} style={inputStyle} />
+            <p style={{ fontSize: 12, color: '#595959', margin: '4px 0 0' }}>{ayuda('peso', 'kg')}</p>
           </div>
           <div>
             <label htmlFor="perfil-altura" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Altura (cm)</label>
-            <input type="text" inputMode="decimal" id="perfil-altura" value={altura} onChange={(e) => setAltura(soloDecimal(e.target.value))} style={inputStyle} />
-            <p style={{ fontSize: 12, color: '#888', margin: '4px 0 0' }}>{ayuda('altura', 'cm')}</p>
+            <input type="text" inputMode="decimal" id="perfil-altura" data-cy="perfil-altura" value={altura} onChange={(e) => setAltura(soloDecimal(e.target.value))} style={inputStyle} />
+            <p style={{ fontSize: 12, color: '#595959', margin: '4px 0 0' }}>{ayuda('altura', 'cm')}</p>
           </div>
           <div>
             <label htmlFor="perfil-meta" style={{ fontSize: 13, fontWeight: 600, color: '#555' }}>Objetivo de entrenamiento</label>
-            <input type="text" id="perfil-meta" value={meta} onChange={(e) => setMeta(e.target.value)} placeholder="Ej: Ganar resistencia" style={inputStyle} />
+            <input type="text" id="perfil-meta" data-cy="perfil-meta" value={meta} onChange={(e) => setMeta(e.target.value)} placeholder="Ej: Ganar resistencia" style={inputStyle} />
           </div>
-          <button type="submit" id="perfil-guardar" style={{ padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
+          <button type="submit" id="perfil-guardar" data-cy="perfil-guardar" style={{ padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
             Guardar perfil
           </button>
         </form>
       ) : (
-        <div style={card}>
-          <p style={{ fontSize: 13, color: '#777', lineHeight: 1.7, margin: 0 }}>
+        <div data-cy="perfil-nota-solo-lectura" style={card}>
+          <p style={{ fontSize: 13, color: '#595959', lineHeight: 1.7, margin: 0 }}>
             Los entrenadores y administradores consultan aquí su nombre, documento de identidad
             y rol asignado. La información de entrenamiento (edad, peso, altura y objetivo) es
             exclusiva del perfil del estudiante.
@@ -221,26 +226,26 @@ export default function ProfileView({ user, showToast }) {
   );
 }
 
-function Dato({ label, valor, extra }) {
+function Dato({ label, valor, extra, dataCy, extraDataCy }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '10px 0', borderBottom: '1px solid #F0F0F0' }}>
-      <span style={{ fontSize: 13, color: '#777' }}>{label}</span>
-      <span style={{ fontSize: 14, fontWeight: 700, textAlign: 'right', wordBreak: 'break-all' }}>
+    <div data-cy={dataCy ? `${dataCy}-fila` : undefined} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '10px 0', borderBottom: '1px solid #F0F0F0' }}>
+      <span style={{ fontSize: 13, color: '#595959' }}>{label}</span>
+      <span data-cy={dataCy} style={{ fontSize: 14, fontWeight: 700, textAlign: 'right', wordBreak: 'break-all' }}>
         {valor || '—'}
         {extra && (
-          <span style={{ display: 'block', fontSize: 11, fontWeight: 800, color: RED }}>{extra}</span>
+          <span data-cy={extraDataCy} style={{ display: 'block', fontSize: 11, fontWeight: 800, color: RED }}>{extra}</span>
         )}
       </span>
     </div>
   );
 }
 
-function Contador({ label, value, sub, alerta }) {
+function Contador({ label, value, sub, alerta, dataCy }) {
   return (
-    <div style={{ border: `1px solid ${alerta ? '#FCD34D' : '#eee'}`, background: alerta ? '#FFFBEB' : 'white', borderRadius: 12, padding: 14 }}>
-      <p style={{ fontSize: 28, fontWeight: 900, color: alerta ? '#B45309' : '#1A1A1A', lineHeight: 1 }}>{value}</p>
+    <div data-cy={dataCy ? `${dataCy}-tarjeta` : undefined} style={{ border: `1px solid ${alerta ? '#FCD34D' : '#eee'}`, background: alerta ? '#FFFBEB' : 'white', borderRadius: 12, padding: 14 }}>
+      <p data-cy={dataCy} style={{ fontSize: 28, fontWeight: 900, color: alerta ? '#B45309' : '#1A1A1A', lineHeight: 1 }}>{value}</p>
       <p style={{ fontSize: 12, fontWeight: 700, color: '#555', marginTop: 6 }}>{label}</p>
-      <p style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{sub}</p>
+      <p style={{ fontSize: 11, color: '#666666', marginTop: 2 }}>{sub}</p>
     </div>
   );
 }

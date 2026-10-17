@@ -89,7 +89,7 @@ describe('RF11 — registrarAsistencia (TrainerPanel)', () => {
   it('camino 1-2-3-4-9: la API responde con error y se muestra el mensaje del servidor', async () => {
     api.attendanceApi.registrarAsistencia.mockRejectedValue(new Error('El bloque de las 12:00 todavía no empieza.'));
     panel();
-    fireEvent.click((await screen.findAllByRole('button', { name: 'Asistió' }))[0]);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Registrar asistencia' }))[0]);
 
     await waitFor(() =>
       expect(showToast).toHaveBeenCalledWith('El bloque de las 12:00 todavía no empieza.', 'error'));
@@ -109,11 +109,14 @@ describe('RF11 — registrarAsistencia (TrainerPanel)', () => {
     const campo = screen.getByPlaceholderText('Documento de identidad del estudiante');
     fireEvent.change(campo, { target: { value: '1001234567' } });
     fireEvent.click(screen.getByRole('button', { name: 'Buscar' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Registrar asistencia' }));
+    // El primer "Registrar asistencia" es el de la tarjeta de la búsqueda; los
+    // demás son los de la tabla de pendientes (H-06 unificó el nombre).
+    await screen.findByText('Doc. 1001234567 · juan@x.co');
+    fireEvent.click(screen.getAllByRole('button', { name: 'Registrar asistencia' })[0]);
 
     await waitFor(() =>
       expect(showToast).toHaveBeenCalledWith('Asistencia registrada para las 06:00 del martes 15.', 'success'));
-    expect(screen.queryByRole('button', { name: 'Registrar asistencia' })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('Doc. 1001234567 · juan@x.co')).not.toBeInTheDocument());
     expect(campo).toHaveValue('');
     expect(onChanged).toHaveBeenCalledTimes(1);
     expect(api.attendanceApi.consultarReservas).toHaveBeenCalledTimes(2);
@@ -122,7 +125,7 @@ describe('RF11 — registrarAsistencia (TrainerPanel)', () => {
   it('camino 1-2-3-5-7-8-9: respuesta sin notificación muestra "Asistencia registrada."', async () => {
     api.attendanceApi.registrarAsistencia.mockResolvedValue({});
     panel();
-    fireEvent.click((await screen.findAllByRole('button', { name: 'Asistió' }))[0]);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Registrar asistencia' }))[0]);
 
     await waitFor(() => expect(showToast).toHaveBeenCalledWith('Asistencia registrada.', 'success'));
     expect(onChanged).toHaveBeenCalledTimes(1);
@@ -134,12 +137,16 @@ describe('RF11 — registrarAsistencia (TrainerPanel)', () => {
 describe('RF12 — pendientes (TrainerPanel)', () => {
   const sinPendientes = /No hay estudiantes pendientes/;
 
-  it('camino 1-2-3-4-6-8-9-10-13: entrenador y la petición falla', async () => {
+  // Actualizado tras la corrección DEF-05: antes este camino mostraba "No hay
+  // estudiantes pendientes" aunque la consulta hubiera fallado.
+  it('camino 1-2-3-4-6-8-9-10-13: entrenador y la petición falla: se avisa el error, no se muestra "sin pendientes"', async () => {
     api.attendanceApi.consultarReservas.mockRejectedValue(new Error('Backend caído'));
     panel();
     await waitFor(() => expect(api.attendanceApi.consultarReservas).toHaveBeenCalled());
 
-    expect(screen.getByText(sinPendientes)).toBeInTheDocument();
+    expect(await screen.findByText('No se pudieron cargar los estudiantes pendientes.')).toBeInTheDocument();
+    expect(screen.queryByText(sinPendientes)).not.toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Reintentar' }).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: 'Cerrar jornada' })).toBeInTheDocument();
   });
 
@@ -156,14 +163,15 @@ describe('RF12 — pendientes (TrainerPanel)', () => {
     expect(screen.getByRole('button', { name: 'Cerrar jornada' })).toBeInTheDocument();
   });
 
-  it('camino 1-2-3-5-6-8-9-11-12-11-13: entrenador con pendientes ve una fila y un botón "Asistió" por estudiante', async () => {
+  // Actualizado tras la corrección H-06: el botón de la fila se llamaba "Asistió".
+  it('camino 1-2-3-5-6-8-9-11-12-11-13: entrenador con pendientes ve una fila y un botón "Registrar asistencia" por estudiante', async () => {
     api.attendanceApi.consultarReservas.mockResolvedValue(CON_PENDIENTES);
     panel();
 
     expect(await screen.findByText('Ana Gómez')).toBeInTheDocument();
     const filas = within(screen.getByRole('table')).getAllByRole('row').slice(1);
     expect(filas).toHaveLength(2);
-    expect(screen.getAllByRole('button', { name: 'Asistió' })).toHaveLength(2);
+    expect(within(screen.getByRole('table')).getAllByRole('button', { name: 'Registrar asistencia' })).toHaveLength(2);
     expect(screen.getByRole('button', { name: 'Cerrar jornada' })).toBeInTheDocument();
   });
 
@@ -274,14 +282,16 @@ describe('RF16 — registroDiario (TrainerPanel)', () => {
     expect(screen.getAllByText('Estudiantes penalizados')).toHaveLength(1);   // solo la tarjeta
   });
 
-  it('camino 1-2-4-5-6-7-9-11-12-13-16: la petición falla y se muestra "Actividad del día" con totales en 0', async () => {
+  // Actualizado tras la corrección DEF-06: antes mostraba los totales en 0,
+  // igual que un día sin actividad.
+  it('camino 1-2-4-5-6-7-9-11-12-13-16: la petición falla: se avisa el error y no se muestran totales', async () => {
     api.reportsApi.verRegistroEntrenador.mockRejectedValue(new Error('Backend caído'));
     panel();
     await waitFor(() => expect(api.reportsApi.verRegistroEntrenador).toHaveBeenCalledWith(ENTRENADOR.email));
 
     expect(screen.getByText('Actividad del día')).toBeInTheDocument();
-    expect(total('Asistencias')).toBe('0');
-    expect(total('Inasistencias')).toBe('0');
+    expect(await screen.findByText(/No se pudo cargar el registro del día/)).toBeInTheDocument();
+    expect(screen.queryByText('Asistencias')).not.toBeInTheDocument();
   });
 
   it('camino 1-2-4-5-6-8-9-11-12-13-16: la respuesta llega sin fecha_label', async () => {
@@ -301,13 +311,15 @@ describe('RF16 — registroDiario (TrainerPanel)', () => {
     expect(total('Asistencias')).toBe('3');
   });
 
-  it('camino 1-2-3-5-6-7-9-11-12-13-16: el registro del administrador falla', async () => {
+  // Actualizado tras la corrección DEF-06.
+  it('camino 1-2-3-5-6-7-9-11-12-13-16: el registro del administrador falla: se avisa el error', async () => {
     nousadas.registroDiarioApi.verRegistroAdministrador.mockRejectedValue(new Error('Backend caído'));
     panel(ADMIN);
     await waitFor(() => expect(nousadas.registroDiarioApi.verRegistroAdministrador).toHaveBeenCalled());
 
     expect(screen.getByText('Actividad del día')).toBeInTheDocument();
-    expect(total('Asistencias')).toBe('0');
+    expect(await screen.findByText(/No se pudo cargar el registro del día/)).toBeInTheDocument();
+    expect(screen.queryByText('Asistencias')).not.toBeInTheDocument();
   });
 });
 
@@ -372,12 +384,15 @@ const buzonPanel = () => render(<AdminPanel user={ADMIN} showToast={showToast} /
 const tituloBuzon = () => screen.getByRole('heading', { name: /Buzón de sugerencias/ });
 
 describe('RF21 — cargarBuzon (AdminPanel)', () => {
-  it('camino 1-2-3-4-6-8-9-12: la petición falla, sin contador y "Todavía no hay mensajes."', async () => {
+  // Actualizado tras la corrección DEF-07: antes un fallo se mostraba como
+  // "Todavía no hay mensajes."
+  it('camino 1-2-3-4-6-8-9-12: la petición falla: sin contador y con aviso de error', async () => {
     api.buzonApi.consultarBuzon.mockRejectedValue(new Error('Solo el administrador puede consultar el buzón.'));
     buzonPanel();
     await waitFor(() => expect(api.buzonApi.consultarBuzon).toHaveBeenCalledWith(ADMIN.email));
 
-    expect(screen.getByText('Todavía no hay mensajes.')).toBeInTheDocument();
+    expect(await screen.findByText('No se pudo cargar el buzón.')).toBeInTheDocument();
+    expect(screen.queryByText('Todavía no hay mensajes.')).not.toBeInTheDocument();
     expect(tituloBuzon()).toHaveTextContent(/^💬 Buzón de sugerencias$/);
   });
 

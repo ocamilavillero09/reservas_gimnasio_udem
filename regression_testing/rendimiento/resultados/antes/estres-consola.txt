@@ -1,0 +1,42 @@
+
+     ✓ login 200
+     ✓ RF12 200
+     ✓ horarios 200
+     ✓ mis reservas 200
+     ✓ RF11 buscar 200
+     ✓ RF11 registrar 200/404/409
+     ✓ historial 200
+     ✓ RF21 200
+     ✓ RF16 200
+     ✓ RF20 201
+
+   ✓ checks..........................: 100.00% 13713 out of 13713
+     data_received...................: 48 MB   194 kB/s
+     data_sent.......................: 2.0 MB  8.3 kB/s
+     http_req_blocked................: avg=14.71µs  min=1.67µs  med=6.36µs   max=6.65ms   p(90)=10.32µs  p(95)=30.87µs  p(99)=229.19µs
+     http_req_connecting.............: avg=3.68µs   min=0s      med=0s       max=3.64ms   p(90)=0s       p(95)=0s       p(99)=140.94µs
+   ✗ http_req_duration...............: avg=264ms    min=1.34ms  med=60.51ms  max=8.13s    p(90)=628.66ms p(95)=1.25s    p(99)=3.13s   
+       { expected_response:true }....: avg=264ms    min=1.34ms  med=60.51ms  max=8.13s    p(90)=628.66ms p(95)=1.25s    p(99)=3.13s   
+     ✓ { op:historial }..............: avg=44.32ms  min=1.34ms  med=6.62ms   max=894.3ms  p(90)=125.06ms p(95)=225.97ms p(99)=488.86ms
+     ✗ { op:horarios }...............: avg=274.96ms min=4.47ms  med=46.35ms  max=3.34s    p(90)=938.23ms p(95)=1.35s    p(99)=2.37s   
+     ✗ { op:login }..................: avg=416.37ms min=59.95ms med=158.14ms max=3.31s    p(90)=1.34s    p(95)=1.81s    p(99)=2.42s   
+     ✗ { op:mis_reservas }...........: avg=127.56ms min=2.17ms  med=49ms     max=1.85s    p(90)=373.11ms p(95)=567.81ms p(99)=951.74ms
+     ✗ { op:RF11_buscar }............: avg=127.72ms min=2.31ms  med=12ms     max=2.04s    p(90)=417.57ms p(95)=708.36ms p(99)=1.4s    
+     ✗ { op:RF11_registrar }.........: avg=173.81ms min=42.43ms med=55ms     max=2.25s    p(90)=555.34ms p(95)=849.08ms p(99)=1.36s   
+     ✗ { op:RF12_pendientes }........: avg=134.75ms min=3.58ms  med=44.35ms  max=1.44s    p(90)=296.36ms p(95)=786.32ms p(99)=1.3s    
+     ✗ { op:RF16_registro_diario }...: avg=1.55s    min=54.26ms med=219.96ms max=8.13s    p(90)=5.59s    p(95)=7.02s    p(99)=7.78s   
+     ✓ { op:RF20_enviar }............: avg=106.41ms min=42.33ms med=50.86ms  max=962.57ms p(90)=232.97ms p(95)=449.47ms p(99)=789.77ms
+     ✗ { op:RF21_buzon }.............: avg=170.62ms min=4.54ms  med=34.2ms   max=1.98s    p(90)=546.17ms p(95)=813.08ms p(99)=1.56s   
+   ✓ http_req_failed.................: 0.00%   0 out of 13713
+     http_req_receiving..............: avg=16.89ms  min=13.52µs med=639.44µs max=1.27s    p(90)=43.76ms  p(95)=46.7ms   p(99)=113.8ms 
+     http_req_sending................: avg=34.11µs  min=5.32µs  med=21.64µs  max=3.31ms   p(90)=62.29µs  p(95)=81.02µs  p(99)=168.33µs
+     http_req_tls_handshaking........: avg=0s       min=0s      med=0s       max=0s       p(90)=0s       p(95)=0s       p(99)=0s      
+     http_req_waiting................: avg=247.07ms min=1ms     med=40.69ms  max=8.12s    p(90)=599.45ms p(95)=1.23s    p(99)=3.08s   
+     http_reqs.......................: 13713   55.570521/s
+     iteration_duration..............: avg=6.64s    min=2.08s   med=6.47s    max=17.03s   p(90)=8.95s    p(95)=9.82s    p(99)=14.02s  
+     iterations......................: 3806    15.423423/s
+     respuestas_inesperadas..........: 0.00%   0 out of 636
+     vus.............................: 1       min=0              max=200
+     vus_max.........................: 200     min=200            max=200
+
+time="2026-10-11T23:32:59-05:00" level=error msg="thresholds on metrics 'http_req_duration, http_req_duration{op:RF11_buscar}, http_req_duration{op:RF11_registrar}, http_req_duration{op:RF12_pendientes}, http_req_duration{op:RF16_registro_diario}, http_req_duration{op:RF21_buzon}, http_req_duration{op:horarios}, http_req_duration{op:login}, http_req_duration{op:mis_reservas}' have been crossed"

@@ -1,0 +1,545 @@
+{
+ "respuestas": 15,
+ "sin_rapidas": 11,
+ "mediana_minutos": 11.1,
+ "revision_calidad": [
+  {
+   "id": 3,
+   "inicio": "2026-10-07 16:35",
+   "minutos": 12.8,
+   "media": 3.81,
+   "motivos": []
+  },
+  {
+   "id": 4,
+   "inicio": "2026-10-07 17:16",
+   "minutos": 9.1,
+   "media": 3.78,
+   "motivos": []
+  },
+  {
+   "id": 5,
+   "inicio": "2026-10-07 18:03",
+   "minutos": 11.1,
+   "media": 4.46,
+   "motivos": []
+  },
+  {
+   "id": 6,
+   "inicio": "2026-10-08 17:53",
+   "minutos": 16.1,
+   "media": 4.46,
+   "motivos": []
+  },
+  {
+   "id": 7,
+   "inicio": "2026-10-08 21:40",
+   "minutos": 23.7,
+   "media": 4.72,
+   "motivos": [
+    "contradice las preguntas inversas"
+   ]
+  },
+  {
+   "id": 8,
+   "inicio": "2026-10-09 05:57",
+   "minutos": 37.6,
+   "media": 4.54,
+   "motivos": []
+  },
+  {
+   "id": 9,
+   "inicio": "2026-10-09 18:39",
+   "minutos": 53.3,
+   "media": 4.73,
+   "motivos": []
+  },
+  {
+   "id": 10,
+   "inicio": "2026-10-09 19:57",
+   "minutos": 9.4,
+   "media": 4.41,
+   "motivos": []
+  },
+  {
+   "id": 11,
+   "inicio": "2026-10-09 20:08",
+   "minutos": 3.5,
+   "media": 5,
+   "motivos": [
+    "rápida (3.5 min, 1.9 s por pregunta)",
+    "misma respuesta en casi todo",
+    "contradice las preguntas inversas"
+   ]
+  },
+  {
+   "id": 12,
+   "inicio": "2026-10-09 20:07",
+   "minutos": 4.4,
+   "media": 4.88,
+   "motivos": [
+    "rápida (4.4 min, 2.4 s por pregunta)",
+    "contradice las preguntas inversas"
+   ]
+  },
+  {
+   "id": 13,
+   "inicio": "2026-10-11 21:51",
+   "minutos": 17.7,
+   "media": 4.28,
+   "motivos": []
+  },
+  {
+   "id": 14,
+   "inicio": "2026-10-11 22:23",
+   "minutos": 29.2,
+   "media": 3.51,
+   "motivos": []
+  },
+  {
+   "id": 15,
+   "inicio": "2026-10-11 23:25",
+   "minutos": 4.8,
+   "media": 3.81,
+   "motivos": [
+    "rápida (4.8 min, 2.6 s por pregunta)"
+   ]
+  },
+  {
+   "id": 16,
+   "inicio": "2026-10-11 23:31",
+   "minutos": 5.8,
+   "media": 4.15,
+   "motivos": []
+  },
+  {
+   "id": 17,
+   "inicio": "2026-10-11 23:37",
+   "minutos": 3.8,
+   "media": 4.25,
+   "motivos": [
+    "rápida (3.8 min, 2.1 s por pregunta)"
+   ]
+  }
+ ],
+ "marcadas_rapidas": [
+  11,
+  12,
+  15,
+  17
+ ],
+ "resultados": {
+  "Eficiencia": {
+   "media_s1": 4.57,
+   "puntaje_s1": 89,
+   "favorable_s1": 97,
+   "desfavorable_s1": 0,
+   "media_s2": 4.43,
+   "alfa": 0.8,
+   "preguntas": [
+    "1. El sistema permite completar tareas de manera rápida y eficiente.",
+    "2. El tiempo de respuesta del software es adecuado.",
+    "3. La navegación a través del software es fluida y sin interrupciones.",
+    "4. El software minimiza la cantidad de pasos necesarios para completar una tarea."
+   ]
+  },
+  "Eficacia": {
+   "media_s1": 4.36,
+   "puntaje_s1": 84,
+   "favorable_s1": 91,
+   "desfavorable_s1": 0,
+   "media_s2": 4.33,
+   "alfa": 0.67,
+   "preguntas": [
+    "5. El software permite lograr los objetivos propuestos sin dificultades.",
+    "6. Las funciones del software cumplen con mis expectativas.",
+    "7. Los resultados obtenidos con el software son precisos y confiables."
+   ]
+  },
+  "Satisfacción": {
+   "media_s1": 4.45,
+   "puntaje_s1": 86,
+   "favorable_s1": 93,
+   "desfavorable_s1": 2,
+   "media_s2": 4.12,
+   "alfa": 0.75,
+   "preguntas": [
+    "8. Disfruto utilizando este software.",
+    "9. Me siento cómodo y seguro al usar este software.",
+    "10. La apariencia visual del software es atractiva.",
+    "11. Recomendaría este software a otras personas."
+   ]
+  },
+  "Facilidad de aprendizaje": {
+   "media_s1": 4.56,
+   "puntaje_s1": 89,
+   "favorable_s1": 93,
+   "desfavorable_s1": 0,
+   "media_s2": 4.48,
+   "alfa": 0.59,
+   "preguntas": [
+    "12. Es fácil aprender a usar este software.",
+    "13. Las instrucciones y mensajes del sistema son claros.",
+    "14. No necesito capacitación extensa para usar este software."
+   ]
+  },
+  "Memorabilidad": {
+   "media_s1": 4.38,
+   "puntaje_s1": 84,
+   "favorable_s1": 98,
+   "desfavorable_s1": 0,
+   "media_s2": 4.53,
+   "alfa": 0.91,
+   "preguntas": [
+    "15. Puedo recordar cómo usar el software después de no utilizarlo por un tiempo.",
+    "16. Después de un tiempo sin usarlo, puedo recordar fácilmente cómo operar el software.",
+    "17. Los atajos y accesos directos son fáciles de recordar."
+   ]
+  },
+  "Seguridad": {
+   "media_s1": 3.91,
+   "puntaje_s1": 73,
+   "favorable_s1": 73,
+   "desfavorable_s1": 5,
+   "media_s2": null,
+   "alfa": 0.95,
+   "preguntas": [
+    "18. El software protege mis datos y privacidad de manera efectiva.",
+    "19. Siento confianza en la seguridad del sistema.",
+    "20. El software tiene medidas para evitar errores críticos."
+   ]
+  },
+  "Flexibilidad": {
+   "media_s1": 3.93,
+   "puntaje_s1": 73,
+   "favorable_s1": 71,
+   "desfavorable_s1": 11,
+   "media_s2": 4.15,
+   "alfa": 0.87,
+   "preguntas": [
+    "21. Puedo personalizar el software según mis necesidades.",
+    "22. El software se adapta a diferentes dispositivos sin problemas.",
+    "23. El software permite múltiples métodos para realizar una tarea."
+   ]
+  },
+  "Manejo de errores": {
+   "media_s1": 4.47,
+   "puntaje_s1": 87,
+   "favorable_s1": 96,
+   "desfavorable_s1": 0,
+   "media_s2": 4.4,
+   "alfa": 0.75,
+   "preguntas": [
+    "24. Los mensajes de error del software son claros y útiles.",
+    "25. El software evita que cometa errores fácilmente.",
+    "26. Cuando cometo un error, el software me ayuda a corregirlo rápidamente."
+   ]
+  },
+  "Accesibilidad": {
+   "media_s1": 3.93,
+   "puntaje_s1": 73,
+   "favorable_s1": 76,
+   "desfavorable_s1": 18,
+   "media_s2": null,
+   "alfa": 0.96,
+   "preguntas": [
+    "27. El software es accesible para personas con discapacidades.",
+    "28. El software proporciona opciones de accesibilidad como ajuste de tamaño de texto y contraste.",
+    "29. El software cumple con estándares de accesibilidad."
+   ]
+  },
+  "Estética": {
+   "media_s1": null,
+   "puntaje_s1": null,
+   "media_s2": 3.98,
+   "puntaje_s2": 75
+  },
+  "Ayuda y documentación": {
+   "media_s1": null,
+   "puntaje_s1": null,
+   "media_s2": 4.45,
+   "puntaje_s2": 86
+  },
+  "_emocional": {
+   "media_1a7": 5.91,
+   "puntaje": 82
+  },
+  "_seccion_3": {
+   "Estética": 4.47,
+   "Usabilidad percibida": 4.57,
+   "Atención focalizada": 3.62,
+   "Implicación": 4.33,
+   "Utilidad": 4.31,
+   "Satisfacción y lealtad": 4.43
+  },
+  "_items_bajos": [
+   {
+    "pregunta": "S2 · 14. Me distraigo con elementos innecesarios en la interfaz. (invertida)",
+    "media": 2.67,
+    "desacuerdo": 53,
+    "n": 15
+   },
+   {
+    "pregunta": "S2 · 11. Me resulta frustrante usar este software. (invertida)",
+    "media": 2.93,
+    "desacuerdo": 47,
+    "n": 15
+   },
+   {
+    "pregunta": "S1 · 19. Siento confianza en la seguridad del sistema.",
+    "media": 3.73,
+    "desacuerdo": 7,
+    "n": 15
+   },
+   {
+    "pregunta": "S1 · 27. El software es accesible para personas con discapacidades.",
+    "media": 3.73,
+    "desacuerdo": 27,
+    "n": 15
+   },
+   {
+    "pregunta": "S1 · 21. Puedo personalizar el software según mis necesidades.",
+    "media": 3.8,
+    "desacuerdo": 20,
+    "n": 15
+   },
+   {
+    "pregunta": "S1 · 28. El software proporciona opciones de accesibilidad como ajuste de tamaño de texto y contraste.",
+    "media": 3.8,
+    "desacuerdo": 20,
+    "n": 15
+   },
+   {
+    "pregunta": "S1 · 22. El software se adapta a diferentes dispositivos sin problemas.",
+    "media": 3.87,
+    "desacuerdo": 7,
+    "n": 15
+   },
+   {
+    "pregunta": "S2 · 9. Puedo personalizar el software según mis necesidades.",
+    "media": 3.93,
+    "desacuerdo": 20,
+    "n": 15
+   },
+   {
+    "pregunta": "S1 · 18. El software protege mis datos y privacidad de manera efectiva.",
+    "media": 4,
+    "desacuerdo": 7,
+    "n": 14
+   },
+   {
+    "pregunta": "S1 · 20. El software tiene medidas para evitar errores críticos.",
+    "media": 4,
+    "desacuerdo": 0,
+    "n": 15
+   }
+  ]
+ },
+ "sensibilidad_sin_rapidas": {
+  "Eficiencia": {
+   "media_s1": 4.45,
+   "puntaje_s1": 86,
+   "favorable_s1": 95,
+   "desfavorable_s1": 0,
+   "media_s2": 4.42,
+   "alfa": 0.76,
+   "preguntas": [
+    "1. El sistema permite completar tareas de manera rápida y eficiente.",
+    "2. El tiempo de respuesta del software es adecuado.",
+    "3. La navegación a través del software es fluida y sin interrupciones.",
+    "4. El software minimiza la cantidad de pasos necesarios para completar una tarea."
+   ]
+  },
+  "Eficacia": {
+   "media_s1": 4.33,
+   "puntaje_s1": 83,
+   "favorable_s1": 91,
+   "desfavorable_s1": 0,
+   "media_s2": 4.27,
+   "alfa": 0.69,
+   "preguntas": [
+    "5. El software permite lograr los objetivos propuestos sin dificultades.",
+    "6. Las funciones del software cumplen con mis expectativas.",
+    "7. Los resultados obtenidos con el software son precisos y confiables."
+   ]
+  },
+  "Satisfacción": {
+   "media_s1": 4.39,
+   "puntaje_s1": 85,
+   "favorable_s1": 91,
+   "desfavorable_s1": 2,
+   "media_s2": 4.15,
+   "alfa": 0.71,
+   "preguntas": [
+    "8. Disfruto utilizando este software.",
+    "9. Me siento cómodo y seguro al usar este software.",
+    "10. La apariencia visual del software es atractiva.",
+    "11. Recomendaría este software a otras personas."
+   ]
+  },
+  "Facilidad de aprendizaje": {
+   "media_s1": 4.52,
+   "puntaje_s1": 88,
+   "favorable_s1": 91,
+   "desfavorable_s1": 0,
+   "media_s2": 4.5,
+   "alfa": 0.54,
+   "preguntas": [
+    "12. Es fácil aprender a usar este software.",
+    "13. Las instrucciones y mensajes del sistema son claros.",
+    "14. No necesito capacitación extensa para usar este software."
+   ]
+  },
+  "Memorabilidad": {
+   "media_s1": 4.33,
+   "puntaje_s1": 83,
+   "favorable_s1": 97,
+   "desfavorable_s1": 0,
+   "media_s2": 4.45,
+   "alfa": 0.87,
+   "preguntas": [
+    "15. Puedo recordar cómo usar el software después de no utilizarlo por un tiempo.",
+    "16. Después de un tiempo sin usarlo, puedo recordar fácilmente cómo operar el software.",
+    "17. Los atajos y accesos directos son fáciles de recordar."
+   ]
+  },
+  "Seguridad": {
+   "media_s1": 3.97,
+   "puntaje_s1": 74,
+   "favorable_s1": 72,
+   "desfavorable_s1": 0,
+   "media_s2": null,
+   "alfa": 0.96,
+   "preguntas": [
+    "18. El software protege mis datos y privacidad de manera efectiva.",
+    "19. Siento confianza en la seguridad del sistema.",
+    "20. El software tiene medidas para evitar errores críticos."
+   ]
+  },
+  "Flexibilidad": {
+   "media_s1": 3.79,
+   "puntaje_s1": 70,
+   "favorable_s1": 61,
+   "desfavorable_s1": 15,
+   "media_s2": 4.02,
+   "alfa": 0.86,
+   "preguntas": [
+    "21. Puedo personalizar el software según mis necesidades.",
+    "22. El software se adapta a diferentes dispositivos sin problemas.",
+    "23. El software permite múltiples métodos para realizar una tarea."
+   ]
+  },
+  "Manejo de errores": {
+   "media_s1": 4.39,
+   "puntaje_s1": 85,
+   "favorable_s1": 94,
+   "desfavorable_s1": 0,
+   "media_s2": 4.35,
+   "alfa": 0.73,
+   "preguntas": [
+    "24. Los mensajes de error del software son claros y útiles.",
+    "25. El software evita que cometa errores fácilmente.",
+    "26. Cuando cometo un error, el software me ayuda a corregirlo rápidamente."
+   ]
+  },
+  "Accesibilidad": {
+   "media_s1": 3.64,
+   "puntaje_s1": 66,
+   "favorable_s1": 67,
+   "desfavorable_s1": 24,
+   "media_s2": null,
+   "alfa": 0.96,
+   "preguntas": [
+    "27. El software es accesible para personas con discapacidades.",
+    "28. El software proporciona opciones de accesibilidad como ajuste de tamaño de texto y contraste.",
+    "29. El software cumple con estándares de accesibilidad."
+   ]
+  },
+  "Estética": {
+   "media_s1": null,
+   "puntaje_s1": null,
+   "media_s2": 4.09,
+   "puntaje_s2": 77
+  },
+  "Ayuda y documentación": {
+   "media_s1": null,
+   "puntaje_s1": null,
+   "media_s2": 4.38,
+   "puntaje_s2": 85
+  },
+  "_emocional": {
+   "media_1a7": 5.77,
+   "puntaje": 79
+  },
+  "_seccion_3": {
+   "Estética": 4.36,
+   "Usabilidad percibida": 4.55,
+   "Atención focalizada": 3.45,
+   "Implicación": 4.27,
+   "Utilidad": 4.42,
+   "Satisfacción y lealtad": 4.43
+  },
+  "_items_bajos": [
+   {
+    "pregunta": "S2 · 14. Me distraigo con elementos innecesarios en la interfaz. (invertida)",
+    "media": 3.18,
+    "desacuerdo": 36,
+    "n": 11
+   },
+   {
+    "pregunta": "S2 · 11. Me resulta frustrante usar este software. (invertida)",
+    "media": 3.27,
+    "desacuerdo": 45,
+    "n": 11
+   },
+   {
+    "pregunta": "S1 · 27. El software es accesible para personas con discapacidades.",
+    "media": 3.36,
+    "desacuerdo": 36,
+    "n": 11
+   },
+   {
+    "pregunta": "S1 · 28. El software proporciona opciones de accesibilidad como ajuste de tamaño de texto y contraste.",
+    "media": 3.45,
+    "desacuerdo": 27,
+    "n": 11
+   },
+   {
+    "pregunta": "S1 · 21. Puedo personalizar el software según mis necesidades.",
+    "media": 3.64,
+    "desacuerdo": 27,
+    "n": 11
+   },
+   {
+    "pregunta": "S2 · 9. Puedo personalizar el software según mis necesidades.",
+    "media": 3.64,
+    "desacuerdo": 27,
+    "n": 11
+   },
+   {
+    "pregunta": "S1 · 22. El software se adapta a diferentes dispositivos sin problemas.",
+    "media": 3.73,
+    "desacuerdo": 9,
+    "n": 11
+   },
+   {
+    "pregunta": "S1 · 19. Siento confianza en la seguridad del sistema.",
+    "media": 3.82,
+    "desacuerdo": 0,
+    "n": 11
+   },
+   {
+    "pregunta": "S2 · 19. El software no se bloquea ni tiene fallos frecuentes.",
+    "media": 3.91,
+    "desacuerdo": 0,
+    "n": 11
+   },
+   {
+    "pregunta": "S2 · 46. Puedo realizar múltiples tareas simultáneamente sin dificultad.",
+    "media": 3.91,
+    "desacuerdo": 18,
+    "n": 11
+   }
+  ]
+ }
+}

@@ -67,22 +67,22 @@ export default function Login({ onLogin }) {
 
   if (registered) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', backgroundColor: '#F4F4F6', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div data-cy="registro-exitoso-contenedor" style={{ minHeight: '100vh', display: 'flex', backgroundColor: '#F4F4F6', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ backgroundColor: 'white', borderRadius: 22, padding: '48px 40px', maxWidth: 440, width: '100%', textAlign: 'center', boxShadow: '0 8px 40px rgba(0,0,0,0.1)', animation: 'scaleIn 0.3s ease' }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', backgroundColor: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', fontSize: 40 }}>
             ✅
           </div>
-          <h2 id="registro-exitoso" style={{ fontSize: 24, fontWeight: 900, color: '#1A1A1A', marginBottom: 10 }}>
+          <h2 id="registro-exitoso" data-cy="registro-exitoso-titulo" style={{ fontSize: 24, fontWeight: 900, color: '#1A1A1A', marginBottom: 10 }}>
             ¡Registro exitoso!
           </h2>
           <p style={{ color: '#555', fontSize: 15, lineHeight: 1.7, marginBottom: 8 }}>
             Tu cuenta ha sido creada correctamente, <strong>{name}</strong>.
           </p>
-          <p style={{ color: '#888', fontSize: 14, lineHeight: 1.7, marginBottom: 32 }}>
+          <p style={{ color: '#595959', fontSize: 14, lineHeight: 1.7, marginBottom: 32 }}>
             Ya puedes iniciar sesión con tu correo <strong style={{ color: RED }}>{email}</strong> y tu
             documento de identidad como contraseña.
           </p>
-          <button onClick={handleGoToLogin} style={{
+          <button onClick={handleGoToLogin} data-cy="registro-ir-login" style={{
             width: '100%', padding: 15, backgroundColor: RED, color: 'white',
             border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15,
             cursor: 'pointer', boxShadow: '0 4px 16px rgba(204,0,0,0.35)',
@@ -95,7 +95,7 @@ export default function Login({ onLogin }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex' }}>
+    <div data-cy="login-contenedor" style={{ minHeight: '100vh', display: 'flex' }}>
       {/* Panel izquierdo decorativo */}
       <div style={{
         flex: 1,
@@ -155,7 +155,7 @@ export default function Login({ onLogin }) {
             <h2 style={{ color: '#1A1A1A', fontSize: 24, fontWeight: 800, marginBottom: 6 }}>
               {tab === 'login' ? 'Bienvenido de nuevo' : 'Crear cuenta'}
             </h2>
-            <p style={{ color: '#888', fontSize: 14, marginBottom: 28 }}>
+            <p style={{ color: '#595959', fontSize: 14, marginBottom: 28 }}>
               {tab === 'login'
                 ? 'Ingresa con tu correo institucional y tu documento de identidad'
                 : 'Regístrate con tu nombre, correo institucional y documento de identidad'}
@@ -167,10 +167,10 @@ export default function Login({ onLogin }) {
                 { id: 'login',    label: 'Iniciar sesión' },
                 { id: 'register', label: 'Registrarse' },
               ].map(t => (
-                <button key={t.id} id={`tab-${t.id}`} onClick={() => { setTab(t.id); setError(''); }} style={{
+                <button key={t.id} id={`tab-${t.id}`} data-cy={`login-tab-${t.id === 'register' ? 'registro' : 'login'}`} onClick={() => { setTab(t.id); setError(''); }} style={{
                   flex: 1, padding: '10px 0', border: 'none', borderRadius: 9, cursor: 'pointer',
                   backgroundColor: tab === t.id ? 'white' : 'transparent',
-                  color: tab === t.id ? RED : '#888',
+                  color: tab === t.id ? RED : '#595959',
                   fontWeight: tab === t.id ? 700 : 400,
                   fontSize: 14,
                   boxShadow: tab === t.id ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
@@ -181,7 +181,7 @@ export default function Login({ onLogin }) {
               ))}
             </div>
 
-            <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <form data-cy={tab === 'register' ? 'registro-formulario' : 'login-formulario'} onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {tab === 'register' && (
                 <div>
                   <label htmlFor="login-nombre" style={{ display: 'block', fontSize: 13, color: '#555', marginBottom: 6, fontWeight: 600 }}>
@@ -190,6 +190,7 @@ export default function Login({ onLogin }) {
                   <input
                     type="text"
                     id="login-nombre"
+                    data-cy="registro-nombre"
                   value={name}
                     onChange={e => setName(e.target.value)}
                     placeholder="Ej: María García"
@@ -206,6 +207,7 @@ export default function Login({ onLogin }) {
                 <input
                   type="text"
                   id="login-correo"
+                  data-cy={tab === 'register' ? 'registro-email' : 'login-email'}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder={config?.dominios?.[0]
@@ -217,7 +219,7 @@ export default function Login({ onLogin }) {
                 />
                 {/* RN01 — se avisa en vivo qué rol otorga el dominio escrito */}
                 {tab === 'register' && email.trim() !== '' && config && (
-                  <p id="login-aviso-dominio" style={{ fontSize: 12, marginTop: 6, color: dominioDetectado ? '#15803D' : '#991B1B' }}>
+                  <p id="login-aviso-dominio" data-cy="registro-aviso-dominio" style={{ fontSize: 12, marginTop: 6, color: dominioDetectado ? '#15803D' : '#991B1B' }}>
                     {dominioDetectado
                       ? `✓ Entrarás como ${dominioDetectado.etiqueta.toUpperCase()}`
                       : '⚠ Ese dominio no es institucional'}
@@ -233,6 +235,7 @@ export default function Login({ onLogin }) {
                 <input
                   type="password"
                   id="login-documento"
+                  data-cy={tab === 'register' ? 'registro-documento' : 'login-documento'}
                   value={documento}
                   // RN02 — La cédula son dígitos. Se filtra al escribir y al
                   // pegar, para que no llegue al servidor algo que va a rechazar.
@@ -243,7 +246,7 @@ export default function Login({ onLogin }) {
                   maxLength={largoDocumento}
                   required
                 />
-                <p style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
+                <p style={{ fontSize: 12, color: '#595959', marginTop: 6 }}>
                   {tab === 'login'
                     ? 'Tu documento de identidad es tu contraseña.'
                     : `Con este documento iniciarás sesión. Son ${largoDocumento} dígitos.`}
@@ -252,11 +255,11 @@ export default function Login({ onLogin }) {
 
               {error && (
                 <div style={{ backgroundColor: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 10, padding: '10px 14px' }}>
-                  <p id="login-error" style={{ color: '#991b1b', fontSize: 13, margin: 0 }}>⚠ {error}</p>
+                  <p id="login-error" data-cy={tab === 'register' ? 'registro-error' : 'login-error'} style={{ color: '#991b1b', fontSize: 13, margin: 0 }}>⚠ {error}</p>
                 </div>
               )}
 
-              <button id="login-enviar" type="submit" disabled={submitting} style={{
+              <button id="login-enviar" data-cy={tab === 'register' ? 'registro-submit' : 'login-submit'} type="submit" disabled={submitting} style={{
                 width: '100%', padding: 15, backgroundColor: RED, color: 'white',
                 border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 15,
                 cursor: submitting ? 'not-allowed' : 'pointer', marginTop: 4,

@@ -26,4 +26,11 @@ RUN useradd --create-home --uid 10001 gimnasio \
 USER gimnasio
 
 EXPOSE 8000
-CMD ["sh", "-c", "python manage.py migrate --run-syncdb && python manage.py runserver 0.0.0.0:8000"]
+# Servidor de aplicaciones: gunicorn con 3 procesos de 4 hilos. `runserver` es
+# el servidor de desarrollo de Django (un solo proceso, sin pensado para
+# producción); en la prueba de estrés con 200 usuarios, gunicorn bajó el p95 de
+# 2,99 s a 1,14 s y el máximo de 5,96 s a 2,49 s, sin errores
+# (regression_testing/rendimiento). --keep-alive 30 evita que cierre conexiones
+# reutilizadas por el cliente o el proxy (con el valor por defecto de 2 s hubo
+# conexiones cortadas). Para desarrollar con recarga automática: SERVIDOR=desarrollo.
+CMD ["sh", "-c", "python manage.py migrate --run-syncdb && if [ \"$SERVIDOR\" = desarrollo ]; then python manage.py runserver 0.0.0.0:8000; else gunicorn gym_api.wsgi:application --bind 0.0.0.0:8000 --workers ${WORKERS:-3} --threads 4 --worker-class gthread --keep-alive 30 --access-logfile -; fi"]

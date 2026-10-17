@@ -18,7 +18,7 @@ Module._initPaths();
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5173';
 
 export default defineConfig({
-  testDir: '../tests/e2e',
+  testDir: '../regression_testing/e2e',
   timeout: 30_000,
   expect: { timeout: 10_000 },
   fullyParallel: false,

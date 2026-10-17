@@ -16,30 +16,34 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
   const staff = user?.role === 'ENTRENADOR' || user?.role === 'ADMIN';
 
   return (
-    <nav style={{
+    <nav data-cy="nav-principal" style={{
       background: `linear-gradient(90deg, ${RED} 0%, #AA0000 100%)`,
       boxShadow: '0 2px 16px rgba(0,0,0,0.25)',
       position: 'sticky', top: 0, zIndex: 100,
     }}>
-      <div style={{
+      <div className="nav-contenedor" style={{
         maxWidth: 1100, margin: '0 auto', padding: '0 24px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 66,
       }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <img src="/logo-udem.png" alt="Universidad de Medellín" style={{ height: 38, filter: 'brightness(0) invert(1)' }} />
+          {/* H-27 — El filtro brightness(0) invert(1) convertía el logo (un PNG con
+              fondo blanco) en un rectángulo blanco. Se muestra tal cual, sobre una
+              placa blanca. */}
+          <img className="nav-logo" src="/logo-udem.png" alt="Universidad de Medellín"
+            style={{ height: 38, backgroundColor: 'white', borderRadius: 8, padding: '2px 6px' }} />
         </div>
 
         {/* Nav links + user */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div className="nav-enlaces" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {!staff && (
             <>
-              <NavBtn active={view === 'dashboard'} onClick={() => onNavigate('dashboard')}>
+              <NavBtn dataCy="nav-reservar" active={view === 'dashboard'} onClick={() => onNavigate('dashboard')}>
                 Reservar
               </NavBtn>
 
               <div style={{ position: 'relative' }}>
-                <NavBtn active={view === 'my-reservations'} onClick={() => onNavigate('my-reservations')}>
+                <NavBtn dataCy="nav-mis-reservas" active={view === 'my-reservations'} onClick={() => onNavigate('my-reservations')}>
                   Mis reservas
                 </NavBtn>
                 {reservationCount > 0 && (
@@ -56,7 +60,7 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
                 )}
               </div>
 
-              <NavBtn active={view === 'history'} onClick={() => onNavigate('history')}>
+              <NavBtn dataCy="nav-historial" active={view === 'history'} onClick={() => onNavigate('history')}>
                 Historial
               </NavBtn>
             </>
@@ -64,23 +68,23 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
 
           {/* Panel de aforo y gestión — solo profesor/admin */}
           {staff && (
-            <NavBtn active={view === 'panel'} onClick={() => onNavigate('panel')}>
+            <NavBtn dataCy="nav-panel" active={view === 'panel'} onClick={() => onNavigate('panel')}>
               Panel
             </NavBtn>
           )}
 
           {/* Gestión de usuarios — solo administrador */}
           {user?.role === 'ADMIN' && (
-            <NavBtn active={view === 'admin'} onClick={() => onNavigate('admin')}>
+            <NavBtn dataCy="nav-usuarios" active={view === 'admin'} onClick={() => onNavigate('admin')}>
               Usuarios
             </NavBtn>
           )}
 
-          <NavBtn id="nav-perfil" active={view === 'profile'} onClick={() => onNavigate('profile')}>
+          <NavBtn id="nav-perfil" dataCy="nav-perfil" active={view === 'profile'} onClick={() => onNavigate('profile')}>
             Perfil
           </NavBtn>
 
-          <div style={{ width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.3)', margin: '0 6px' }} />
+          <div className="nav-separador" style={{ width: 1, height: 28, backgroundColor: 'rgba(255,255,255,0.3)', margin: '0 6px' }} />
 
           {/* Avatar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -93,15 +97,15 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
             }}>
               {initials}
             </div>
-            <div style={{ maxWidth: 150, overflow: 'hidden' }}>
-              <p style={{ color: 'white', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div className="nav-usuario-texto" data-cy="nav-usuario" style={{ maxWidth: 150, overflow: 'hidden' }}>
+              <p data-cy="nav-usuario-nombre" style={{ color: 'white', fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {user?.name}
               </p>
-              <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }}>
+              <p data-cy="nav-usuario-rol" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11 }}>
                 {ROLE_LABEL[user?.role] || user?.role}
               </p>
             </div>
-            <button onClick={onLogout} style={{
+            <button onClick={onLogout} data-cy="nav-salir" style={{
               padding: '7px 14px',
               border: '1.5px solid rgba(255,255,255,0.45)',
               borderRadius: 9, cursor: 'pointer',
@@ -117,9 +121,9 @@ export default function Navbar({ user, view, reservationCount, onNavigate, onLog
   );
 }
 
-function NavBtn({ id, active, onClick, children }) {
+function NavBtn({ id, active, onClick, children, dataCy }) {
   return (
-    <button id={id} onClick={onClick} style={{
+    <button id={id} data-cy={dataCy} className="nav-boton" onClick={onClick} style={{
       padding: '8px 18px', border: 'none', borderRadius: 10, cursor: 'pointer',
       backgroundColor: active ? 'rgba(255,255,255,0.22)' : 'transparent',
       color: 'white',

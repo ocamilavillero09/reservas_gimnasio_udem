@@ -1,0 +1,86 @@
+
+ RUN  v1.6.1 /home/claude/work/reservas/frontend
+
+stderr | ../regression_testing/frontend/camila.test.jsx > RF20 — enviarReporte (HistoryView) > camino 1-2-3-13: con el campo vacío o solo espacios el botón queda deshabilitado
+Warning: An update to HistoryView inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at HistoryView (/home/claude/work/reservas/frontend/src/components/HistoryView.jsx:13:24)
+
+ ✓ ../regression_testing/frontend/camila.test.jsx  (29 tests) 1369ms
+ ✓ ../regression_testing/frontend/adminPanel.test.jsx  (11 tests) 666ms
+stderr | ../regression_testing/frontend/reservas.test.jsx > RF06 / RF07 — Dashboard > RF07 — reservar pide confirmación con la fecha de mañana y, al confirmar, reserva ese bloque
+Warning: An update to Dashboard inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Dashboard (/home/claude/work/reservas/frontend/src/components/Dashboard.jsx:298:22)
+
+stderr | ../regression_testing/frontend/reservas.test.jsx > RF06 / RF07 — Dashboard > RF07 — cancelar la confirmación no reserva
+Warning: An update to Dashboard inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Dashboard (/home/claude/work/reservas/frontend/src/components/Dashboard.jsx:298:22)
+
+stderr | ../regression_testing/frontend/reservas.test.jsx > RF06 / RF07 — Dashboard > RF07 — sin fecha todavía, el modal muestra "el día siguiente"
+Warning: An update to Dashboard inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Dashboard (/home/claude/work/reservas/frontend/src/components/Dashboard.jsx:298:22)
+
+ ✓ ../regression_testing/frontend/reservas.test.jsx  (15 tests) 451ms
+ ✓ ../regression_testing/frontend/profileView.test.jsx  (11 tests) 472ms
+ ✓ ../regression_testing/frontend/api.test.js  (13 tests) 15ms
+stderr | ../regression_testing/frontend/login.test.jsx > Login > muestra las pestañas de iniciar sesión y registrarse
+Warning: Unsupported style property @media(max-width:768px). Did you mean @media(maxWidth:768px)?
+    at div
+    at div
+    at Login (/home/claude/work/reservas/frontend/src/components/Login.jsx:20:18)
+
+stderr | ../regression_testing/frontend/login.test.jsx > Login > al cambiar a Registrarse aparece el campo Nombre completo
+Warning: An update to Login inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at Login (/home/claude/work/reservas/frontend/src/components/Login.jsx:20:18)
+
+ ✓ ../regression_testing/frontend/login.test.jsx  (6 tests) 237ms
+
+ Test Files  6 passed (6)
+      Tests  85 passed (85)
+   Start at  00:56:11
+   Duration  9.59s (transform 561ms, setup 311ms, collect 1.46s, tests 3.21s, environment 2.63s, prepare 626ms)
+

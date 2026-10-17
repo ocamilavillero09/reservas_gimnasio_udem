@@ -1,0 +1,8 @@
+{
+  "pantalla": "panel-entrenador",
+  "dispositivo": "escritorio",
+  "ancho": 1280,
+  "desborde_horizontal_px": 0,
+  "objetivos_menores_24px": [],
+  "fuente_minima_px": 10
+}
