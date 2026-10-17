@@ -4,7 +4,7 @@ const RED = '#CC0000';
 
 function CancelModal({ reservation, onConfirm, onClose }) {
   return (
-    <div style={{
+    <div data-cy="mis-reservas-cancelar-modal" style={{
       position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.55)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 999, padding: 24,
@@ -16,25 +16,25 @@ function CancelModal({ reservation, onConfirm, onClose }) {
         textAlign: 'center',
       }}>
         <div style={{ fontSize: 52, marginBottom: 16 }}>🗑️</div>
-        <h3 style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', marginBottom: 8 }}>
+        <h3 data-cy="mis-reservas-cancelar-titulo" style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', marginBottom: 8 }}>
           ¿Cancelar reserva?
         </h3>
-        <p style={{ color: '#666', fontSize: 15, marginBottom: 8 }}>
-          Bloque de las <strong style={{ color: RED }}>{reservation.hour}</strong>
+        <p data-cy="mis-reservas-cancelar-bloque" style={{ color: '#666', fontSize: 15, marginBottom: 8 }}>
+          Bloque de las <strong data-cy="mis-reservas-cancelar-hora" style={{ color: RED }}>{reservation.hour}</strong>
         </p>
-        <p style={{ color: '#666666', fontSize: 13, lineHeight: 1.7, marginBottom: 28 }}>
+        <p data-cy="mis-reservas-cancelar-aviso" style={{ color: '#666666', fontSize: 13, lineHeight: 1.7, marginBottom: 28 }}>
           El cupo será liberado <strong>inmediatamente</strong> y otro estudiante
           podrá ocuparlo.
         </p>
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onClose} style={{
+          <button data-cy="mis-reservas-cancelar-mantener" onClick={onClose} style={{
             flex: 1, padding: 14, border: '1.5px solid #E5E7EB', borderRadius: 12,
             cursor: 'pointer', backgroundColor: 'white', color: '#555',
             fontWeight: 600, fontSize: 14,
           }}>
             Mantener
           </button>
-          <button onClick={onConfirm} style={{
+          <button data-cy="mis-reservas-cancelar-confirmar" onClick={onConfirm} style={{
             flex: 1, padding: 14, border: 'none', borderRadius: 12,
             cursor: 'pointer', backgroundColor: RED, color: 'white',
             fontWeight: 800, fontSize: 14,
@@ -57,33 +57,33 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
   };
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
-      <h2 style={{ fontSize: 30, fontWeight: 900, color: '#1A1A1A', marginBottom: 6, letterSpacing: -0.5 }}>
+    <div data-cy="mis-reservas-contenedor" style={{ maxWidth: 720, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
+      <h2 data-cy="mis-reservas-titulo" style={{ fontSize: 30, fontWeight: 900, color: '#1A1A1A', marginBottom: 6, letterSpacing: -0.5 }}>
         Mis reservas
       </h2>
-      <p style={{ color: '#666666', fontSize: 15, marginBottom: 32 }}>
+      <p data-cy="mis-reservas-subtitulo" style={{ color: '#666666', fontSize: 15, marginBottom: 32 }}>
         {/* RN03 — se deja explícito para qué día es la reserva */}
         Tu reserva de mañana
         {reservaFecha?.label && (
-          <strong style={{ color: '#555', textTransform: 'capitalize' }}> · {reservaFecha.label}</strong>
+          <strong data-cy="mis-reservas-fecha" style={{ color: '#555', textTransform: 'capitalize' }}> · {reservaFecha.label}</strong>
         )}
       </p>
 
       {reservations.length === 0 ? (
         /* Estado vacío */
-        <div style={{
+        <div data-cy="mis-reservas-vacio" style={{
           textAlign: 'center', padding: '64px 40px',
           backgroundColor: 'white', borderRadius: 22,
           boxShadow: '0 2px 14px rgba(0,0,0,0.07)',
         }}>
           <div style={{ fontSize: 72, marginBottom: 20 }}>📅</div>
-          <h3 style={{ color: '#1A1A1A', fontSize: 22, fontWeight: 800, marginBottom: 10 }}>
+          <h3 data-cy="mis-reservas-vacio-titulo" style={{ color: '#1A1A1A', fontSize: 22, fontWeight: 800, marginBottom: 10 }}>
             Sin reservas activas
           </h3>
-          <p style={{ color: '#666666', fontSize: 14, marginBottom: 28, maxWidth: 280, margin: '0 auto 28px' }}>
+          <p data-cy="mis-reservas-vacio-mensaje" style={{ color: '#666666', fontSize: 14, marginBottom: 28, maxWidth: 280, margin: '0 auto 28px' }}>
             No tienes ninguna reserva en este momento. ¡Asegura tu cupo ahora!
           </p>
-          <button onClick={() => onNavigate('dashboard')} style={{
+          <button data-cy="mis-reservas-ir-reservar" onClick={() => onNavigate('dashboard')} style={{
             padding: '13px 32px', backgroundColor: RED, color: 'white',
             border: 'none', borderRadius: 12, fontWeight: 800, fontSize: 14,
             cursor: 'pointer', boxShadow: '0 4px 16px rgba(204,0,0,0.35)',
@@ -92,9 +92,9 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
           </button>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div data-cy="mis-reservas-lista" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* Banner recordatorio RF08 */}
-          <div style={{
+          <div data-cy="mis-reservas-recordatorio" style={{
             backgroundColor: '#FFFBEB', border: '1.5px solid #FCD34D',
             borderRadius: 14, padding: '14px 18px',
             display: 'flex', gap: 12, alignItems: 'flex-start', marginBottom: 8,
@@ -108,7 +108,7 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
           </div>
 
           {reservations.map(res => (
-            <div key={res.id} style={{
+            <div data-cy={`mis-reservas-reserva-${res.id}`} key={res.id} style={{
               backgroundColor: 'white', borderRadius: 18, padding: '22px 26px',
               boxShadow: '0 2px 14px rgba(0,0,0,0.07)',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16,
@@ -123,14 +123,14 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
                   ⏰
                 </div>
                 <div>
-                  <p style={{ fontSize: 26, fontWeight: 900, color: '#1A1A1A', lineHeight: 1, marginBottom: 4 }}>
+                  <p data-cy={`mis-reservas-reserva-${res.id}-hora`} style={{ fontSize: 26, fontWeight: 900, color: '#1A1A1A', lineHeight: 1, marginBottom: 4 }}>
                     {res.hour}
                   </p>
-                  <p style={{ fontSize: 13, color: '#666666', marginBottom: 6, textTransform: 'capitalize' }}>
+                  <p data-cy={`mis-reservas-reserva-${res.id}-fecha`} style={{ fontSize: 13, color: '#666666', marginBottom: 6, textTransform: 'capitalize' }}>
                     {res.date}
                   </p>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{
+                    <span data-cy={`mis-reservas-reserva-${res.id}-estado`} style={{
                       display: 'inline-flex', alignItems: 'center', gap: 5,
                       backgroundColor: '#dcfce7', color: '#15803d',
                       fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 24,
@@ -138,7 +138,7 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
                     }}>
                       ● Activa
                     </span>
-                    <span style={{
+                    <span data-cy={`mis-reservas-reserva-${res.id}-para-manana`} style={{
                       backgroundColor: '#FEE2E2', color: RED,
                       fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 24,
                     }}>
@@ -148,7 +148,7 @@ export default function MyReservations({ reservations, reservaFecha, onCancel, o
                 </div>
               </div>
 
-              <button onClick={() => setCancelTarget(res)} style={{
+              <button data-cy={`mis-reservas-reserva-${res.id}-cancelar`} onClick={() => setCancelTarget(res)} style={{
                 padding: '10px 22px',
                 border: '1.5px solid #fca5a5',
                 borderRadius: 12, cursor: 'pointer',

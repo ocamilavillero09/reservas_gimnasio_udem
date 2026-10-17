@@ -15,6 +15,7 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
 
   return (
     <div
+      data-cy={`dashboard-horario-${slot.id}`}
       style={{
         backgroundColor: 'white',
         borderRadius: 18,
@@ -33,7 +34,7 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
     >
       {/* Badge reservado */}
       {isReserved && (
-        <div style={{
+        <div data-cy={`dashboard-horario-${slot.id}-reservado`} style={{
           position: 'absolute', top: 14, right: 14,
           backgroundColor: RED, color: 'white',
           fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 24,
@@ -47,13 +48,13 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
       <p style={{ fontSize: 13, color: '#666666', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 1 }}>
         Bloque
       </p>
-      <div style={{ fontSize: 42, fontWeight: 900, color: '#1A1A1A', lineHeight: 1, marginBottom: 16 }}>
+      <div data-cy={`dashboard-horario-${slot.id}-hora`} style={{ fontSize: 42, fontWeight: 900, color: '#1A1A1A', lineHeight: 1, marginBottom: 16 }}>
         {slot.hour}
       </div>
 
       {/* Barra de disponibilidad */}
-      <div style={{ height: 7, backgroundColor: '#F0F0F0', borderRadius: 6, marginBottom: 10, overflow: 'hidden' }}>
-        <div style={{
+      <div data-cy={`dashboard-horario-${slot.id}-barra`} style={{ height: 7, backgroundColor: '#F0F0F0', borderRadius: 6, marginBottom: 10, overflow: 'hidden' }}>
+        <div data-cy={`dashboard-horario-${slot.id}-barra-nivel`} style={{
           height: '100%', width: `${pct}%`,
           backgroundColor: barColor,
           borderRadius: 6,
@@ -62,10 +63,10 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 22 }}>
-        <span style={{ fontSize: 13, color: '#666' }}>
-          <strong style={{ color: '#1A1A1A' }}>{slot.available}</strong> / {slot.total} cupos
+        <span data-cy={`dashboard-horario-${slot.id}-cupos`} style={{ fontSize: 13, color: '#666' }}>
+          <strong data-cy={`dashboard-horario-${slot.id}-disponibles`} style={{ color: '#1A1A1A' }}>{slot.available}</strong> / {slot.total} cupos
         </span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: barColor }}>
+        <span data-cy={`dashboard-horario-${slot.id}-estado`} style={{ fontSize: 12, fontWeight: 700, color: barColor }}>
           ● {statusLabel}
         </span>
       </div>
@@ -73,6 +74,7 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
       {/* Botón. Un bloque agotado se muestra sin acción disponible (RF06). */}
       {(
         <button
+          data-cy={`dashboard-horario-${slot.id}-reservar`}
           onClick={() => !deshabilitado && onReserve(slot)}
           disabled={deshabilitado}
           style={{
@@ -96,7 +98,7 @@ function SlotCard({ slot, isReserved, yaReservoElDia, onReserve }) {
 
 function ReserveModal({ slot, fechaLabel, onConfirm, onClose }) {
   return (
-    <div style={{
+    <div data-cy="dashboard-reserva-modal" style={{
       position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.55)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 999, padding: 24,
@@ -108,11 +110,11 @@ function ReserveModal({ slot, fechaLabel, onConfirm, onClose }) {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{ fontSize: 52, marginBottom: 12 }}>📋</div>
-          <h3 style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', marginBottom: 8 }}>
+          <h3 data-cy="dashboard-reserva-titulo" style={{ fontSize: 22, fontWeight: 900, color: '#1A1A1A', marginBottom: 8 }}>
             Confirmar reserva
           </h3>
-          <p style={{ color: '#666', fontSize: 15 }}>
-            Bloque de las <strong style={{ color: RED }}>{slot.hour}</strong>
+          <p data-cy="dashboard-reserva-bloque" style={{ color: '#666', fontSize: 15 }}>
+            Bloque de las <strong data-cy="dashboard-reserva-hora" style={{ color: RED }}>{slot.hour}</strong>
           </p>
         </div>
 
@@ -124,13 +126,13 @@ function ReserveModal({ slot, fechaLabel, onConfirm, onClose }) {
           <p style={{ fontSize: 12, color: '#595959', fontWeight: 700, letterSpacing: 0.6, textTransform: 'uppercase', marginBottom: 4 }}>
             Reserva para mañana
           </p>
-          <p style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A', textTransform: 'capitalize', margin: 0 }}>
+          <p data-cy="dashboard-reserva-fecha" style={{ fontSize: 15, fontWeight: 800, color: '#1A1A1A', textTransform: 'capitalize', margin: 0 }}>
             {fechaLabel || 'el día siguiente'}
           </p>
         </div>
 
         {/* Aviso RF08 / RN05 */}
-        <div style={{
+        <div data-cy="dashboard-reserva-politica" style={{
           backgroundColor: '#FFF8E6', border: '1.5px solid #FFC107',
           borderRadius: 14, padding: '16px 18px', marginBottom: 26,
         }}>
@@ -145,14 +147,14 @@ function ReserveModal({ slot, fechaLabel, onConfirm, onClose }) {
         </div>
 
         <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={onClose} style={{
+          <button data-cy="dashboard-reserva-cancelar" onClick={onClose} style={{
             flex: 1, padding: 14, border: '1.5px solid #E5E7EB', borderRadius: 12,
             cursor: 'pointer', backgroundColor: 'white', color: '#555',
             fontWeight: 600, fontSize: 14,
           }}>
             Cancelar
           </button>
-          <button onClick={onConfirm} style={{
+          <button data-cy="dashboard-reserva-confirmar" onClick={onConfirm} style={{
             flex: 1, padding: 14, border: 'none', borderRadius: 12,
             cursor: 'pointer', backgroundColor: RED, color: 'white',
             fontWeight: 800, fontSize: 14,
@@ -190,18 +192,18 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
   };
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
+    <div data-cy="dashboard-contenedor" style={{ maxWidth: 1100, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
 
       {/* Saludo */}
       <div style={{ marginBottom: 28 }}>
-        <h2 style={{ fontSize: 30, fontWeight: 900, color: '#1A1A1A', marginBottom: 4, letterSpacing: -0.5 }}>
+        <h2 data-cy="dashboard-saludo" style={{ fontSize: 30, fontWeight: 900, color: '#1A1A1A', marginBottom: 4, letterSpacing: -0.5 }}>
           Hola, {user?.name?.split(' ')[0]} 👋
         </h2>
-        <p style={{ color: '#666666', fontSize: 15, textTransform: 'capitalize' }}>Hoy es {hoy}</p>
+        <p data-cy="dashboard-fecha-hoy" style={{ color: '#666666', fontSize: 15, textTransform: 'capitalize' }}>Hoy es {hoy}</p>
       </div>
 
       {/* RN03 — Banner de la fecha de reserva: se reserva para el DÍA SIGUIENTE */}
-      <div style={{
+      <div data-cy="dashboard-banner-fecha" style={{
         background: `linear-gradient(120deg, ${RED} 0%, #990000 100%)`,
         borderRadius: 18, padding: '22px 26px', marginBottom: 24,
         display: 'flex', gap: 18, alignItems: 'center', color: 'white',
@@ -212,7 +214,7 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
           <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', opacity: 0.85, marginBottom: 4 }}>
             Estás reservando para mañana
           </p>
-          <p style={{ fontSize: 22, fontWeight: 900, textTransform: 'capitalize', lineHeight: 1.2 }}>
+          <p data-cy="dashboard-fecha-reserva" style={{ fontSize: 22, fontWeight: 900, textTransform: 'capitalize', lineHeight: 1.2 }}>
             {reservaFecha?.label || 'Cargando fecha...'}
           </p>
           <p style={{ fontSize: 13, opacity: 0.9, marginTop: 6 }}>
@@ -223,13 +225,14 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
       </div>
 
       {/* Estadísticas rápidas */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 28 }}>
-        <StatCard icon="✅" label="Cupos disponibles" value={totalAvailable} />
-        <StatCard icon="📌" label="Mi reserva de mañana" value={`${reservations.length}/1`} />
+      <div data-cy="dashboard-estadisticas" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 28 }}>
+        <StatCard dataCy="dashboard-cupos-disponibles" icon="✅" label="Cupos disponibles" value={totalAvailable} />
+        <StatCard dataCy="dashboard-mi-reserva" icon="📌" label="Mi reserva de mañana" value={`${reservations.length}/1`} />
         {/* RN08 — Cancelar no penaliza; lo que penaliza es no presentarse.
             El límite y el umbral de aviso los fija el backend (RNF06): si no
             han llegado, la tarjeta no inventa un número. */}
         <StatCard
+          dataCy="dashboard-inasistencias"
           icon="🚫"
           label={user?.no_show_limite
             ? `Inasistencias (límite ${user.no_show_limite})`
@@ -241,16 +244,16 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
 
       {/* Título de sección */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <h3 style={{ fontSize: 20, fontWeight: 800, color: '#1A1A1A' }}>
+        <h3 data-cy="dashboard-titulo-disponibilidad" style={{ fontSize: 20, fontWeight: 800, color: '#1A1A1A' }}>
           Disponibilidad en tiempo real
         </h3>
-        <span style={{ fontSize: 12, color: RED, backgroundColor: '#fee2e2', padding: '6px 14px', borderRadius: 20, fontWeight: 700 }}>
+        <span data-cy="dashboard-en-vivo" style={{ fontSize: 12, color: RED, backgroundColor: '#fee2e2', padding: '6px 14px', borderRadius: 20, fontWeight: 700 }}>
           🔴 En vivo
         </span>
       </div>
 
       {/* Grid de slots */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: 20 }}>
+      <div data-cy="dashboard-horarios" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 1fr))', gap: 20 }}>
         {slots.map(slot => (
           <SlotCard
             key={slot.id}
@@ -274,9 +277,9 @@ export default function Dashboard({ slots, user, reservaFecha, reservations, onR
   );
 }
 
-function StatCard({ icon, label, value, highlight }) {
+function StatCard({ icon, label, value, highlight, dataCy }) {
   return (
-    <div style={{
+    <div data-cy={dataCy} style={{
       backgroundColor: 'white', borderRadius: 16, padding: '20px 24px',
       boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
       border: highlight ? '1.5px solid #F59E0B' : '1.5px solid transparent',
@@ -284,8 +287,8 @@ function StatCard({ icon, label, value, highlight }) {
     }}>
       <div style={{ fontSize: 32 }}>{icon}</div>
       <div>
-        <p style={{ fontSize: 26, fontWeight: 900, color: highlight ? '#B45309' : '#1A1A1A', lineHeight: 1 }}>{value}</p>
-        <p style={{ fontSize: 12, color: '#666666', marginTop: 4 }}>{label}</p>
+        <p data-cy={`${dataCy}-valor`} style={{ fontSize: 26, fontWeight: 900, color: highlight ? '#B45309' : '#1A1A1A', lineHeight: 1 }}>{value}</p>
+        <p data-cy={`${dataCy}-etiqueta`} style={{ fontSize: 12, color: '#666666', marginTop: 4 }}>{label}</p>
       </div>
     </div>
   );

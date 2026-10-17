@@ -113,14 +113,14 @@ export default function AdminPanel({ user, showToast }) {
   const porRol = (rol) => users.filter((u) => u.role === rol).length;
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
-      <h2 style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Gestión de usuarios</h2>
-      <p style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>
+    <div data-cy="admin-contenedor" style={{ maxWidth: 820, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
+      <h2 data-cy="admin-titulo" style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Gestión de usuarios</h2>
+      <p data-cy="admin-subtitulo" style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>
         {esPrincipal ? 'Administrador principal' : 'Administrador'} · {user.email}
       </p>
 
       {!esPrincipal && (
-        <div style={{ background: '#FFF7ED', border: '1.5px solid #F59E0B', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
+        <div data-cy="admin-aviso-no-principal" style={{ background: '#FFF7ED', border: '1.5px solid #F59E0B', borderRadius: 12, padding: '14px 16px', marginBottom: 20 }}>
           <p style={{ fontSize: 13, color: '#78350F', margin: 0, lineHeight: 1.6 }}>
             ⚠️ Solo el <strong>administrador principal</strong> puede crear cuentas de administrador
             y retirarles el rol. Desde aquí puedes consultar los usuarios y crear estudiantes o entrenadores.
@@ -129,32 +129,33 @@ export default function AdminPanel({ user, showToast }) {
       )}
 
       {/* Crear usuario (incluye nuevos administradores) */}
-      <div style={card}>
-        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>➕ Crear usuario</h3>
-        <p style={{ color: '#595959', fontSize: 13, marginBottom: 18, lineHeight: 1.6 }}>
+      <div data-cy="admin-crear-contenedor" style={card}>
+        <h3 data-cy="admin-crear-titulo" style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>➕ Crear usuario</h3>
+        <p data-cy="admin-crear-descripcion" style={{ color: '#595959', fontSize: 13, marginBottom: 18, lineHeight: 1.6 }}>
           El rol se asigna automáticamente según el dominio del correo (RN01). Para crear
           otro <strong>administrador</strong> (RF22), usa un correo del dominio
           administrativo{dominioAdmin ? <strong> {dominioAdmin.dominio}</strong> : null}.
           El documento de identidad será su contraseña de ingreso.
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: 10, marginBottom: 20 }}>
+        <div data-cy="admin-dominios" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px,1fr))', gap: 10, marginBottom: 20 }}>
           {(config?.dominios ?? []).map((d) => {
             const b = ROLE_BADGE[d.rol];
             return (
-              <div key={d.dominio} style={{ border: '1px solid #eee', borderRadius: 12, padding: '12px 14px' }}>
-                <span style={{ background: b.bg, color: b.fg, fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 20 }}>
+              <div data-cy={`admin-dominio-${d.dominio}`} key={d.dominio} style={{ border: '1px solid #eee', borderRadius: 12, padding: '12px 14px' }}>
+                <span data-cy={`admin-dominio-${d.dominio}-rol`} style={{ background: b.bg, color: b.fg, fontSize: 11, fontWeight: 800, padding: '3px 10px', borderRadius: 20 }}>
                   {b.label}
                 </span>
-                <p style={{ fontSize: 12, color: '#555', marginTop: 8, wordBreak: 'break-all' }}>{d.dominio}</p>
+                <p data-cy={`admin-dominio-${d.dominio}-texto`} style={{ fontSize: 12, color: '#555', marginTop: 8, wordBreak: 'break-all' }}>{d.dominio}</p>
               </div>
             );
           })}
         </div>
 
-        <form onSubmit={crear} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo" style={inputStyle} required />
+        <form data-cy="admin-crear-formulario" onSubmit={crear} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <input data-cy="admin-crear-nombre" value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre completo" style={inputStyle} required />
           <input
+            data-cy="admin-crear-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -164,6 +165,7 @@ export default function AdminPanel({ user, showToast }) {
             required
           />
           <input
+            data-cy="admin-crear-documento"
             type="text"
             value={documento}
             // RN02 — La cédula son dígitos y nada más.
@@ -178,7 +180,7 @@ export default function AdminPanel({ user, showToast }) {
           />
 
           {email && (
-            <p style={{ fontSize: 13, color: (rolDetectado && !intentaCrearAdmin) ? '#15803D' : '#991B1B', margin: 0 }}>
+            <p data-cy="admin-crear-aviso-rol" style={{ fontSize: 13, color: (rolDetectado && !intentaCrearAdmin) ? '#15803D' : '#991B1B', margin: 0 }}>
               {!rolDetectado
                 ? '⚠ El correo no pertenece a ninguno de los tres dominios institucionales.'
                 : intentaCrearAdmin
@@ -187,7 +189,7 @@ export default function AdminPanel({ user, showToast }) {
             </p>
           )}
 
-          <button type="submit" disabled={enviando || intentaCrearAdmin} style={{
+          <button data-cy="admin-crear-submit" type="submit" disabled={enviando || intentaCrearAdmin} style={{
             padding: 13, border: 'none', borderRadius: 12, background: RED, color: 'white',
             fontWeight: 800,
             cursor: (enviando || intentaCrearAdmin) ? 'not-allowed' : 'pointer',
@@ -199,41 +201,41 @@ export default function AdminPanel({ user, showToast }) {
       </div>
 
       {/* Listado de usuarios */}
-      <div style={card}>
+      <div data-cy="admin-usuarios-contenedor" style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
-          <h3 style={{ fontSize: 18, fontWeight: 800 }}>👥 Usuarios registrados ({users.length})</h3>
-          <span style={{ fontSize: 12, color: '#595959' }}>
+          <h3 data-cy="admin-usuarios-titulo" style={{ fontSize: 18, fontWeight: 800 }}>👥 Usuarios registrados ({users.length})</h3>
+          <span data-cy="admin-usuarios-resumen" style={{ fontSize: 12, color: '#595959' }}>
             {porRol('ESTUDIANTE')} estudiantes · {porRol('ENTRENADOR')} profesores · {porRol('ADMIN')} administradores
           </span>
         </div>
 
         {users.length === 0 ? (
-          <p style={{ color: '#666666', fontSize: 14 }}>Sin usuarios para mostrar.</p>
+          <p data-cy="admin-usuarios-vacio" style={{ color: '#666666', fontSize: 14 }}>Sin usuarios para mostrar.</p>
         ) : users.map((u) => {
           const b = ROLE_BADGE[u.role] || { bg: '#eee', fg: '#555', label: u.role };
           return (
-            <div key={u.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #F0F0F0' }}>
+            <div data-cy={`admin-usuario-${u.email}`} key={u.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: '1px solid #F0F0F0' }}>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontWeight: 700, fontSize: 14 }}>
+                <p data-cy={`admin-usuario-${u.email}-nombre`} style={{ fontWeight: 700, fontSize: 14 }}>
                   {u.name}
                   {u.es_principal && (
-                    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: RED }}>★ PRINCIPAL</span>
+                    <span data-cy={`admin-usuario-${u.email}-principal`} style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: RED }}>★ PRINCIPAL</span>
                   )}
                 </p>
-                <p style={{ fontSize: 12, color: '#666666', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <p data-cy={`admin-usuario-${u.email}-correo`} style={{ fontSize: 12, color: '#666666', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {u.email} · doc. {u.documento || '—'}
                 </p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
                 {u.estado === 'PENALIZADO' && (
-                  <span style={{ fontSize: 11, fontWeight: 800, color: RED }}>PENALIZADO</span>
+                  <span data-cy={`admin-usuario-${u.email}-penalizado`} style={{ fontSize: 11, fontWeight: 800, color: RED }}>PENALIZADO</span>
                 )}
-                <span style={{ background: b.bg, color: b.fg, fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 20 }}>
+                <span data-cy={`admin-usuario-${u.email}-rol`} style={{ background: b.bg, color: b.fg, fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 20 }}>
                   {b.label}
                 </span>
                 {/* RF22 — Retirar o restaurar el rol de administrador */}
                 {esPrincipal && !u.es_principal && u.role === 'ADMIN' && (
-                  <button onClick={() => cambiarRol(u, 'retirar')} style={{
+                  <button data-cy={`admin-usuario-${u.email}-retirar-rol`} onClick={() => cambiarRol(u, 'retirar')} style={{
                     padding: '6px 12px', border: '1.5px solid #fca5a5', borderRadius: 8,
                     background: 'white', color: RED, fontSize: 11, fontWeight: 800, cursor: 'pointer',
                   }}>
@@ -241,7 +243,7 @@ export default function AdminPanel({ user, showToast }) {
                   </button>
                 )}
                 {esPrincipal && u.role === 'SIN_ROL' && (
-                  <button onClick={() => cambiarRol(u, 'restaurar')} style={{
+                  <button data-cy={`admin-usuario-${u.email}-restaurar`} onClick={() => cambiarRol(u, 'restaurar')} style={{
                     padding: '6px 12px', border: '1.5px solid #86efac', borderRadius: 8,
                     background: 'white', color: '#15803d', fontSize: 11, fontWeight: 800, cursor: 'pointer',
                   }}>
@@ -255,47 +257,47 @@ export default function AdminPanel({ user, showToast }) {
       </div>
 
       {/* RF21 — Buzón de sugerencias. Solo el administrador lo ve. */}
-      <div style={{ ...card, marginTop: 24 }}>
-        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
+      <div data-cy="admin-buzon-contenedor" style={{ ...card, marginTop: 24 }}>
+        <h3 data-cy="admin-buzon-titulo" style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>
           <span aria-hidden="true">💬</span> Buzón de sugerencias
           {buzon?.total ? (
-            <span style={{
+            <span data-cy="admin-buzon-total" style={{
               marginLeft: 10, background: '#FEE2E2', color: RED, fontSize: 12,
               fontWeight: 800, padding: '4px 10px', borderRadius: 20,
             }}>{buzon.total}</span>
           ) : null}
         </h3>
-        <p style={{ fontSize: 13, color: '#595959', marginBottom: 16 }}>
+        <p data-cy="admin-buzon-descripcion" style={{ fontSize: 13, color: '#595959', marginBottom: 16 }}>
           Fallas y mejoras que reportan los estudiantes desde su historial. Borra
           los que ya hayas atendido para no perder de vista los que faltan.
         </p>
 
         {errorBuzon ? (
           // DEF-07 — Antes un fallo de carga se mostraba como "Todavía no hay mensajes".
-          <div role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 16px' }}>
-            <span style={{ color: '#991B1B', fontSize: 14, fontWeight: 600 }}>No se pudo cargar el buzón.</span>
-            <button onClick={cargar} style={{ padding: '8px 14px', border: '1.5px solid #991B1B', borderRadius: 10, background: 'white', color: '#991B1B', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+          <div data-cy="admin-buzon-error" role="alert" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 16px' }}>
+            <span data-cy="admin-buzon-error-mensaje" style={{ color: '#991B1B', fontSize: 14, fontWeight: 600 }}>No se pudo cargar el buzón.</span>
+            <button data-cy="admin-buzon-reintentar" onClick={cargar} style={{ padding: '8px 14px', border: '1.5px solid #991B1B', borderRadius: 10, background: 'white', color: '#991B1B', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
               Reintentar
             </button>
           </div>
         ) : !buzon || buzon.mensajes.length === 0 ? (
-          <p style={{ color: '#666666', fontSize: 14 }}>Todavía no hay mensajes.</p>
+          <p data-cy="admin-buzon-vacio" style={{ color: '#666666', fontSize: 14 }}>Todavía no hay mensajes.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div data-cy="admin-buzon-lista" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             {buzon.mensajes.map((m) => (
-              <div key={m.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 16 }}>
+              <div data-cy={`admin-buzon-mensaje-${m.id}`} key={m.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 16 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' }}>
-                  <span id={`autor-${m.id}`} style={{ fontWeight: 700, fontSize: 14 }}>{m.autor_nombre}</span>
+                  <span data-cy={`admin-buzon-mensaje-${m.id}-autor`} id={`autor-${m.id}`} style={{ fontWeight: 700, fontSize: 14 }}>{m.autor_nombre}</span>
                   {/* DEF-04 — La fecha llega en UTC; antes se cortaba el texto sin
                       convertirla y salía cinco horas adelantada. */}
-                  <span style={{ fontSize: 12, color: '#666666' }}>{fechaColombia(m.fecha)}</span>
+                  <span data-cy={`admin-buzon-mensaje-${m.id}-fecha`} style={{ fontSize: 12, color: '#666666' }}>{fechaColombia(m.fecha)}</span>
                 </div>
-                <p style={{ fontSize: 12, color: '#666666', margin: '2px 0 10px' }}>{m.autor_email}</p>
-                <p style={{ fontSize: 14, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{m.mensaje}</p>
+                <p data-cy={`admin-buzon-mensaje-${m.id}-correo`} style={{ fontSize: 12, color: '#666666', margin: '2px 0 10px' }}>{m.autor_email}</p>
+                <p data-cy={`admin-buzon-mensaje-${m.id}-texto`} style={{ fontSize: 14, lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>{m.mensaje}</p>
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
                   {/* H-20 — Antes medía 26 px de alto con letra de 11 px y no decía
                       de quién era el mensaje para un lector de pantalla. */}
-                  <button onClick={() => borrarMensaje(m)} aria-describedby={`autor-${m.id}`} style={{
+                  <button data-cy={`admin-buzon-mensaje-${m.id}-borrar`} onClick={() => borrarMensaje(m)} aria-describedby={`autor-${m.id}`} style={{
                     padding: '9px 16px', minHeight: 36, border: '1.5px solid #fca5a5', borderRadius: 8,
                     background: 'white', color: RED, fontSize: 13, fontWeight: 800, cursor: 'pointer',
                   }}>

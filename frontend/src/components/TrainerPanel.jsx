@@ -147,39 +147,39 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
   const t = diario?.totales;
 
   return (
-    <div style={{ maxWidth: 860, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
+    <div data-cy="entrenador-contenedor" style={{ maxWidth: 860, margin: '0 auto', padding: '36px 24px', animation: 'fadeUp 0.4s ease' }}>
       <h2 id="panel-titulo" data-cy="panel-titulo" style={{ fontSize: 30, fontWeight: 900, marginBottom: 4 }}>Panel del gimnasio</h2>
-      <p style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>
+      <p data-cy="entrenador-subtitulo" style={{ color: '#666666', fontSize: 15, marginBottom: 28 }}>
         {esAdmin ? 'Administrador' : 'Entrenador'} · {user.name}
       </p>
 
       {/* ── RF06 / RF07 / RF12 — Bloques horarios y sus cupos ──────────────── */}
-      <div style={card}>
+      <div data-cy="entrenador-horarios-contenedor" style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 800 }}><span aria-hidden="true">🕒</span> Bloques horarios y cupos</h3>
-            <p style={{ fontSize: 13, color: '#595959', marginTop: 4, textTransform: 'capitalize' }}>
+            <h3 data-cy="entrenador-horarios-titulo" style={{ fontSize: 18, fontWeight: 800 }}><span aria-hidden="true">🕒</span> Bloques horarios y cupos</h3>
+            <p data-cy="entrenador-horarios-fecha" style={{ fontSize: 13, color: '#595959', marginTop: 4, textTransform: 'capitalize' }}>
               Disponibilidad para mañana{reservaFecha?.label ? ` · ${reservaFecha.label}` : ''}
             </p>
           </div>
-          <span style={{ background: '#FEE2E2', color: RED, fontSize: 13, fontWeight: 800, padding: '8px 16px', borderRadius: 20 }}>
+          <span data-cy="entrenador-horarios-ocupacion" style={{ background: '#FEE2E2', color: RED, fontSize: 13, fontWeight: 800, padding: '8px 16px', borderRadius: 20 }}>
             {totalReservados} ocupados / {totalCupos} cupos
           </span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px,1fr))', gap: 12 }}>
+        <div data-cy="entrenador-horarios-lista" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px,1fr))', gap: 12 }}>
           {bloques.map((b) => {
             const ocupados = b.total - b.available;
             const pct = b.total ? Math.round((ocupados / b.total) * 100) : 0;
             return (
-              <div key={b.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 14 }}>
-                <div style={{ fontWeight: 900, fontSize: 20 }}>{b.hour}</div>
-                <div style={{ fontSize: 13, color: '#666', margin: '4px 0' }}>
+              <div data-cy={`entrenador-horario-${b.id}`} key={b.id} style={{ border: '1px solid #eee', borderRadius: 12, padding: 14 }}>
+                <div data-cy={`entrenador-horario-${b.id}-hora`} style={{ fontWeight: 900, fontSize: 20 }}>{b.hour}</div>
+                <div data-cy={`entrenador-horario-${b.id}-ocupacion`} style={{ fontSize: 13, color: '#666', margin: '4px 0' }}>
                   {ocupados} ocupados · {b.available} libres
                 </div>
-                <div style={{ height: 6, background: '#F0F0F0', borderRadius: 6, overflow: 'hidden', marginTop: 6 }}>
-                  <div style={{ height: '100%', width: `${pct}%`, background: pct >= 80 ? '#dc2626' : '#16a34a' }} />
+                <div data-cy={`entrenador-horario-${b.id}-barra`} style={{ height: 6, background: '#F0F0F0', borderRadius: 6, overflow: 'hidden', marginTop: 6 }}>
+                  <div data-cy={`entrenador-horario-${b.id}-barra-nivel`} style={{ height: '100%', width: `${pct}%`, background: pct >= 80 ? '#dc2626' : '#16a34a' }} />
                 </div>
-                <div style={{ fontSize: 12, color: '#666666', marginTop: 6 }}>{pct}% de aforo</div>
+                <div data-cy={`entrenador-horario-${b.id}-porcentaje`} style={{ fontSize: 12, color: '#666666', marginTop: 6 }}>{pct}% de aforo</div>
               </div>
             );
           })}
@@ -191,8 +191,8 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
       </div>
 
       {/* ── RF11 / RF13 — Buscar por documento y registrar asistencia ─────── */}
-      <div style={card}>
-        <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}><span aria-hidden="true">🪪</span> Registrar asistencia</h3>
+      <div data-cy="buscar-contenedor" style={card}>
+        <h3 data-cy="buscar-titulo" style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}><span aria-hidden="true">🪪</span> Registrar asistencia</h3>
         <p style={{ fontSize: 13, color: '#595959', marginBottom: 16 }}>
           Busca al estudiante por su documento de identidad para verificar si tiene reserva.
         </p>
@@ -225,7 +225,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
             <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
               <div>
                 <p data-cy="buscar-resultado-nombre" style={{ fontWeight: 800, fontSize: 15 }}>{busqueda.estudiante.name}</p>
-                <p style={{ fontSize: 12, color: '#666666' }}>
+                <p data-cy="buscar-resultado-contacto" style={{ fontSize: 12, color: '#666666' }}>
                   Doc. {busqueda.estudiante.documento} · {busqueda.estudiante.email}
                 </p>
               </div>
@@ -247,11 +247,11 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
               </p>
             ) : busqueda.reservas.map((r) => (
               <div key={r.id} data-cy="buscar-resultado-reserva" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '12px 0', borderTop: '1px solid #F0F0F0', flexWrap: 'wrap' }}>
-                <span style={{ fontWeight: 700 }}>
+                <span data-cy="buscar-resultado-reserva-bloque" style={{ fontWeight: 700 }}>
                   {r.hour}
-                  <span style={{ color: '#666666', fontWeight: 400, fontSize: 13 }}> · {r.date}</span>
+                  <span data-cy="buscar-resultado-reserva-fecha" style={{ color: '#666666', fontWeight: 400, fontSize: 13 }}> · {r.date}</span>
                   {r.es_de_hoy && (
-                    <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 800, color: '#15803D' }}>HOY</span>
+                    <span data-cy="buscar-resultado-reserva-hoy" style={{ marginLeft: 8, fontSize: 11, fontWeight: 800, color: '#15803D' }}>HOY</span>
                   )}
                 </span>
                 {r.es_de_hoy ? (
@@ -263,10 +263,10 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
                   // botón queda deshabilitado y se explica por qué, en vez de
                   // dejar que el entrenador lo pulse y reciba un error.
                   <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-                    <button disabled aria-describedby={`aviso-${r.id}`} style={{ ...btn, background: '#E5E7EB', color: '#4B5563', cursor: 'not-allowed' }}>
+                    <button data-cy="buscar-registrar-asistencia-deshabilitado" disabled aria-describedby={`aviso-${r.id}`} style={{ ...btn, background: '#E5E7EB', color: '#4B5563', cursor: 'not-allowed' }}>
                       Registrar asistencia
                     </button>
-                    <span id={`aviso-${r.id}`} style={{ fontSize: 12, color: '#595959' }}>
+                    <span data-cy="buscar-resultado-reserva-aviso" id={`aviso-${r.id}`} style={{ fontSize: 12, color: '#595959' }}>
                       Se registra el día de la reserva.
                     </span>
                   </span>
@@ -281,8 +281,8 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
       <div data-cy="reporte-inasistencias-contenedor" style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 6 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 800 }}><span aria-hidden="true">⏳</span> Sin asistencia registrada</h3>
-            <p style={{ fontSize: 13, color: '#595959', marginTop: 4 }}>
+            <h3 data-cy="reporte-inasistencias-titulo" style={{ fontSize: 18, fontWeight: 800 }}><span aria-hidden="true">⏳</span> Sin asistencia registrada</h3>
+            <p data-cy="reporte-inasistencias-descripcion" style={{ fontSize: 13, color: '#595959', marginTop: 4 }}>
               Estudiantes con reserva que no han registrado asistencia
               {pendientes?.fecha_label ? ` · ${pendientes.fecha_label}` : ''}.
             </p>
@@ -295,7 +295,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
             </button>
           )}
         </div>
-        <p style={{ fontSize: 12, color: '#666666', marginBottom: 16 }}>
+        <p data-cy="reporte-inasistencias-nota" style={{ fontSize: 12, color: '#666666', marginBottom: 16 }}>
           {esAdmin
             ? 'Solo el entrenador cierra la jornada. Aquí puedes supervisar quiénes quedan pendientes.'
             : pendientes?.no_show_limite
@@ -324,7 +324,7 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
               style={{ ...inputStyle, marginBottom: 12 }}
             />
             <table data-cy="reporte-inasistencias-tabla" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 520 }}>
-              <thead>
+              <thead data-cy="reporte-inasistencias-encabezado">
                 <tr style={{ textAlign: 'left', color: '#595959' }}>
                   <th style={{ padding: '8px 6px' }}>Estudiante</th>
                   <th style={{ padding: '8px 6px' }}>Documento</th>
@@ -333,21 +333,21 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
                   <th style={{ padding: '8px 6px' }} />
                 </tr>
               </thead>
-              <tbody>
+              <tbody data-cy="reporte-inasistencias-cuerpo">
                 {pendientes.pendientes.filter((p) => {
                   const f = filtro.trim().toLowerCase();
                   return !f || [p.name, p.email, p.documento].some((v) => (v || '').toLowerCase().includes(f));
                 }).map((p) => (
                   <tr key={p.id} data-cy="reporte-inasistencias-fila" style={{ borderTop: '1px solid #F0F0F0' }}>
                     <td style={{ padding: '10px 6px' }}>
-                      <div style={{ fontWeight: 700 }}>{p.name}</div>
-                      <div style={{ color: '#666666', fontSize: 12 }}>{p.email}</div>
+                      <div data-cy="reporte-inasistencias-nombre" style={{ fontWeight: 700 }}>{p.name}</div>
+                      <div data-cy="reporte-inasistencias-correo" style={{ color: '#666666', fontSize: 12 }}>{p.email}</div>
                     </td>
-                    <td style={{ padding: '10px 6px' }}>{p.documento}</td>
-                    <td style={{ padding: '10px 6px' }}>{p.hour}<div style={{ color: '#666666', fontSize: 12 }}>{p.date}</div></td>
-                    <td style={{ padding: '10px 6px', textAlign: 'center', fontWeight: 800 }}>
+                    <td data-cy="reporte-inasistencias-documento" style={{ padding: '10px 6px' }}>{p.documento}</td>
+                    <td data-cy="reporte-inasistencias-bloque" style={{ padding: '10px 6px' }}>{p.hour}<div data-cy="reporte-inasistencias-fecha" style={{ color: '#666666', fontSize: 12 }}>{p.date}</div></td>
+                    <td data-cy="reporte-inasistencias-contador" style={{ padding: '10px 6px', textAlign: 'center', fontWeight: 800 }}>
                       {p.no_show_count}
-                      <div style={{ fontSize: 10, fontWeight: 500, color: '#666666' }}>
+                      <div data-cy="reporte-inasistencias-restantes" style={{ fontSize: 10, fontWeight: 500, color: '#666666' }}>
                         faltan {p.inasistencias_restantes}
                       </div>
                     </td>
@@ -366,15 +366,16 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
       </div>
 
       {/* ── RF19 / RF20 — Reporte general diario y su impresión en PDF ─────── */}
-      <div style={card}>
+      <div data-cy="entrenador-reporte-diario-contenedor" style={card}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
           <div>
-            <h3 style={{ fontSize: 18, fontWeight: 800 }}><span aria-hidden="true">📄</span> Reporte general diario</h3>
-            <p style={{ fontSize: 13, color: '#595959', marginTop: 4, textTransform: 'capitalize' }}>
+            <h3 data-cy="entrenador-reporte-diario-titulo" style={{ fontSize: 18, fontWeight: 800 }}><span aria-hidden="true">📄</span> Reporte general diario</h3>
+            <p data-cy="entrenador-reporte-diario-fecha" style={{ fontSize: 13, color: '#595959', marginTop: 4, textTransform: 'capitalize' }}>
               {diario?.fecha_label || 'Actividad del día'}
             </p>
           </div>
           <a
+            data-cy="entrenador-reporte-diario-pdf"
             href={(esAdmin ? registroDiarioApi.descargarRegistroAdministrador
                            : registroDiarioApi.descargarRegistroEntrenador)(user.email)}
             target="_blank"
@@ -386,25 +387,25 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
         </div>
 
         {errorDiario ? (
-          <Aviso onReintentar={refrescar}>No se pudo cargar el registro del día. Los totales no están disponibles.</Aviso>
+          <Aviso dataCy="entrenador-reporte-diario-error" onReintentar={refrescar}>No se pudo cargar el registro del día. Los totales no están disponibles.</Aviso>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 12, marginBottom: 18 }}>
-            <Total label="Asistencias" value={t?.asistencias ?? '—'} color="#15803D" />
-            <Total label="Cancelaciones" value={t?.cancelaciones ?? '—'} color="#4B5563" />
-            <Total label="Inasistencias" value={t?.inasistencias ?? '—'} color="#B45309" />
-            <Total label="Estudiantes penalizados" value={t?.estudiantes_penalizados ?? '—'} color={RED} />
+          <div data-cy="entrenador-reporte-diario-totales" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px,1fr))', gap: 12, marginBottom: 18 }}>
+            <Total dataCy="entrenador-reporte-diario-asistencias" label="Asistencias" value={t?.asistencias ?? '—'} color="#15803D" />
+            <Total dataCy="entrenador-reporte-diario-cancelaciones" label="Cancelaciones" value={t?.cancelaciones ?? '—'} color="#4B5563" />
+            <Total dataCy="entrenador-reporte-diario-inasistencias" label="Inasistencias" value={t?.inasistencias ?? '—'} color="#B45309" />
+            <Total dataCy="entrenador-reporte-diario-penalizados" label="Estudiantes penalizados" value={t?.estudiantes_penalizados ?? '—'} color={RED} />
           </div>
         )}
 
         {diario?.penalizados?.length > 0 && (
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 8 }}>
+          <div data-cy="entrenador-reporte-diario-penalizados-lista">
+            <p data-cy="entrenador-reporte-diario-penalizados-titulo" style={{ fontSize: 13, fontWeight: 700, color: '#555', marginBottom: 8 }}>
               Estudiantes penalizados
             </p>
             {diario.penalizados.map((p) => (
-              <div key={p.email} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderBottom: '1px solid #F0F0F0', fontSize: 13 }}>
-                <span style={{ fontWeight: 700 }}>{p.name}<span style={{ color: '#666666', fontWeight: 400 }}> · doc. {p.documento}</span></span>
-                <span style={{ color: RED, fontWeight: 800 }}>{p.no_show_count} inasistencias</span>
+              <div data-cy={`entrenador-reporte-diario-penalizado-${p.email}`} key={p.email} style={{ display: 'flex', justifyContent: 'space-between', gap: 10, padding: '8px 0', borderBottom: '1px solid #F0F0F0', fontSize: 13 }}>
+                <span data-cy={`entrenador-reporte-diario-penalizado-${p.email}-nombre`} style={{ fontWeight: 700 }}>{p.name}<span data-cy={`entrenador-reporte-diario-penalizado-${p.email}-documento`} style={{ color: '#666666', fontWeight: 400 }}> · doc. {p.documento}</span></span>
+                <span data-cy={`entrenador-reporte-diario-penalizado-${p.email}-inasistencias`} style={{ color: RED, fontWeight: 800 }}>{p.no_show_count} inasistencias</span>
               </div>
             ))}
           </div>
@@ -419,18 +420,18 @@ export default function TrainerPanel({ user, reservaFecha, onChanged, showToast 
 function Aviso({ children, onReintentar, dataCy }) {
   return (
     <div role="alert" data-cy={dataCy} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 12, padding: '12px 16px', marginBottom: 12 }}>
-      <span style={{ color: '#991B1B', fontSize: 14, fontWeight: 600 }}>{children}</span>
-      <button onClick={onReintentar} style={{ padding: '8px 14px', border: '1.5px solid #991B1B', borderRadius: 10, background: 'white', color: '#991B1B', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+      <span data-cy={`${dataCy}-mensaje`} style={{ color: '#991B1B', fontSize: 14, fontWeight: 600 }}>{children}</span>
+      <button data-cy={`${dataCy}-reintentar`} onClick={onReintentar} style={{ padding: '8px 14px', border: '1.5px solid #991B1B', borderRadius: 10, background: 'white', color: '#991B1B', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
         Reintentar
       </button>
     </div>
   );
 }
 
-function Total({ label, value, color }) {
+function Total({ label, value, color, dataCy }) {
   return (
-    <div style={{ border: '1px solid #eee', borderRadius: 12, padding: 16, textAlign: 'center' }}>
-      <p style={{ fontSize: 32, fontWeight: 900, color, lineHeight: 1 }}>{value}</p>
+    <div data-cy={dataCy} style={{ border: '1px solid #eee', borderRadius: 12, padding: 16, textAlign: 'center' }}>
+      <p data-cy={`${dataCy}-valor`} style={{ fontSize: 32, fontWeight: 900, color, lineHeight: 1 }}>{value}</p>
       <p style={{ fontSize: 12, fontWeight: 700, color: '#555', marginTop: 8 }}>{label}</p>
     </div>
   );
