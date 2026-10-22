@@ -13,11 +13,17 @@ Característica: E2E de navegador - registro, sesión, perfiles e inasistencias
     Entonces debe ver el título "Registro exitoso"
 
   @rf01
-  Escenario: Rechazar el registro con un dominio no institucional (RF01 alterno)
-    Cuando una persona intenta registrarse con el correo "externa@gmail.com"
+  Esquema del escenario: Rechazar el registro con el dominio <dominio> (RF01 alterno)
+    Cuando una persona intenta registrarse con el correo "<correo>"
     Entonces debe ver el aviso de dominio "⚠ Ese dominio no es institucional"
     Y debe ver un mensaje de error en el formulario
     Y no debe ver el título de registro exitoso
+
+    Ejemplos:
+      | dominio     | correo              |
+      | gmail.com   | externa@gmail.com   |
+      | hotmail.com | externa@hotmail.com |
+      | outlook.com | externa@outlook.com |
 
   # RF02
   @rf02
@@ -27,10 +33,15 @@ Característica: E2E de navegador - registro, sesión, perfiles e inasistencias
     Y no debe ver el botón de enviar del login
 
   @rf02
-  Escenario: Rechazar el inicio de sesión con documento incorrecto (RF02 alterno)
-    Cuando Ana inicia sesión con el documento "9876543210"
+  Esquema del escenario: Rechazar el inicio de sesión con <caso> (RF02 alterno)
+    Cuando Ana inicia sesión con el documento "<documento>"
     Entonces debe ver un mensaje de error en el formulario
     Y no debe ver el botón de perfil
+
+    Ejemplos:
+      | caso                      | documento  |
+      | documento inexistente     | 9876543210 |
+      | documento de otra persona | 1003456789 |
 
   # RF03
   @rf03 @restaurar-perfil-ana
