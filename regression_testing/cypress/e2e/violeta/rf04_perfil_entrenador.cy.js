@@ -1,4 +1,3 @@
-import '@percy/cypress';
 describe('RF04 - Perfil del entrenador', () => {
     it('E2E-RF04-01 · El entrenador ve su título de perfil, su rol "Entrenador" y su documento', () => {
         cy.escenarioBase();

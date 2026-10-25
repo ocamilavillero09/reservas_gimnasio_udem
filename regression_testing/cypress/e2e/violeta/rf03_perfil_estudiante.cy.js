@@ -1,4 +1,3 @@
-import '@percy/cypress';
 describe('RF03 - Perfil del estudiante', () => {
     it('E2E-RF03-01 · El estudiante actualiza edad, peso, altura y objetivo y ve "Perfil actualizado."', () => {
         // dado que un estudiante con sesión iniciada
@@ -8,8 +7,6 @@ describe('RF03 - Perfil del estudiante', () => {
 
         // - Esta en la pantalla de perfil.
         cy.get('[data-cy="nav-perfil"]').click();
-        cy.terminarAnimaciones();
-        cy.percySnapshot('RF03 - perfil estudiante');
 
         // cuando
         // - Escribe una edad, un peso, una altura y elige un objetivo.

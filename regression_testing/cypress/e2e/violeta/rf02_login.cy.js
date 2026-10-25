@@ -1,4 +1,3 @@
-import '@percy/cypress';
 describe('RF02 - inicio de sesion', () => {
     beforeEach(() => {
         // dado

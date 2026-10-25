@@ -1,4 +1,3 @@
-import '@percy/cypress';
 describe('RF15 - Inasistencias', () => {
     it('E2E-RF15-01 · Una estudiante sin penalización ve el reporte de inasistencias con contador 0 y sin aviso de penalización', () => {
         // dado

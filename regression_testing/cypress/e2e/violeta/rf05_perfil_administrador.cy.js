@@ -1,4 +1,3 @@
-import '@percy/cypress';
 
 describe('RF05 - Perfil del administrador', () => {
     it('E2E-RF05-01 · La administradora ve su rol con "Administrador principal" y su documento', () => {

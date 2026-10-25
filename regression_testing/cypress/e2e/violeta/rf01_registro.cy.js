@@ -1,4 +1,3 @@
-import '@percy/cypress';
 describe('RF01 - Registro', () => {
     beforeEach(() => {
         // dado
