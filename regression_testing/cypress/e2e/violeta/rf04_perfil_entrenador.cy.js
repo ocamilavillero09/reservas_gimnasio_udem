@@ -1,3 +1,4 @@
+import '../../../../frontend/node_modules/@percy/cypress';
 describe('RF04 - Perfil del entrenador', () => {
     it('E2E-RF04-01 · El entrenador ve su título de perfil, su rol "Entrenador" y su documento', () => {
         cy.escenarioBase();
@@ -10,6 +11,8 @@ describe('RF04 - Perfil del entrenador', () => {
         cy.get('[data-cy="perfil-rol"]').should('have.text', 'Entrenador');
         cy.get('[data-cy="perfil-documento"]').should('have.text', '1000000002');
 
+        cy.terminarAnimaciones();
+        cy.percySnapshot('RF04 - perfil entrenador');
     });
 
     it('E2E-RF04-02 · El entrenador no ve el campo de edad ni el botón de guardar perfil', () => {

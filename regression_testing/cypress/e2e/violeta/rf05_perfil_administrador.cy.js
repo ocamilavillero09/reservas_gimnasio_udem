@@ -1,4 +1,4 @@
-
+import '../../../../frontend/node_modules/@percy/cypress';
 describe('RF05 - Perfil del administrador', () => {
     it('E2E-RF05-01 · La administradora ve su rol con "Administrador principal" y su documento', () => {
         cy.escenarioBase();
@@ -7,9 +7,12 @@ describe('RF05 - Perfil del administrador', () => {
         cy.get('[data-cy="nav-perfil"]').click();
 
         cy.get('[data-cy="perfil-titulo"]').should('have.text', 'Mi perfil');
-        cy.get('[data-cy="perfil-rol"]').should('contain.text', 'Administrador');
-        cy.get('[data-cy="perfil-principal"]').should('have.text', 'Administrador principal');
+        cy.get('[data-cy="perfil-rol"]').should('be.visible').and('contain.text', 'Administrador');
+        cy.get('[data-cy="perfil-principal"]').should('be.visible').and('have.text', 'Administrador principal');
         cy.get('[data-cy="perfil-documento"]').should('have.text', '1000000001');
+
+        cy.terminarAnimaciones();
+        cy.percySnapshot('RF05 - perfil administrador');
     });
 
     it('E2E-RF05-02 · La administradora no ve el campo de edad y sí ve el botón de usuarios', () => {

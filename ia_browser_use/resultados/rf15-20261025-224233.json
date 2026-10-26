@@ -1,0 +1,31 @@
+[
+  {
+    "caso": 1,
+    "titulo": "Estudiante en 0 inasistencias",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "origen_falla": "IA",
+    "veredicto": "NO CONCLUYENTE",
+    "api": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "pasos": 5,
+    "segundos": 12.1,
+    "errores_del_agente": [
+      "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}",
+      "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}",
+      "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}",
+      "404 NOT_FOUND. {'error': {'code': 404, 'message': 'This model models/gemini-2.5-flash is no longer available to new users. Please update your code to use models/gemini-3.8-flash for the latest features and improvements. We recommend you to use the Interactions API (https://ai.google.dev/gemini-api/docs/get-started).', 'status': 'NOT_FOUND'}}"
+    ],
+    "ultima_captura": "C:\\Users\\acer\\AppData\\Local\\Temp\\browser_use_agent_06adecbf-6fb6-79ec-8000-bf66f8870b0e_1792986104\\screenshots\\step_4.png",
+    "detalle": "La IA no devolvió los datos en el formato pedido.",
+    "final_texto": null
+  }
+]

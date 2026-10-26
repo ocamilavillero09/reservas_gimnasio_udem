@@ -1,0 +1,93 @@
+[
+  {
+    "caso": 4,
+    "titulo": "Control negativo: documento que no existe",
+    "documento_buscado": "9999999999",
+    "esperado": {
+      "mensaje": "No hay ningún estudiante registrado con el documento 9999999999.",
+      "aparece_estudiante": false
+    },
+    "modelo": "gemini-3.1-flash-lite",
+    "max_output_tokens": 16000,
+    "origen_falla": null,
+    "veredicto": "PASA",
+    "captura": "C:\\Users\\acer\\dev\\workspace\\reservas_gimnasio_udem\\ia_browser_use\\resultados\\rf15-20261025-232459-tarea4.png",
+    "api": {
+      "http": 404,
+      "error": "No hay ningún estudiante registrado con el documento 9999999999."
+    },
+    "observador_instalado": true,
+    "errores_del_agente": [],
+    "pasos": 4,
+    "segundos": 21.0,
+    "pagina": {
+      "url": "http://localhost:5173/",
+      "hay_resultado": false,
+      "nombre": null,
+      "estado": null,
+      "linea": null,
+      "error": null
+    },
+    "observador": {
+      "vivo": true,
+      "toasts": [
+        "No hay ningún estudiante registrado con el documento 9999999999."
+      ],
+      "avisos_total": 29,
+      "avisos_ultimos": [
+        "120",
+        "06:000 ocupados · 20 libres0% de aforo",
+        "08:000 ocupados · 20 libres0% de aforo",
+        "10:000 ocupados · 20 libres0% de aforo",
+        "12:000 ocupados · 20 libres0% de aforo",
+        "14:000 ocupados · 20 libres0% de aforo",
+        "16:000 ocupados · 20 libres0% de aforo",
+        "Buscando…",
+        "✕No hay ningún estudiante registrado con el documento 9999999999.×",
+        "Buscar"
+      ]
+    },
+    "lectura_ia": {
+      "aparece_estudiante": false,
+      "mensaje_de_error": "No hay ningún estudiante registrado con el documento 9999999999."
+    },
+    "verificacion_pagina": [
+      {
+        "campo": "aparece un estudiante",
+        "ia": false,
+        "pagina": false,
+        "coincide": true
+      },
+      {
+        "campo": "mensaje de error (toast / texto nuevo en la página)",
+        "ia": "No hay ningún estudiante registrado con el documento 9999999999.",
+        "pagina": [
+          "No hay ningún estudiante registrado con el documento 9999999999."
+        ],
+        "via": "toast",
+        "coincide": true
+      }
+    ],
+    "mensaje_visto_via": "toast",
+    "comparacion": [
+      {
+        "campo": "mensaje",
+        "esperado": "No hay ningún estudiante registrado con el documento 9999999999.",
+        "obtenido": "No hay ningún estudiante registrado con el documento 9999999999.",
+        "coincide": true
+      },
+      {
+        "campo": "aparece_estudiante",
+        "esperado": false,
+        "obtenido": false,
+        "coincide": true
+      },
+      {
+        "campo": "mensaje reportado por la IA",
+        "esperado": "No hay ningún estudiante registrado con el documento 9999999999.",
+        "obtenido": "No hay ningún estudiante registrado con el documento 9999999999.",
+        "coincide": true
+      }
+    ]
+  }
+]

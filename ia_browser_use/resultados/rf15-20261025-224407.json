@@ -1,0 +1,31 @@
+[
+  {
+    "caso": 1,
+    "titulo": "Estudiante en 0 inasistencias",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "origen_falla": "IA",
+    "veredicto": "NO CONCLUYENTE",
+    "api": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "pasos": 5,
+    "segundos": 23.7,
+    "errores_del_agente": [
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    ],
+    "ultima_captura": "C:\\Users\\acer\\AppData\\Local\\Temp\\browser_use_agent_06adecc6-0b35-7587-8000-8f4c49c40f6c_1792986209\\screenshots\\step_4.png",
+    "detalle": "La IA no devolvió los datos en el formato pedido.",
+    "final_texto": null
+  }
+]

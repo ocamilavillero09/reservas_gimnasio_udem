@@ -75,11 +75,11 @@ Un fallo provocado es romper algo a propósito, un poquito, para comprobar que l
 
 | Fallo | Qué se rompió | Quién tenía el error | Pruebas que fallaron | Evidencia (informe y video) |
 |---|---|---|---|---|
-| 1 | En RF02-04 se escribió a mano un nombre equivocado ("Laura Gomez") como el que debía aparecer | La prueba | 1 de 4 (E2E-RF02-04) | `reports/violeta-fallo-1/index.html` · `evidencias/violeta-fallo-1/videos/rf02_login.cy.js.mp4` |
-| 2 | La pantalla de perfil mostró una inasistencia de más | La aplicación | 4 de 5 (E2E-RF15-01, 02, 04 y 05) | `reports/violeta-fallo-2/index.html` · `evidencias/violeta-fallo-2/videos/rf15_inasistencias.cy.js.mp4` |
-| 3 | En RF02-01 la prueba buscó el botón con un nombre que no existe (`login-enviar`) | La prueba | 1 de 4 (E2E-RF02-01) | `reports/violeta-fallo-3/index.html` · `evidencias/violeta-fallo-3/videos/rf02_login.cy.js.mp4` |
+| 1 | En RF02-04 se escribió a mano un nombre equivocado ("Laura Gomez") como el que debía aparecer | La prueba | 1 de 4 (E2E-RF02-04) | `reports/fallos-violeta/violeta-fallo-1/index.html` · `evidencias/fallos-violeta/violeta-fallo-1/videos/rf02_login.cy.js.mp4` |
+| 2 | La pantalla de perfil mostró una inasistencia de más | La aplicación | 4 de 5 (E2E-RF15-01, 02, 04 y 05) | `reports/fallos-violeta/violeta-fallo-2/index.html` · `evidencias/fallos-violeta/violeta-fallo-2/videos/rf15_inasistencias.cy.js.mp4` |
+| 3 | En RF02-01 la prueba buscó el botón con un nombre que no existe (`login-enviar`) | La prueba | 1 de 4 (E2E-RF02-01) | `reports/fallos-violeta/violeta-fallo-3/index.html` · `evidencias/fallos-violeta/violeta-fallo-3/videos/rf02_login.cy.js.mp4` |
 
-Las capturas de cada fallo están en `evidencias/violeta-fallo-N/capturas/`. En los tres casos se comprobó que la prueba falló por la razón provocada y no por otra, y que después de revertir pasó.
+Las capturas de cada fallo están en `evidencias/fallos-violeta/violeta-fallo-N/capturas/`. En los tres casos se comprobó que la prueba falló por la razón provocada y no por otra, y que después de revertir pasó.
 
 **Cómo se comprobó que no quedó nada roto:** los archivos de pruebas de Violeta no están en git, así que se guardó una copia antes de cada cambio y se comparó después (idénticos). El archivo de la aplicación sí está en git y `git diff` confirmó que quedó sin cambios. Después se ejecutó todo de nuevo: 23 de 23 en `npm run cy:violeta` y 1 de 1 en `npm run cy:violeta:componentes`.
 

@@ -1,0 +1,97 @@
+[
+  {
+    "caso": 1,
+    "titulo": "Estudiante en 0 inasistencias",
+    "documento_buscado": "1000000003",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "modelo": "gemini-3-flash-preview",
+    "max_output_tokens": 16000,
+    "origen_falla": null,
+    "veredicto": "PASA",
+    "captura": "C:\\Users\\acer\\dev\\workspace\\reservas_gimnasio_udem\\ia_browser_use\\resultados\\rf15-20261026-084136-tarea1.png",
+    "api": {
+      "http": 200,
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "errores_del_agente": [],
+    "pasos": 6,
+    "segundos": 57.0,
+    "pagina": {
+      "url": "http://localhost:5173/",
+      "hay_resultado": true,
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "linea": "Inasistencias: 0 de 5",
+      "error": null
+    },
+    "lectura_ia": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5,
+      "texto_linea": "Inasistencias: 0 de 5"
+    },
+    "verificacion_pagina": [
+      {
+        "campo": "línea \"Inasistencias: X de Y\"",
+        "ia": "Inasistencias: 0 de 5",
+        "pagina": [
+          "Inasistencias: 0 de 5"
+        ],
+        "coincide": true
+      },
+      {
+        "campo": "texto de la línea copiado por la IA",
+        "ia": "Inasistencias: 0 de 5",
+        "pagina": "Inasistencias: 0 de 5",
+        "coincide": true
+      },
+      {
+        "campo": "nombre",
+        "ia": "Laura Estudiante",
+        "pagina": "Laura Estudiante",
+        "coincide": true
+      },
+      {
+        "campo": "estado",
+        "ia": "ACTIVO",
+        "pagina": "ACTIVO",
+        "coincide": true
+      }
+    ],
+    "comparacion": [
+      {
+        "campo": "nombre",
+        "esperado": "Laura Estudiante",
+        "obtenido": "Laura Estudiante",
+        "coincide": true
+      },
+      {
+        "campo": "estado",
+        "esperado": "ACTIVO",
+        "obtenido": "ACTIVO",
+        "coincide": true
+      },
+      {
+        "campo": "inasistencias",
+        "esperado": 0,
+        "obtenido": 0,
+        "coincide": true
+      },
+      {
+        "campo": "limite",
+        "esperado": 5,
+        "obtenido": 5,
+        "coincide": true
+      }
+    ]
+  }
+]

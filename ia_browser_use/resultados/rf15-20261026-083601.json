@@ -1,0 +1,46 @@
+[
+  {
+    "caso": 3,
+    "titulo": "Estudiante penalizada (5 inasistencias)",
+    "documento_buscado": "1000000003",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "PENALIZADO",
+      "inasistencias": 5,
+      "limite": 5
+    },
+    "modelo": "gemini-3.1-flash-lite",
+    "max_output_tokens": 16000,
+    "origen_falla": "IA",
+    "veredicto": "NO CONCLUYENTE",
+    "captura": "C:\\Users\\acer\\dev\\workspace\\reservas_gimnasio_udem\\ia_browser_use\\resultados\\rf15-20261026-083601-tarea3.png",
+    "api": {
+      "http": 200,
+      "nombre": "Laura Estudiante",
+      "estado": "PENALIZADO",
+      "inasistencias": 5,
+      "limite": 5
+    },
+    "errores_del_agente": [
+      "LLM call timed out after 75 seconds. Keep your thinking and output short."
+    ],
+    "pasos": 5,
+    "segundos": 129.8,
+    "pagina": {
+      "url": "http://localhost:5173/",
+      "hay_resultado": true,
+      "nombre": "Laura Estudiante",
+      "estado": "PENALIZADO",
+      "linea": "Inasistencias: 5 de 5",
+      "error": null
+    },
+    "lectura_ia": {
+      "nombre": "Laura Estudiante",
+      "estado": "PENALIZADO",
+      "inasistencias": null,
+      "limite": null,
+      "texto_linea": ""
+    },
+    "detalle": "La IA no vio la línea \"Inasistencias: X de Y\" y la dejó vacía."
+  }
+]

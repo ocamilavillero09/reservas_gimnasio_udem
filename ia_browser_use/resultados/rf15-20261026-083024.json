@@ -1,0 +1,46 @@
+[
+  {
+    "caso": 2,
+    "titulo": "Estudiante en alerta (3 inasistencias)",
+    "documento_buscado": "1000000003",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 3,
+      "limite": 5
+    },
+    "modelo": "gemini-3.1-flash-lite",
+    "max_output_tokens": 16000,
+    "origen_falla": "IA",
+    "veredicto": "NO CONCLUYENTE",
+    "captura": "C:\\Users\\acer\\dev\\workspace\\reservas_gimnasio_udem\\ia_browser_use\\resultados\\rf15-20261026-083024-tarea2.png",
+    "api": {
+      "http": 200,
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 3,
+      "limite": 5
+    },
+    "errores_del_agente": [
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    ],
+    "pasos": 5,
+    "segundos": 37.3,
+    "pagina": {
+      "url": "http://localhost:5173/",
+      "hay_resultado": true,
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "linea": "Inasistencias: 3 de 5",
+      "error": null
+    },
+    "lectura_ia": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": null,
+      "limite": null,
+      "texto_linea": "Inasistencias: de"
+    },
+    "detalle": "La IA no vio la línea \"Inasistencias: X de Y\" y la dejó vacía."
+  }
+]

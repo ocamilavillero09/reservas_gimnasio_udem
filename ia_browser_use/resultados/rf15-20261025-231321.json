@@ -1,0 +1,50 @@
+[
+  {
+    "caso": 4,
+    "titulo": "Control negativo: documento que no existe",
+    "documento_buscado": "9999999999",
+    "esperado": {
+      "mensaje": "No hay ningún estudiante registrado con el documento 9999999999.",
+      "aparece_estudiante": false
+    },
+    "modelo": "gemini-3.1-flash-lite",
+    "max_output_tokens": 16000,
+    "origen_falla": "IA",
+    "veredicto": "FALSO POSITIVO: la IA inventó el dato",
+    "captura": "C:\\Users\\acer\\dev\\workspace\\reservas_gimnasio_udem\\ia_browser_use\\resultados\\rf15-20261025-231321-tarea4.png",
+    "api": {
+      "http": 404,
+      "error": "No hay ningún estudiante registrado con el documento 9999999999."
+    },
+    "errores_del_agente": [],
+    "pasos": 4,
+    "segundos": 35.8,
+    "pagina": {
+      "url": "http://localhost:5173/",
+      "hay_resultado": false,
+      "nombre": null,
+      "estado": null,
+      "linea": null,
+      "error": null
+    },
+    "lectura_ia": {
+      "aparece_estudiante": false,
+      "mensaje_de_error": "No hay ningún estudiante registrado con el documento 9999999999."
+    },
+    "verificacion_pagina": [
+      {
+        "campo": "aparece un estudiante",
+        "ia": false,
+        "pagina": false,
+        "coincide": true
+      },
+      {
+        "campo": "mensaje de error",
+        "ia": "No hay ningún estudiante registrado con el documento 9999999999.",
+        "pagina": null,
+        "coincide": false
+      }
+    ],
+    "detalle": "Valores que la IA reportó y que NO están en la página: mensaje de error"
+  }
+]

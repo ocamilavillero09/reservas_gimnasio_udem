@@ -36,3 +36,5 @@ playwright-report/
 
 regression_testing/serenityjs/reports/
 .pytest_cache/
+testsprite_tests/tmp/
+testsprite_tests/tmp/config.json

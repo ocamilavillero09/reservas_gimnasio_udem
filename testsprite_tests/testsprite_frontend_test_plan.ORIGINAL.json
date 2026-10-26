@@ -1,0 +1,445 @@
+[
+  {
+    "id": "TC001",
+    "title": "Create a valid student account and continue to sign in",
+    "description": "Verifies that a new institutional student account can be created successfully and the app returns to the sign-in screen afterward.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Ana Maria Lopez"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with ana.lopez.student.unique01@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 1234567890"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a successful registration confirmation is visible"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to the sign-in screen"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the sign-in screen is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Log in with a newly created account and reach the student home screen",
+    "description": "Verifies that a user can register an institutional student account and then sign in with the same credentials to reach the role-specific home screen.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Laura Gomez"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with laura.gomez.student.unique02@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 2345678901"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to the sign-in screen"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with laura.gomez.student.unique02@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 2345678901"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the student home screen is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the sign-in screen is no longer displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Log in with valid student credentials",
+    "description": "Verifies that an existing student account can sign in successfully with the institutional email and identity document.",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with existing.student.unique07@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 7890123456"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the student home screen is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the login screen is no longer displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Show an invalid-credentials error for a wrong password",
+    "description": "Verifies that signing in with a registered email and incorrect identity document shows the invalid-credentials message without entering the app.",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with existing.student.unique07@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 0000000000"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an invalid-credentials error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the home screen is not displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Show an invalid-credentials error for an unregistered email",
+    "description": "Verifies that trying to log in with an unregistered institutional email shows the invalid-credentials message.",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with unregistered.user.unique08@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 9012345678"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an invalid-credentials error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the home screen is not displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Reject a non-institutional email during registration",
+    "description": "Verifies that entering a non-institutional email shows the live warning and registration is rejected with an error message.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Daniela Ruiz"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with daniela.ruiz@gmail.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 3456789012"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the non-institutional domain warning is visible"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a registration error message is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC007",
+    "title": "Reject a duplicate institutional email during registration",
+    "description": "Verifies that registering an email that already exists produces the duplicate-email error state on the registration form.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Elena Torres"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with elena.torres.student.unique04@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 4567890123"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to the sign-in screen"
+      },
+      {
+        "type": "action",
+        "description": "Navigate back to the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Elena Torres Duplicate"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with elena.torres.student.unique04@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 5678901234"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a duplicate-email registration error is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC008",
+    "title": "Show the institutional domain hint while typing a valid registration email",
+    "description": "Verifies that the registration form shows the live institutional-domain guidance as a valid email address is entered.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Carlos Perez"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with carlos.perez.student.unique03@soyudemedellin.edu.co"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the institutional domain hint is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the student role guidance is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC009",
+    "title": "Reject an identity document shorter than ten digits during registration",
+    "description": "Verifies that the registration form blocks an identity document with fewer than 10 digits and shows the document validation error.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Felipe Marin"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with felipe.marin.student.unique05@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 678901234"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an identity-document validation error is visible"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC010",
+    "title": "Reject incomplete login credentials",
+    "description": "Verifies that the login form shows the invalid-credentials error when required fields are left incomplete.",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with incomplete.login.unique09@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an invalid-credentials error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the home screen is not displayed"
+      }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC011",
+    "title": "Strip non-digit characters from the identity document input",
+    "description": "Verifies that non-digit characters typed into the identity document field are removed and the remaining digits can be used for a valid registration.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the registration tab"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the full name field with Gabriela Ortiz"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the institutional email field with gabriela.ortiz.student.unique06@soyudemedellin.edu.co"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the identity document field with 12a34b567c890"
+      },
+      {
+        "type": "action",
+        "description": "Submit the registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a successful registration confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the identity document was accepted as a 10-digit value"
+      }
+    ],
+    "priority": "Low"
+  }
+]

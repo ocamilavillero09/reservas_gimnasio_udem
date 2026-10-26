@@ -24,6 +24,7 @@
     "cy:interfaz": "cypress run --e2e --spec \"../regression_testing/cypress/e2e/ux/interfaz.cy.js\" --config retries=0 --env informe=interfaz",
     "cy:hallazgos": "cypress run --e2e --spec \"../regression_testing/cypress/e2e/ux/hallazgos.cy.js\" --config retries=0 --env informe=hallazgos",
     "cy:violeta": "cypress run --e2e --spec \"../regression_testing/cypress/e2e/violeta/**/*.cy.js\" --config retries=0 --env informe=violeta",
+    "cy:violeta:percy": "percy exec -- cypress run --e2e --spec \"../regression_testing/cypress/e2e/violeta/rf03_perfil_estudiante.cy.js,../regression_testing/cypress/e2e/violeta/rf04_perfil_entrenador.cy.js,../regression_testing/cypress/e2e/violeta/rf05_perfil_administrador.cy.js\" --config retries=0 --env informe=violeta-percy",
     "cy:violeta:componentes": "cypress run --component --config-file cypress.violeta.config.js --spec \"../regression_testing/cypress/component/violeta/**/*.cy.jsx\" --env informe=violeta-componentes"
   },
   "dependencies": {

@@ -1,0 +1,23 @@
+{
+  "pantalla": "violeta-perfil-estudiante",
+  "violaciones": [
+    {
+      "regla": "color-contrast",
+      "impacto": "serious",
+      "descripcion": "Elements must meet minimum color contrast ratio thresholds",
+      "ayuda": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+      "wcag": [
+        "wcag2aa",
+        "wcag143"
+      ],
+      "nodos": 1,
+      "ejemplos": [
+        {
+          "selector": "#perfil-guardar",
+          "html": "<button type=\"submit\" id=\"perfil-guardar\" data-cy=\"perfil-guardar\" style=\"padding: 13px; border: none; border-radius: 12px; background: rgb(22, 163, 74); color:",
+          "resumen": "Fix any of the following:\n  Element has insufficient color contrast of 3.29 (foreground color: #ffffff, background color: #16a34a, font size: 10.0pt (13.3333px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ]
+}

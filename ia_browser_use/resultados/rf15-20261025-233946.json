@@ -1,0 +1,43 @@
+[
+  {
+    "caso": 2,
+    "titulo": "Estudiante en alerta (3 inasistencias)",
+    "documento_buscado": "1000000003",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 3,
+      "limite": 5
+    },
+    "modelo": "gemini-3.1-flash-lite",
+    "max_output_tokens": 16000,
+    "origen_falla": "MODELO/ENTORNO",
+    "veredicto": "NO CONCLUYENTE",
+    "captura": "C:\\Users\\acer\\dev\\workspace\\reservas_gimnasio_udem\\ia_browser_use\\resultados\\rf15-20261025-233946-tarea2.png",
+    "api": {
+      "http": 200,
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 3,
+      "limite": 5
+    },
+    "errores_del_agente": [
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "LLM call timed out after 75 seconds. Keep your thinking and output short.",
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}",
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    ],
+    "pasos": 6,
+    "segundos": 116.7,
+    "pagina": {
+      "url": "http://localhost:5173/",
+      "hay_resultado": false,
+      "nombre": null,
+      "estado": null,
+      "linea": null,
+      "error": null
+    },
+    "detalle": "La IA no devolvió los datos en el formato pedido.",
+    "final_texto": null
+  }
+]

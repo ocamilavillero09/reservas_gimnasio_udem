@@ -8,6 +8,8 @@
 4. Si la prueba se pone en rojo y dice con claridad qué pasó, sabemos que funciona y que podemos confiar en ella.
 5. Después de cada experimento se deshace el cambio y se comprueba que todo vuelve a la normalidad.
 
+La carpeta fallos-violeta guarda las corridas con un fallo provocado a propósito; esas pruebas salen en rojo a propósito. La corrida normal, donde todo pasa, está en evidencias/violeta.
+
 ## Antes de leer los fallos: tres palabras
 
 - **Prueba:** un guion que hace Cypress solo. Abre la página, escribe, hace clic y revisa lo que ve.
@@ -44,9 +46,9 @@ Regla para decir en voz alta: *"Miro la captura de pantalla. Si la aplicación s
 Aquí la captura muestra a Laura dentro de la aplicación, con su nombre real. Lo que no coincide es el nombre que se había escrito en la prueba.
 
 **5. ¿Dónde está la evidencia?** (rutas desde `regression_testing/cypress/`)
-- Informe: `reports/violeta-fallo-1/index.html`
-- Video: `evidencias/violeta-fallo-1/videos/rf02_login.cy.js.mp4`
-- Captura: `evidencias/violeta-fallo-1/capturas/rf02_login.cy.js/` (el archivo termina en "(failed).png")
+- Informe: `reports/fallos-violeta/violeta-fallo-1/index.html`
+- Video: `evidencias/fallos-violeta/violeta-fallo-1/videos/rf02_login.cy.js.mp4`
+- Captura: `evidencias/fallos-violeta/violeta-fallo-1/capturas/rf02_login.cy.js/` (el archivo termina en "(failed).png")
 
 **Resultado:** 3 pruebas pasaron y 1 falló (la RF02-04). Después de revertir, las 4 pasaron.
 
@@ -84,9 +86,9 @@ Aquí la prueba dejó a la estudiante con 3 faltas y esperaba ver 3. Lo correcto
 **Una lección extra:** un solo defecto hizo fallar cuatro pruebas a la vez. Cuando varias pruebas fallan juntas con el mismo tipo de mensaje, suele ser una sola causa común, y conviene buscarla antes de revisar cada prueba por separado.
 
 **5. ¿Dónde está la evidencia?**
-- Informe: `reports/violeta-fallo-2/index.html`
-- Video: `evidencias/violeta-fallo-2/videos/rf15_inasistencias.cy.js.mp4`
-- Capturas: `evidencias/violeta-fallo-2/capturas/rf15_inasistencias.cy.js/` (cuatro archivos, uno por prueba fallida)
+- Informe: `reports/fallos-violeta/violeta-fallo-2/index.html`
+- Video: `evidencias/fallos-violeta/violeta-fallo-2/videos/rf15_inasistencias.cy.js.mp4`
+- Capturas: `evidencias/fallos-violeta/violeta-fallo-2/capturas/rf15_inasistencias.cy.js/` (cuatro archivos, uno por prueba fallida)
 
 **Resultado:** 1 prueba pasó y 4 fallaron. Después de revertir, las 5 pasaron.
 
@@ -116,9 +118,9 @@ Regla para decir en voz alta: *"Si el mensaje dice 'no encontré el elemento', m
 Aquí la captura muestra el botón "Ingresar" bien visible, así que lo que estaba mal era el nombre que usó la prueba.
 
 **5. ¿Dónde está la evidencia?**
-- Informe: `reports/violeta-fallo-3/index.html`
-- Video: `evidencias/violeta-fallo-3/videos/rf02_login.cy.js.mp4`
-- Captura: `evidencias/violeta-fallo-3/capturas/rf02_login.cy.js/` (el archivo termina en "(failed).png")
+- Informe: `reports/fallos-violeta/violeta-fallo-3/index.html`
+- Video: `evidencias/fallos-violeta/violeta-fallo-3/videos/rf02_login.cy.js.mp4`
+- Captura: `evidencias/fallos-violeta/violeta-fallo-3/capturas/rf02_login.cy.js/` (el archivo termina en "(failed).png")
 
 **Resultado:** 3 pruebas pasaron y 1 falló (la RF02-01). Después de revertir, las 4 pasaron.
 

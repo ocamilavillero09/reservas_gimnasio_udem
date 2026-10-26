@@ -1,0 +1,59 @@
+[
+  {
+    "caso": 1,
+    "titulo": "Estudiante en 0 inasistencias",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "origen_falla": null,
+    "veredicto": "PASA",
+    "api": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5
+    },
+    "pasos": 5,
+    "segundos": 52.5,
+    "errores_del_agente": [
+      "Model output was truncated at max_output_tokens=8096; the structured output is incomplete. Increase max_output_tokens or request shorter output."
+    ],
+    "ultima_captura": "C:\\Users\\acer\\AppData\\Local\\Temp\\browser_use_agent_06adecea-f9b3-7ae1-8000-e1a400f4f92c_1792986801\\screenshots\\step_4.png",
+    "lectura_ia": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5,
+      "texto_linea": "Inasistencias: 0 de 5"
+    },
+    "comparacion": [
+      {
+        "campo": "nombre",
+        "esperado": "Laura Estudiante",
+        "obtenido": "Laura Estudiante",
+        "coincide": true
+      },
+      {
+        "campo": "estado",
+        "esperado": "ACTIVO",
+        "obtenido": "ACTIVO",
+        "coincide": true
+      },
+      {
+        "campo": "inasistencias",
+        "esperado": 0,
+        "obtenido": 0,
+        "coincide": true
+      },
+      {
+        "campo": "limite",
+        "esperado": 5,
+        "obtenido": 5,
+        "coincide": true
+      }
+    ]
+  }
+]

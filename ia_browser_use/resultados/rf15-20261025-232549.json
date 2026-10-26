@@ -1,0 +1,74 @@
+[
+  {
+    "caso": 2,
+    "titulo": "Estudiante en alerta (3 inasistencias)",
+    "documento_buscado": "1000000003",
+    "esperado": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 3,
+      "limite": 5
+    },
+    "modelo": "gemini-3.1-flash-lite",
+    "max_output_tokens": 16000,
+    "origen_falla": "IA",
+    "veredicto": "FALSO POSITIVO: la IA inventó el dato",
+    "captura": "C:\\Users\\acer\\dev\\workspace\\reservas_gimnasio_udem\\ia_browser_use\\resultados\\rf15-20261025-232549-tarea2.png",
+    "api": {
+      "http": 200,
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 3,
+      "limite": 5
+    },
+    "errores_del_agente": [
+      "503 UNAVAILABLE. {'error': {'code': 503, 'message': 'This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.', 'status': 'UNAVAILABLE'}}"
+    ],
+    "pasos": 5,
+    "segundos": 28.7,
+    "pagina": {
+      "url": "http://localhost:5173/",
+      "hay_resultado": true,
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "linea": "Inasistencias: 3 de 5",
+      "error": null
+    },
+    "lectura_ia": {
+      "nombre": "Laura Estudiante",
+      "estado": "ACTIVO",
+      "inasistencias": 0,
+      "limite": 5,
+      "texto_linea": "Inasistencias: 0 de 5"
+    },
+    "verificacion_pagina": [
+      {
+        "campo": "línea \"Inasistencias: X de Y\"",
+        "ia": "Inasistencias: 0 de 5",
+        "pagina": [
+          "Inasistencias: 3 de 5"
+        ],
+        "coincide": false
+      },
+      {
+        "campo": "texto de la línea copiado por la IA",
+        "ia": "Inasistencias: 0 de 5",
+        "pagina": "Inasistencias: 3 de 5",
+        "coincide": false
+      },
+      {
+        "campo": "nombre",
+        "ia": "Laura Estudiante",
+        "pagina": "Laura Estudiante",
+        "coincide": true
+      },
+      {
+        "campo": "estado",
+        "ia": "ACTIVO",
+        "pagina": "ACTIVO",
+        "coincide": true
+      }
+    ],
+    "detalle": "Valores que la IA reportó y que NO están en la página: línea \"Inasistencias: X de Y\", texto de la línea copiado por la IA"
+  }
+]

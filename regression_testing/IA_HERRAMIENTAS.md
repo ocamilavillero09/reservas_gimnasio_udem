@@ -1,0 +1,171 @@
+# Herramientas de IA en las pruebas
+
+Este documento resume cómo usamos cuatro herramientas con IA para probar la app de reservas del gimnasio, qué salió bien, qué salió mal y qué falta.
+
+**Cómo leerlo.** Todo está basado en archivos del repositorio. Cuando un dato no está en ningún archivo, dice **"no verificado"** y explica de dónde viene.
+
+| Herramienta | Requisitos | Resultado final |
+|---|---|---|
+| Percy | RF03, RF04, RF05 | Línea base aprobada (build #3). Build #4 con cambios **sin aprobar**. |
+| TestSprite | RF01, RF02 | 12 de 12 pasan, pero con aserciones débiles. |
+| Browser Use | RF15 | 4 de 4 pasan con `gemini-3-flash-preview`, confirmados con lectura independiente de la página. |
+| Stagehand | RF02 | 1 de 3 casos pasó. **(a) y (c) pendientes de ejecutar.** |
+
+---
+
+## 1. Percy (pruebas visuales) — RF03, RF04, RF05
+
+**Qué se le pidió.** Tomar una captura de la pantalla "Mi perfil" de cada rol (estudiante, entrenador, administrador) y compararla con la captura anterior. No usa un modelo de lenguaje: compara imágenes.
+
+**Qué generó.** Capturas con nombre `RF03 - perfil estudiante`, `RF04 - perfil entrenador` y `RF05 - perfil administrador`. Salen de las pruebas de [e2e/violeta](cypress/e2e/violeta/) con el comando `npm run cy:violeta:percy` (definido en `frontend/package.json`).
+
+**Qué corregimos o verificamos.**
+- Antes de cada captura la prueba llama a `cy.terminarAnimaciones()`, para que una animación a medias no cuente como diferencia.
+- Build #3: se aprobó como **línea base** (la imagen de referencia).
+- Build #4: trae cambios y **se dejó sin aprobar a propósito**, para que alguien los revise.
+
+**Resultado.** Línea base aprobada y build #4 pendiente de revisión.
+- **No verificado:** los números de build (#3 y #4) y su estado de aprobación los dio Violeta. No están en ningún archivo del repositorio, porque viven en el panel web de Percy.
+- **No verificado:** qué cambió exactamente en el build #4.
+
+**Limitaciones.**
+- Percy solo dice "esta imagen cambió". No dice si el cambio es un error o una mejora: eso lo decide una persona.
+- Una captura no comprueba textos. Cypress sí, y por eso las pruebas tienen además aserciones de texto.
+- Solo se cubrieron tres pantallas de perfil.
+
+---
+
+## 2. TestSprite (pruebas generadas con IA) — RF01 y RF02
+
+**Qué se le pidió.** Generar y ejecutar pruebas de interfaz para el registro (RF01) y el inicio de sesión (RF02), solo sobre el frontend en `http://localhost:5173`. Fuente: [standard_prd.json](../testsprite_tests/standard_prd.json) y el reporte [testsprite-mcp-test-report.md](../testsprite_tests/testsprite-mcp-test-report.md).
+
+**Qué generó.**
+- Un plan de pruebas.
+- Un script de Python por prueba (`TC001` a `TC013` en [testsprite_tests](../testsprite_tests/)).
+
+**Qué corregimos o verificamos.**
+- **El plan hubo que corregirlo a mano antes de ejecutar.** El plan original ([ORIGINAL.json](../testsprite_tests/testsprite_frontend_test_plan.ORIGINAL.json)) tenía 11 pruebas. El reporte dice que ignoró los datos pedidos: inventó cuentas inexistentes y creaba 4 cuentas. El plan corregido tiene 12 pruebas, con las de correos hotmail y outlook agregadas.
+- **Aserciones débiles o vacías que encontramos** (según el reporte):
+  - **TC001** (registro) y **TC003** (login): solo comprueban que aparezca el botón "Reservar". TC001 no comprueba "¡Registro exitoso!".
+  - **TC006** (rechazo de gmail): la segunda aserción busca "correo institucional", un texto que ya estaba en el subtítulo. Solo la primera tiene valor.
+  - **TC007** y **TC008**: les faltan chequeos negativos (por ejemplo, que no aparezca "Registro exitoso").
+  - **Todas las aserciones negativas del plan** ("NO aparece ¡Registro exitoso!") se perdieron al generar el código.
+  - Todas las aserciones llevan el comentario `Assert-outcome: not verified`: TestSprite no pudo evaluarlas al exportar. Sí se ejecutaron.
+
+**Resultado.** **12 de 12 pasan.** No se encontró ningún defecto real de la app. Con las aserciones débiles, ese "12 de 12" vale menos de lo que parece.
+
+**Limitaciones.**
+- La corrida creó una cuenta real que no se puede borrar desde aquí: `testsprite.rf01.202610252200@soyudemedellin.edu.co`. Repetir TC001 exige correo y documento nuevos.
+- Gastó 6 créditos (150 → 144).
+- No se probó: bloqueo tras 5 intentos fallidos, registro de entrenador o administrador, correo con mayúsculas o espacios, ni sesión al recargar.
+
+---
+
+## 3. Browser Use (la IA navega y lee) — RF15
+
+**Qué se le pidió.** Iniciar sesión como entrenador, ir a "Panel", buscar a un estudiante por documento y **solo leer** (nombre, estado y la línea "Inasistencias: X de Y"). Sin dar veredicto. Código: [rf15_browser_use.py](../ia_browser_use/rf15_browser_use.py).
+
+Cuatro tareas:
+1. Estudiante con 0 inasistencias.
+2. Estudiante en alerta, con 3.
+3. Estudiante penalizada, con 5.
+4. Control negativo: un documento que no existe, donde la IA no debe inventar un estudiante.
+
+**Qué generó.** Un JSON por corrida y una captura por tarea en [ia_browser_use/resultados](../ia_browser_use/resultados/).
+
+**Qué corregimos o verificamos.** El veredicto lo da el código, no la IA. Lo que la IA dice se contrasta con tres fuentes independientes:
+- el contenido real de la página, leído con código;
+- el valor sembrado en la base de datos;
+- la respuesta de la API.
+
+### Historial de fallos (leído de los 18 JSON)
+
+| # | Qué pasó | Cuándo y modelo | Origen | Qué se hizo |
+|---|---|---|---|---|
+| 1 | **404 de modelo**: `gemini-2.5-flash` "ya no está disponible para cuentas nuevas". Tarea 1 sin datos (no concluyente). | 25-oct 22:42 | Servicio de IA, no la app | Se cambió de modelo. |
+| 2 | **503 de saturación**: "high demand". Tarea 1 sin datos. | 25-oct 22:44 | Servicio de IA | Se reintentó. El script ahora clasifica 404, 503 y truncado como error del modelo, no de la IA. |
+| 3 | **Respuesta truncada**: el modelo cortó la salida en 8096 tokens. Esa corrida igual pasó, pero con el error registrado. | 25-oct 22:54 | Configuración | Se subió el límite a 16000 (comentario en el script). |
+| 4 | **Falso positivo del toast**: en el control negativo, el script dijo que la IA inventó el mensaje, porque la página ya no lo mostraba al leerla. | 25-oct 23:13, `gemini-3.1-flash-lite` | **El verificador**, no la IA. Mi lectura: el mensaje existió, era un aviso de 5 s. | Se agregó un observador (`MutationObserver`) que guarda los avisos. Desde la corrida 23:24 la tarea 4 pasa con el mensaje visto como `toast`. |
+| 5 | **Alucinación "0 de 5"**: la IA reportó `Inasistencias: 0 de 5` y la página decía **`3 de 5`**. Veredicto: falso positivo de la IA. Pasó **dos veces** (25-oct 23:25 y 26-oct 08:21). | `gemini-3.1-flash-lite` | **La IA** | Se cambió la instrucción: copiar la línea letra por letra y dejarla vacía si no se ve. |
+| 6 | Tras ese cambio, el modelo `flash-lite` dejó la línea vacía 3 veces (no concluyente). Además hubo 503 y "LLM call timed out after 75 seconds". | 26-oct 08:30 a 08:36 | IA y servicio | Se cambió a `gemini-3-flash-preview`. |
+
+### Resultado final: 4 de 4 pasan
+Con `gemini-3-flash-preview`, el 26-oct entre 08:39 y 08:47, las cuatro tareas dan **PASA**. En cada una, lo que dijo la IA coincide con lo que la página tenía:
+
+| Tarea | Lectura de la IA | Lo que había en la página |
+|---|---|---|
+| 1 | `Inasistencias: 0 de 5` | `Inasistencias: 0 de 5` |
+| 2 | `Inasistencias: 3 de 5` | `Inasistencias: 3 de 5` |
+| 3 | `PENALIZADO`, `5 de 5` | `PENALIZADO`, `5 de 5` |
+| 4 | Mensaje "No hay ningún estudiante registrado con el documento 9999999999." | El mismo mensaje, visto como `toast` |
+
+**Limitaciones.**
+- Las 4 tareas pasaron en **4 corridas separadas** (opción `--solo`), no en una sola corrida de las cuatro.
+- **Que haya pasado una vez no prueba que vaya a pasar siempre.** Con otro modelo, la tarea 2 falló dos veces.
+- El script **borra usuarios, reservas y disponibilidad** de la base antes de cada tarea.
+- Las tareas que pasaron tardaron entre 21 y 60 segundos cada una (campo `segundos` de los JSON). Las que fallaron llegaron a tardar hasta 130 segundos.
+- El nombre del modelo no está en los JSON más antiguos (los dos primeros). No verificado cuál se usó en 25-oct 22:54.
+
+---
+
+## 4. Stagehand (proyecto del profe adaptado a nuestro login) — RF02
+
+**Qué se le pidió.** Adaptar el ejemplo del profe a nuestra app. La prueba es `D:\documentos universidad\validacion\Stagehand-E2E-AI\tests\login-gimnasio.e2e.ts` (está fuera de este repositorio). La IA hace las acciones y el código verifica con textos exactos:
+
+| Caso | La IA hace | El código verifica |
+|---|---|---|
+| (a) Login correcto del estudiante | Escribir correo y documento, pulsar "Ingresar" | Que el botón diga exactamente "Reservar" |
+| (b) Documento incorrecto | Lo mismo, con un documento erróneo | Que el mensaje sea exactamente "Correo o documento de identidad incorrectos." |
+| (c) Correo gmail en el registro | Abrir la pestaña "Registrarse" y escribir un correo gmail | Que el aviso diga exactamente "Ese dominio no es institucional" |
+
+**Qué generó.** Esa prueba más el script `test:gimnasio` en el `package.json` del ejemplo. El `typecheck` pasó sin errores.
+
+**Qué verificamos y resultado.**
+
+| Caso | Estado |
+|---|---|
+| (a) | **Pendiente de ejecutar.** |
+| (b) | **Pasó una vez**, en la primera ejecución del 26-oct. En esa misma ejecución (a) y (c) ya habían fallado por cuota, así que (b) no se puede describir como "antes de agotar la cuota". |
+| (c) | **Pendiente de ejecutar.** |
+
+Los casos (a) y (c) **no se dan por pasados**. Ninguna ejecución los completó, y la causa fue la cuota o el servicio de Gemini, no la app.
+
+**Modelos intentados el 26-oct** (la clave de Gemini está en el `.env` del ejemplo, que no se leyó):
+
+| Modelo | Resultado | Verificado |
+|---|---|---|
+| `gemini-3-flash` | "Cuota diaria excedida": 20 peticiones por día en el plan gratuito. | Sí, lo vi en la salida de la ejecución. |
+| `gemini-2.5-flash` | Error 404: "ya no está disponible para cuentas nuevas". Es el modelo por defecto del ejemplo. | Sí, lo vi en la salida. |
+| `gemini-3.8-flash` (sugerido por la propia API) | "High demand" (saturación). La ejecución se quedó colgada unos 30 minutos y la detuve a mano. | Sí, lo vi en la salida. |
+| `gemini-3-flash-preview` | Cuota diaria excedida o saturación. | **No verificado:** lo informó Violeta; no hay registro de esa ejecución en los archivos. |
+| `gemini-3.1-flash-lite` | Cuota diaria excedida o saturación. | **No verificado:** igual que el anterior. |
+
+**Hipótesis (no comprobada):** la cuota gratuita de 20 peticiones por día parece compartirse entre los modelos de Gemini 3. Sería consistente con que `gemini-3-flash-preview` y `gemini-3.1-flash-lite` fallaran igual, pero no lo comprobé en la documentación de Google ni con pruebas controladas.
+
+**Ollama local (`qwen2.5:7b`).** Fue muy lento (105 s) y no devolvió ninguna acción. **No verificado en archivos:** este dato lo dio Violeta y no hay un registro de esa ejecución. Por eso Ollama no se usó para esta prueba.
+
+**Limitaciones.**
+- No hay evidencia de (a) ni de (c) hasta que se vuelvan a ejecutar con cuota disponible.
+- El caso (b) tiene una sola ejecución exitosa.
+- Una copia de la prueba está en [stagehand/](../stagehand/), sin claves.
+- La ruta de los datos de prueba está escrita para este computador (se puede cambiar con `GIMNASIO_FIXTURES`).
+- Tras 5 intentos fallidos el backend bloquea el correo 15 minutos. Cada ejecución hace solo un intento fallido.
+
+---
+
+## Lección
+
+**Un "PASA" de la IA solo vale si se verifica con algo que no dependa de la IA.**
+
+Lo vimos en los propios archivos:
+
+- **Browser Use.** La IA dijo "0 de 5" con seguridad cuando la página decía "3 de 5". Lo que la detectó fue el código que lee la página, no otra pregunta a la IA. A la inversa, el verificador también falló una vez (el toast): ningún veredicto se debe aceptar sin revisar de dónde sale.
+- **TestSprite.** "12 de 12" suena perfecto, pero varias pruebas solo miran que aparezca un botón. Un "pasa" con una aserción floja es solo un "no se rompió".
+- **Stagehand.** Se diseñó con la regla correcta: la IA solo hace los clics, y la verificación es código con texto exacto. Los casos que no se ejecutaron se quedan como "pendiente", no como "pasó".
+- **Mismo problema sin IA.** En Cypress, la prueba E2E-RF05-01 comprobaba el texto "Administrador principal" con `have.text`, que no exige que el texto sea visible. Se corrigió agregando `.should('be.visible')` y la prueba volvió a pasar (2 de 2). Ver [rf05_perfil_administrador.cy.js](cypress/e2e/violeta/rf05_perfil_administrador.cy.js).
+
+Reglas prácticas:
+1. La IA actúa y lee; el veredicto lo da el código.
+2. El código compara contra un valor esperado conocido (base de datos, API o texto exacto), no contra lo que la IA dice haber visto.
+3. Si la verificación no se pudo hacer, el resultado es "no concluyente" o "pendiente", nunca "pasa".
+4. Revisar las aserciones: que comprueben lo que dicen comprobar.

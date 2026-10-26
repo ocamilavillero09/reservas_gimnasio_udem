@@ -1,0 +1,200 @@
+[
+  {
+    "id": "TC001",
+    "title": "Register a valid student account, then log in with it",
+    "description": "RF01+RF02. The ONLY successful registration of the whole run. Registers a unique @soyudemedellin.edu.co account, sees the success screen, goes to sign-in and logs in with the same credentials.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Fill in the full name field with Prueba TestSprite" },
+      { "type": "action", "description": "Fill in the institutional email field with testsprite.rf01.202610252200@soyudemedellin.edu.co" },
+      { "type": "assertion", "description": "Verify the live hint says the user will enter as ESTUDIANTE and does not say 'no es institucional'" },
+      { "type": "action", "description": "Fill in the identity document field with 9000000001" },
+      { "type": "action", "description": "Submit the registration form (Crear cuenta)" },
+      { "type": "assertion", "description": "Verify the text '¡Registro exitoso!' is visible" },
+      { "type": "action", "description": "Click 'Ir a iniciar sesión'" },
+      { "type": "assertion", "description": "Verify the sign-in form is displayed with an empty email field" },
+      { "type": "action", "description": "Fill in the email field with testsprite.rf01.202610252200@soyudemedellin.edu.co" },
+      { "type": "action", "description": "Fill in the identity document field with 9000000001" },
+      { "type": "action", "description": "Submit the login form (Ingresar)" },
+      { "type": "assertion", "description": "Verify the sign-in form is no longer displayed and the user name 'Prueba TestSprite' or the student home is visible" }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Log in with the existing student account",
+    "description": "RF02 success case with the seeded student account (laura.est@soyudemedellin.edu.co / 1000000003).",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Fill in the email field with laura.est@soyudemedellin.edu.co" },
+      { "type": "action", "description": "Fill in the identity document field with 1000000003" },
+      { "type": "action", "description": "Submit the login form (Ingresar)" },
+      { "type": "assertion", "description": "Verify the sign-in form is no longer displayed" },
+      { "type": "assertion", "description": "Verify the name 'Laura Estudiante' or the student home is visible" }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Wrong identity document for a registered email shows the exact error",
+    "description": "RF02 negative. Uses the real registered email with a wrong document. ONE attempt only (5 failures lock the email for 15 minutes).",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Fill in the email field with laura.est@soyudemedellin.edu.co" },
+      { "type": "action", "description": "Fill in the identity document field with 1000000009" },
+      { "type": "action", "description": "Submit the login form (Ingresar)" },
+      { "type": "assertion", "description": "Verify the exact text 'Correo o documento de identidad incorrectos.' is visible" },
+      { "type": "assertion", "description": "Verify the sign-in form is still displayed" }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Unregistered email shows the exact error",
+    "description": "RF02 negative. Email that does not exist in the system.",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Fill in the email field with noexiste.testsprite@soyudemedellin.edu.co" },
+      { "type": "action", "description": "Fill in the identity document field with 1000000099" },
+      { "type": "action", "description": "Submit the login form (Ingresar)" },
+      { "type": "assertion", "description": "Verify the exact text 'Correo o documento de identidad incorrectos.' is visible" },
+      { "type": "assertion", "description": "Verify the sign-in form is still displayed" }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Reject a gmail email during registration",
+    "description": "RF01 negative. gmail.com is not institutional: live hint and rejection on submit.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Fill in the full name field with Prueba Gmail" },
+      { "type": "action", "description": "Fill in the institutional email field with prueba.gmail@gmail.com" },
+      { "type": "assertion", "description": "Verify the text 'Ese dominio no es institucional' is visible" },
+      { "type": "action", "description": "Fill in the identity document field with 9000000002" },
+      { "type": "action", "description": "Submit the registration form (Crear cuenta)" },
+      { "type": "assertion", "description": "Verify an error containing 'correo institucional' is visible" },
+      { "type": "assertion", "description": "Verify the text '¡Registro exitoso!' is NOT visible" }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Reject an already registered email during registration",
+    "description": "RF01 negative. Uses the existing seeded email (no new account is created). Document is different from the existing one on purpose.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Fill in the full name field with Duplicado Prueba" },
+      { "type": "action", "description": "Fill in the institutional email field with laura.est@soyudemedellin.edu.co" },
+      { "type": "action", "description": "Fill in the identity document field with 9000000003" },
+      { "type": "action", "description": "Submit the registration form (Crear cuenta)" },
+      { "type": "assertion", "description": "Verify the exact text 'Ya existe una cuenta con este correo.' is visible" },
+      { "type": "assertion", "description": "Verify the text '¡Registro exitoso!' is NOT visible" }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC008",
+    "title": "Live hint shows the student role for a valid institutional email",
+    "description": "RF01. Only types, does not submit, so no account is created.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Fill in the institutional email field with carlos.hint@soyudemedellin.edu.co" },
+      { "type": "assertion", "description": "Verify the text 'Entrarás como ESTUDIANTE' is visible" },
+      { "type": "assertion", "description": "Verify the text 'no es institucional' is NOT visible" }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC009",
+    "title": "Reject an identity document shorter than ten digits",
+    "description": "RF01 negative. 9 digits is accepted by the input (maxLength 10) but the server must reject it.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Fill in the full name field with Prueba Documento Corto" },
+      { "type": "action", "description": "Fill in the institutional email field with testsprite.shortdoc@soyudemedellin.edu.co" },
+      { "type": "action", "description": "Fill in the identity document field with 678901234" },
+      { "type": "action", "description": "Submit the registration form (Crear cuenta)" },
+      { "type": "assertion", "description": "Verify the error 'El documento de identidad debe tener exactamente 10 dígitos.' is visible" },
+      { "type": "assertion", "description": "Verify the text '¡Registro exitoso!' is NOT visible" }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC010",
+    "title": "Login with the document left empty is rejected",
+    "description": "RF02 negative. Email filled, document empty.",
+    "category": "RF02 - Inicio de sesión",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Fill in the email field with noexiste.vacio@soyudemedellin.edu.co" },
+      { "type": "action", "description": "Leave the identity document field empty" },
+      { "type": "action", "description": "Submit the login form (Ingresar)" },
+      { "type": "assertion", "description": "Verify an error message is visible" },
+      { "type": "assertion", "description": "Verify the sign-in form is still displayed" }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC011",
+    "title": "Letters typed in the identity document are discarded",
+    "description": "RF01. Types letters and digits and checks that only digits remain. Does not submit, so no account is created.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Type '12a34b567c890' into the identity document field (type it character by character)" },
+      { "type": "assertion", "description": "Verify the identity document field value is exactly '1234567890' (digits only, no letters)" }
+    ],
+    "priority": "Low"
+  },
+  {
+    "id": "TC012",
+    "title": "Reject a hotmail email during registration",
+    "description": "RF01 negative. hotmail.com is not institutional.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Fill in the full name field with Prueba Hotmail" },
+      { "type": "action", "description": "Fill in the institutional email field with prueba.hotmail@hotmail.com" },
+      { "type": "assertion", "description": "Verify the text 'Ese dominio no es institucional' is visible" },
+      { "type": "action", "description": "Fill in the identity document field with 9000000004" },
+      { "type": "action", "description": "Submit the registration form (Crear cuenta)" },
+      { "type": "assertion", "description": "Verify an error containing 'correo institucional' is visible" },
+      { "type": "assertion", "description": "Verify the text '¡Registro exitoso!' is NOT visible" }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC013",
+    "title": "Reject an outlook email during registration",
+    "description": "RF01 negative. outlook.com is not institutional.",
+    "category": "RF01 - Registro de cuenta",
+    "steps": [
+      { "type": "action", "description": "Navigate to /" },
+      { "type": "action", "description": "Click the registration tab (Registrarse)" },
+      { "type": "action", "description": "Fill in the full name field with Prueba Outlook" },
+      { "type": "action", "description": "Fill in the institutional email field with prueba.outlook@outlook.com" },
+      { "type": "assertion", "description": "Verify the text 'Ese dominio no es institucional' is visible" },
+      { "type": "action", "description": "Fill in the identity document field with 9000000005" },
+      { "type": "action", "description": "Submit the registration form (Crear cuenta)" },
+      { "type": "assertion", "description": "Verify an error containing 'correo institucional' is visible" },
+      { "type": "assertion", "description": "Verify the text '¡Registro exitoso!' is NOT visible" }
+    ],
+    "priority": "High"
+  }
+]

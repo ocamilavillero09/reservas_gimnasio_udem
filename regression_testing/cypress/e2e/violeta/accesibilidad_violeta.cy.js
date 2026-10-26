@@ -2,6 +2,7 @@
 // login (RF02) y perfil de estudiante, entrenador y administradora (RF03 a RF05).
 // Las violaciones quedan en evidencias/violeta/accesibilidad/<pantalla>.json;
 // la prueba falla si hay alguna crítica o seria.
+import '../../../../frontend/node_modules/@percy/cypress';
 describe('Accesibilidad Violeta — WCAG 2.2 A/AA (axe-core)', () => {
     beforeEach(() => {
         // dado
