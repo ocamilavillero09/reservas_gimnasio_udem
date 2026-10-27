@@ -1,5 +1,6 @@
 ﻿# language: es
 
+@sebas @api
 Característica: Pruebas de regresión del gimnasio
   Como estudiante o usuario autorizado
   Quiero validar las operaciones del sistema de reservas
@@ -22,9 +23,9 @@ Característica: Pruebas de regresión del gimnasio
     Cuando intento reservar sin proporcionar los datos obligatorios
     Entonces la respuesta de la reserva debe ser un error 400
 
-  Escenario: Rechazar la reserva cuando el estudiante no existe (RF07_C2)
-    Cuando intento reservar con un correo de estudiante inexistente
-    Entonces la respuesta de la reserva debe ser un error 404
+  Escenario: Rechazar la reserva sin sesión de un estudiante que no existe (RF07_C2)
+    Cuando intento reservar sin sesión con un correo de estudiante inexistente
+    Entonces la respuesta de la reserva debe ser un error 401
 
   Escenario: Rechazar la reserva cuando el usuario no es estudiante (RF07_C3)
     Cuando intento reservar con un usuario que no es estudiante

@@ -11,7 +11,8 @@
     "test:web": "npm test -- --tags '@web'",
     "test:api": "cross-env SERENITY_API_ONLY=true npm test -- --tags '@api'",
     "test:report": "html-reporter serve --dir reports/serenity-js --port 8080 --open",
-    "test:camila": "npm run clean && cucumber-js --tags @camila"
+    "test:camila": "npm run clean && cucumber-js --tags @camila",
+    "test:sebas": "npm run clean && cucumber-js --tags \"@sebas or @sebas-e2e\""
   },
   "engines": {
     "node": "^22.22.2 || ^24.15.0"

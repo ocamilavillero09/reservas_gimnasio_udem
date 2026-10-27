@@ -1,0 +1,2492 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-27T05:25:28.133Z",
+  "finishedAt": "2026-10-27T05:25:38.705Z",
+  "outcomes": {
+    "passed": 4,
+    "failed": 0,
+    "pending": 0,
+    "skipped": 0,
+    "compromised": 0,
+    "error": 0
+  },
+  "scenes": [
+    {
+      "name": "Reservar el bloque de las 06:00 desde el panel (RF07 exitoso)",
+      "category": "E2E de navegador - reservas del estudiante y búsqueda del entrenador",
+      "outcome": {
+        "code": 64
+      },
+      "duration": 3233,
+      "startedAt": "2026-10-27T05:25:28.133Z",
+      "source": {
+        "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+        "line": 11
+      },
+      "tags": [
+        {
+          "type": "feature",
+          "name": "E2E de navegador - reservas del estudiante y búsqueda del entrenador"
+        },
+        {
+          "type": "tag",
+          "name": "sebas-e2e"
+        },
+        {
+          "type": "tag",
+          "name": "rf06"
+        },
+        {
+          "type": "tag",
+          "name": "rf07"
+        }
+      ],
+      "activities": [
+        {
+          "type": "Task",
+          "name": "Before",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 840,
+          "startedAt": "2026-10-27T05:25:28.135Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 31,
+              "startedAt": "2026-10-27T05:25:28.382Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 37,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta tomas.coach@udem.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 18,
+              "startedAt": "2026-10-27T05:25:28.832Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 38,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador deja a laura.est@soyudemedellin.edu.co sin reservas activas",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 32,
+              "startedAt": "2026-10-27T05:25:28.895Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 39,
+                "column": 30
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 27
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Dado que Laura entró como estudiante",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 1139,
+          "startedAt": "2026-10-27T05:25:28.976Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Laura inicia sesión como laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 860,
+              "startedAt": "2026-10-27T05:25:28.994Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Laura navigates to \"http://localhost:5173\"",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 265,
+                  "startedAt": "2026-10-27T05:25:28.995Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                    "line": 23,
+                    "column": 54
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-navigates-to--http---localhos-e76461f043.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura enters \"laura.est@soyudemedellin.edu.co\" into campo correo",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 27,
+                  "startedAt": "2026-10-27T05:25:29.524Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 15,
+                    "column": 36
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--laura-est-soyudemedel-fc2c61d24b.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura enters \"1000000003\" into campo documento (contraseña)",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 11,
+                  "startedAt": "2026-10-27T05:25:29.630Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 16,
+                    "column": 40
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--1000000003--into-camp-fd19a82d9a.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura clicks on botón ingresar",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 53,
+                  "startedAt": "2026-10-27T05:25:29.709Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 17,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-ingresar-a9fd44d6f3.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 23,
+                "column": 54
+              }
+            },
+            {
+              "type": "Interaction",
+              "name": "Laura waits until lista de bloques horarios does become visible",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 112,
+              "startedAt": "2026-10-27T05:25:29.868Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 23,
+                "column": 78
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-lista-de-bloques--b15c88de0c.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 12
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Cuando reserva el bloque 1 y confirma",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 794,
+          "startedAt": "2026-10-27T05:25:30.116Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Laura reserva el bloque 1 y confirma",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 771,
+              "startedAt": "2026-10-27T05:25:30.123Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Laura waits until botón Reservar cupo del bloque 1 does become visible",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 48,
+                  "startedAt": "2026-10-27T05:25:30.124Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 13,
+                    "column": 7
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-reservar-cu-48fbc5751c.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura clicks on botón Reservar cupo del bloque 1",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 209,
+                  "startedAt": "2026-10-27T05:25:30.248Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 14,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-reservar-cupo-a9302702dd.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura waits until botón Confirmar de la ventana de reserva does become visible",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 36,
+                  "startedAt": "2026-10-27T05:25:30.526Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 15,
+                    "column": 7
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-confirmar-d-b79fe2153f.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura clicks on botón Confirmar de la ventana de reserva",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 205,
+                  "startedAt": "2026-10-27T05:25:30.621Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 16,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-confirmar-de--9286f28ce2.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 32,
+                "column": 59
+              }
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 13
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Entonces su contador de reservas de mañana debe mostrar \"1/1\"",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 109,
+          "startedAt": "2026-10-27T05:25:30.910Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Laura ensures that the text of contador Mi reserva de mañana does eventually equal \"1/1\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 21,
+              "startedAt": "2026-10-27T05:25:30.918Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 36,
+                "column": 49
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-cont-0a1655a630.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 14
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Y el bloque 1 debe quedar marcado como reservado",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 124,
+          "startedAt": "2026-10-27T05:25:31.020Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Laura ensures that etiqueta Reservado del bloque 1 does eventually become visible",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 49,
+              "startedAt": "2026-10-27T05:25:31.025Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 40,
+                "column": 49
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-etiqueta-reserva-a5cd0934f5.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 15
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Y la reserva de mañana de Laura debe quedar \"ACTIVA\" en la base de datos",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 111,
+          "startedAt": "2026-10-27T05:25:31.145Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Laura ensures that el estado de la reserva de mañana de laura.est@soyudemedellin.edu.co does eventually equal \"ACTIVA\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 32,
+              "startedAt": "2026-10-27T05:25:31.148Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 45,
+                "column": 12
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-el-estado-de-la--6c74c71dcb.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 16
+          }
+        },
+        {
+          "type": "Task",
+          "name": "After",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 12,
+          "startedAt": "2026-10-27T05:25:31.256Z",
+          "children": [],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 43
+          }
+        }
+      ],
+      "narrative": "Como estudiante o entrenador del gimnasio UdeM\nQuiero usar la interfaz web\nPara comprobar de punta a punta RF06, RF07, RF08, RF09 y RF10",
+      "artifacts": [
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "fho3wce3ixgbxsp9umzdkv8p"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "fq3jn08miviyigl5zlyverj2"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-navigates-to--http---localhos-e76461f043.png",
+          "type": "screenshot",
+          "activityId": "g3f3zk85aqqoyr0nlxe59tek"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--laura-est-soyudemedel-fc2c61d24b.png",
+          "type": "screenshot",
+          "activityId": "n05xbk8220p9oi79gf06s612"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--1000000003--into-camp-fd19a82d9a.png",
+          "type": "screenshot",
+          "activityId": "uh5t7lyd7m91tupqsub2tyn1"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-ingresar-a9fd44d6f3.png",
+          "type": "screenshot",
+          "activityId": "mo2lcdses4lg1fh32k02yjyg"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-lista-de-bloques--b15c88de0c.png",
+          "type": "screenshot",
+          "activityId": "ltn937ejr05bh3v3ns7pas5n"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-reservar-cu-48fbc5751c.png",
+          "type": "screenshot",
+          "activityId": "g7nq9kepnh0lbp4244dqjt1x"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-reservar-cupo-a9302702dd.png",
+          "type": "screenshot",
+          "activityId": "ka6h9nx08286bmr7sjq3p4m1"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-confirmar-d-b79fe2153f.png",
+          "type": "screenshot",
+          "activityId": "d85qu3rrzrdqqkao7frlwh9l"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-confirmar-de--9286f28ce2.png",
+          "type": "screenshot",
+          "activityId": "wxgxnlcf9xdnqtt4cr3io6ht"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-cont-0a1655a630.png",
+          "type": "screenshot",
+          "activityId": "a5y39s20gh7bmcnjqdjgolxa"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-etiqueta-reserva-a5cd0934f5.png",
+          "type": "screenshot",
+          "activityId": "a1bsdhga0i3awssf1g6192ng"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-el-estado-de-la--6c74c71dcb.png",
+          "type": "screenshot",
+          "activityId": "k5bdwcfopxxxukk2c8v0wl9i"
+        }
+      ],
+      "cast": [
+        {
+          "name": "Preparador",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        },
+        {
+          "name": "Laura",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Consultar y cancelar la reserva activa desde Mis reservas (RF08 y RF09 exitoso)",
+      "category": "E2E de navegador - reservas del estudiante y búsqueda del entrenador",
+      "outcome": {
+        "code": 64
+      },
+      "duration": 2986,
+      "startedAt": "2026-10-27T05:25:31.377Z",
+      "source": {
+        "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+        "line": 20
+      },
+      "tags": [
+        {
+          "type": "feature",
+          "name": "E2E de navegador - reservas del estudiante y búsqueda del entrenador"
+        },
+        {
+          "type": "tag",
+          "name": "sebas-e2e"
+        },
+        {
+          "type": "tag",
+          "name": "rf08"
+        },
+        {
+          "type": "tag",
+          "name": "rf09"
+        }
+      ],
+      "activities": [
+        {
+          "type": "Task",
+          "name": "Before",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 366,
+          "startedAt": "2026-10-27T05:25:31.378Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 19,
+              "startedAt": "2026-10-27T05:25:31.381Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 37,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta tomas.coach@udem.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 19,
+              "startedAt": "2026-10-27T05:25:31.602Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 38,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador deja a laura.est@soyudemedellin.edu.co sin reservas activas",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 14,
+              "startedAt": "2026-10-27T05:25:31.681Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 39,
+                "column": 30
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 27
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Dado que Laura tiene una reserva para mañana en el bloque 1",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 90,
+          "startedAt": "2026-10-27T05:25:31.744Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Preparador reserva por la API el bloque 1 para laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 45,
+              "startedAt": "2026-10-27T05:25:31.746Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 19,
+                "column": 63
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-reserva-por-la-api-el-bl-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 21
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Y que Laura entró como estudiante",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 1215,
+          "startedAt": "2026-10-27T05:25:31.834Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Laura inicia sesión como laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 1004,
+              "startedAt": "2026-10-27T05:25:31.840Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Laura navigates to \"http://localhost:5173\"",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 394,
+                  "startedAt": "2026-10-27T05:25:31.840Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                    "line": 23,
+                    "column": 54
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-navigates-to--http---localhos-afa80f90fc.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura enters \"laura.est@soyudemedellin.edu.co\" into campo correo",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 21,
+                  "startedAt": "2026-10-27T05:25:32.348Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 15,
+                    "column": 36
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--laura-est-soyudemedel-26b03aa512.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura enters \"1000000003\" into campo documento (contraseña)",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 9,
+                  "startedAt": "2026-10-27T05:25:32.451Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 16,
+                    "column": 40
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--1000000003--into-camp-b119774859.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura clicks on botón ingresar",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 210,
+                  "startedAt": "2026-10-27T05:25:32.545Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 17,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-ingresar-ed44db3551.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 23,
+                "column": 54
+              }
+            },
+            {
+              "type": "Interaction",
+              "name": "Laura waits until lista de bloques horarios does become visible",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 123,
+              "startedAt": "2026-10-27T05:25:32.860Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 23,
+                "column": 78
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-lista-de-bloques--cddb1fc920.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 22
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Cuando abre sus reservas",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 237,
+          "startedAt": "2026-10-27T05:25:33.049Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Laura abre Mis reservas",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 217,
+              "startedAt": "2026-10-27T05:25:33.052Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Laura waits until botón Mis reservas does become visible",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 24,
+                  "startedAt": "2026-10-27T05:25:33.052Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 22,
+                    "column": 42
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-mis-reserva-166162349d.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura clicks on botón Mis reservas",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 56,
+                  "startedAt": "2026-10-27T05:25:33.144Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 22,
+                    "column": 77
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-mis-reservas-0f670b0d5a.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 51,
+                "column": 58
+              }
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 23
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Entonces debe ver su reserva de las \"06:00\" en estado \"Activa\"",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 173,
+          "startedAt": "2026-10-27T05:25:33.286Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Laura ensures that the text of hora de la reserva does eventually equal \"06:00\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 29,
+              "startedAt": "2026-10-27T05:25:33.291Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 56,
+                "column": 12
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-hora-a46821b65b.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Laura ensures that the text of estado de la reserva does eventually include \"Activa\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 19,
+              "startedAt": "2026-10-27T05:25:33.380Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 57,
+                "column": 12
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-esta-05c40f2a1d.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 24
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Cuando cancela la reserva y confirma",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 621,
+          "startedAt": "2026-10-27T05:25:33.459Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Laura cancela su reserva y confirma",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 595,
+              "startedAt": "2026-10-27T05:25:33.465Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Laura waits until botón Cancelar reserva does become visible",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 37,
+                  "startedAt": "2026-10-27T05:25:33.466Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 28,
+                    "column": 5
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-cancelar-re-a1c7fa33e3.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura clicks on botón Cancelar reserva",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 88,
+                  "startedAt": "2026-10-27T05:25:33.566Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 29,
+                    "column": 11
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-cancelar-rese-d8d8e2d84e.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura waits until botón Sí, cancelar does become visible",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 28,
+                  "startedAt": "2026-10-27T05:25:33.723Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 30,
+                    "column": 5
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-s---cancela-33868da8d4.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Laura clicks on botón Sí, cancelar",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 198,
+                  "startedAt": "2026-10-27T05:25:33.815Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 31,
+                    "column": 11
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-s---cancelar-f5798092f6.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 62,
+                "column": 59
+              }
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 25
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Entonces debe ver el aviso de reservas vacías \"Sin reservas activas\"",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 110,
+          "startedAt": "2026-10-27T05:25:34.081Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Laura ensures that the text of título sin reservas activas does eventually equal \"Sin reservas activas\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 47,
+              "startedAt": "2026-10-27T05:25:34.083Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 66,
+                "column": 49
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-t-tu-b87d0510ce.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 26
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Y la reserva de mañana de Laura debe quedar \"CANCELADA\" en la base de datos",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 77,
+          "startedAt": "2026-10-27T05:25:34.191Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Laura ensures that el estado de la reserva de mañana de laura.est@soyudemedellin.edu.co does eventually equal \"CANCELADA\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 21,
+              "startedAt": "2026-10-27T05:25:34.194Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 45,
+                "column": 12
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-el-estado-de-la--16589b6c8a.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 27
+          }
+        },
+        {
+          "type": "Task",
+          "name": "After",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 2,
+          "startedAt": "2026-10-27T05:25:34.268Z",
+          "children": [],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 43
+          }
+        }
+      ],
+      "narrative": "Como estudiante o entrenador del gimnasio UdeM\nQuiero usar la interfaz web\nPara comprobar de punta a punta RF06, RF07, RF08, RF09 y RF10",
+      "artifacts": [
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "fefbanhaamun9qilqiiq5vxz"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "a1t3mktklmplwym1jhmlwig2"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-reserva-por-la-api-el-bl-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "uu0aeslzljde0rjugecjv695"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-navigates-to--http---localhos-afa80f90fc.png",
+          "type": "screenshot",
+          "activityId": "j10lzrohe76fd8fejruu8dir"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--laura-est-soyudemedel-26b03aa512.png",
+          "type": "screenshot",
+          "activityId": "bvc3ahoesvc2y794qiol57ot"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-enters--1000000003--into-camp-b119774859.png",
+          "type": "screenshot",
+          "activityId": "kro5iahj9fxawh38gpfjr0pk"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-ingresar-ed44db3551.png",
+          "type": "screenshot",
+          "activityId": "kekojjgoi3js2lomows7qd9q"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-lista-de-bloques--cddb1fc920.png",
+          "type": "screenshot",
+          "activityId": "uunvdrjyt6qrluoqpncogrtw"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-mis-reserva-166162349d.png",
+          "type": "screenshot",
+          "activityId": "ad2ud8bz4ak1jcbu9897rmlp"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-mis-reservas-0f670b0d5a.png",
+          "type": "screenshot",
+          "activityId": "ofmjg8uetjzyqkbvilgbaj8q"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-hora-a46821b65b.png",
+          "type": "screenshot",
+          "activityId": "f76li0f6t8odfreli3kd83eu"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-esta-05c40f2a1d.png",
+          "type": "screenshot",
+          "activityId": "o9gxpyrfioei45oobtx1p1xk"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-cancelar-re-a1c7fa33e3.png",
+          "type": "screenshot",
+          "activityId": "hoce89gg4ha8scbiayifljx7"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-cancelar-rese-d8d8e2d84e.png",
+          "type": "screenshot",
+          "activityId": "hir03nx6093vmjrvig25x1od"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-waits-until-bot-n-s---cancela-33868da8d4.png",
+          "type": "screenshot",
+          "activityId": "tswly7nonus63ya8whjvkwyp"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-clicks-on-bot-n-s---cancelar-f5798092f6.png",
+          "type": "screenshot",
+          "activityId": "lb63xt94gan0qv3qfazgj9c3"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-the-text-of-t-tu-b87d0510ce.png",
+          "type": "screenshot",
+          "activityId": "ksuxq3ni78q5wru6psif72qm"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-laura-ensures-that-el-estado-de-la--16589b6c8a.png",
+          "type": "screenshot",
+          "activityId": "gi3lwjonl036z9mcqkz3capc"
+        }
+      ],
+      "cast": [
+        {
+          "name": "Preparador",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        },
+        {
+          "name": "Laura",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "El entrenador encuentra la reserva activa de una estudiante (RF10 exitoso)",
+      "category": "E2E de navegador - reservas del estudiante y búsqueda del entrenador",
+      "outcome": {
+        "code": 64
+      },
+      "duration": 2207,
+      "startedAt": "2026-10-27T05:25:34.369Z",
+      "source": {
+        "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+        "line": 31
+      },
+      "tags": [
+        {
+          "type": "feature",
+          "name": "E2E de navegador - reservas del estudiante y búsqueda del entrenador"
+        },
+        {
+          "type": "tag",
+          "name": "sebas-e2e"
+        },
+        {
+          "type": "tag",
+          "name": "rf10"
+        }
+      ],
+      "activities": [
+        {
+          "type": "Task",
+          "name": "Before",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 338,
+          "startedAt": "2026-10-27T05:25:34.369Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 10,
+              "startedAt": "2026-10-27T05:25:34.371Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 37,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta tomas.coach@udem.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 19,
+              "startedAt": "2026-10-27T05:25:34.582Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 38,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador deja a laura.est@soyudemedellin.edu.co sin reservas activas",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 10,
+              "startedAt": "2026-10-27T05:25:34.640Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 39,
+                "column": 30
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 27
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Dado que Laura tiene una reserva para mañana en el bloque 1",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 109,
+          "startedAt": "2026-10-27T05:25:34.708Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Preparador reserva por la API el bloque 1 para laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 53,
+              "startedAt": "2026-10-27T05:25:34.709Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 19,
+                "column": 63
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-reserva-por-la-api-el-bl-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 32
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Y que Tomás entró como entrenador",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 1038,
+          "startedAt": "2026-10-27T05:25:34.818Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Tomás inicia sesión como tomas.coach@udem.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 876,
+              "startedAt": "2026-10-27T05:25:34.824Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Tomás navigates to \"http://localhost:5173\"",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 228,
+                  "startedAt": "2026-10-27T05:25:34.824Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                    "line": 27,
+                    "column": 54
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-navigates-to--http---localhos-33b4179048.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás enters \"tomas.coach@udem.edu.co\" into campo correo",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 23,
+                  "startedAt": "2026-10-27T05:25:35.181Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 15,
+                    "column": 36
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--tomas-coach-udem-edu--a527d679f7.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás enters \"1000000002\" into campo documento (contraseña)",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 10,
+                  "startedAt": "2026-10-27T05:25:35.292Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 16,
+                    "column": 40
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--1000000002--into-camp-05e5b41bee.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás clicks on botón ingresar",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 219,
+                  "startedAt": "2026-10-27T05:25:35.385Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 17,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-ingresar-a1391d5f19.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 27,
+                "column": 54
+              }
+            },
+            {
+              "type": "Interaction",
+              "name": "Tomás waits until buscador de estudiantes does become visible",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 89,
+              "startedAt": "2026-10-27T05:25:35.715Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 27,
+                "column": 78
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-buscador-de-estud-85092fdcc1.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 33
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Cuando consulta en el buscador el documento \"1000000003\"",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 468,
+          "startedAt": "2026-10-27T05:25:35.856Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Tomás busca en el panel el documento 1000000003",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 446,
+              "startedAt": "2026-10-27T05:25:35.862Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Tomás waits until campo documento del estudiante does become visible",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 41,
+                  "startedAt": "2026-10-27T05:25:35.862Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 38,
+                    "column": 7
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-campo-documento-d-00e5ec0480.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás enters \"1000000003\" into campo documento del estudiante",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 7,
+                  "startedAt": "2026-10-27T05:25:35.965Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 39,
+                    "column": 33
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--1000000003--into-camp-d27d80509a.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás clicks on botón Buscar",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 204,
+                  "startedAt": "2026-10-27T05:25:36.043Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 40,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-buscar-f6f0b06462.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 71,
+                "column": 60
+              }
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 34
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Entonces debe aparecer la estudiante \"Laura Estudiante\" con su reserva de las \"06:00\"",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 159,
+          "startedAt": "2026-10-27T05:25:36.324Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Tomás ensures that the text of nombre del estudiante encontrado does eventually equal \"Laura Estudiante\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 14,
+              "startedAt": "2026-10-27T05:25:36.329Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 76,
+                "column": 12
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-ensures-that-the-text-of-nomb-856ea34d65.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Tomás ensures that the text of bloque de la reserva encontrada does eventually include \"06:00\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 19,
+              "startedAt": "2026-10-27T05:25:36.403Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 77,
+                "column": 12
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-ensures-that-the-text-of-bloq-c9a645ccb1.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 35
+          }
+        },
+        {
+          "type": "Task",
+          "name": "After",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 2,
+          "startedAt": "2026-10-27T05:25:36.483Z",
+          "children": [],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 43
+          }
+        }
+      ],
+      "narrative": "Como estudiante o entrenador del gimnasio UdeM\nQuiero usar la interfaz web\nPara comprobar de punta a punta RF06, RF07, RF08, RF09 y RF10",
+      "artifacts": [
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "vaahyv9wd3ebgija48xkugut"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "zbbinnujyp6jp70cmx0kf272"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-reserva-por-la-api-el-bl-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "uatcbytrmhxklgd2w8jckx4b"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-navigates-to--http---localhos-33b4179048.png",
+          "type": "screenshot",
+          "activityId": "c3ljyt44zb32pltxytew79w9"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--tomas-coach-udem-edu--a527d679f7.png",
+          "type": "screenshot",
+          "activityId": "zzn15j7wrl3n7csslibhhdhq"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--1000000002--into-camp-05e5b41bee.png",
+          "type": "screenshot",
+          "activityId": "ss7q42p8xqun17fd0dyec928"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-ingresar-a1391d5f19.png",
+          "type": "screenshot",
+          "activityId": "eitvwomb5g1ojdo2pyowj490"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-buscador-de-estud-85092fdcc1.png",
+          "type": "screenshot",
+          "activityId": "lx5i2ojo9ob3wjxwra9b482n"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-campo-documento-d-00e5ec0480.png",
+          "type": "screenshot",
+          "activityId": "qfgon4bu2nq61ap5tv59ehvi"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--1000000003--into-camp-d27d80509a.png",
+          "type": "screenshot",
+          "activityId": "jr1ziy2ps1p7u4vue5zsdf8e"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-buscar-f6f0b06462.png",
+          "type": "screenshot",
+          "activityId": "ryd53b74q3guglddhwgdv0oo"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-ensures-that-the-text-of-nomb-856ea34d65.png",
+          "type": "screenshot",
+          "activityId": "c951r84omgn5mw92wirvhgoy"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-ensures-that-the-text-of-bloq-c9a645ccb1.png",
+          "type": "screenshot",
+          "activityId": "p6bqld34cmtq077exy4v6hl7"
+        }
+      ],
+      "cast": [
+        {
+          "name": "Preparador",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        },
+        {
+          "name": "Tomás",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "El entrenador escribe un documento con formato inválido (RF10 error)",
+      "category": "E2E de navegador - reservas del estudiante y búsqueda del entrenador",
+      "outcome": {
+        "code": 64
+      },
+      "duration": 2125,
+      "startedAt": "2026-10-27T05:25:36.580Z",
+      "source": {
+        "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+        "line": 38
+      },
+      "tags": [
+        {
+          "type": "feature",
+          "name": "E2E de navegador - reservas del estudiante y búsqueda del entrenador"
+        },
+        {
+          "type": "tag",
+          "name": "sebas-e2e"
+        },
+        {
+          "type": "tag",
+          "name": "rf10"
+        }
+      ],
+      "activities": [
+        {
+          "type": "Task",
+          "name": "Before",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 414,
+          "startedAt": "2026-10-27T05:25:36.581Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta laura.est@soyudemedellin.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 10,
+              "startedAt": "2026-10-27T05:25:36.585Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 37,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador se asegura de que exista la cuenta tomas.coach@udem.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 19,
+              "startedAt": "2026-10-27T05:25:36.853Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 38,
+                "column": 22
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            },
+            {
+              "type": "Interaction",
+              "name": "Preparador deja a laura.est@soyudemedellin.edu.co sin reservas activas",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 15,
+              "startedAt": "2026-10-27T05:25:36.931Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+                "line": 39,
+                "column": 30
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 27
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Dado que Tomás entró como entrenador",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 1084,
+          "startedAt": "2026-10-27T05:25:36.995Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Tomás inicia sesión como tomas.coach@udem.edu.co",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 854,
+              "startedAt": "2026-10-27T05:25:37.004Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Tomás navigates to \"http://localhost:5173\"",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 239,
+                  "startedAt": "2026-10-27T05:25:37.004Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                    "line": 27,
+                    "column": 54
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-navigates-to--http---localhos-33b4179048.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás enters \"tomas.coach@udem.edu.co\" into campo correo",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 24,
+                  "startedAt": "2026-10-27T05:25:37.356Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 15,
+                    "column": 36
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--tomas-coach-udem-edu--766a17da3f.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás enters \"1000000002\" into campo documento (contraseña)",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 9,
+                  "startedAt": "2026-10-27T05:25:37.470Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 16,
+                    "column": 40
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--1000000002--into-camp-f0d755ddd0.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás clicks on botón ingresar",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 211,
+                  "startedAt": "2026-10-27T05:25:37.564Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/camila/tasks.ts",
+                    "line": 17,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-ingresar-419aef2c32.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 27,
+                "column": 54
+              }
+            },
+            {
+              "type": "Interaction",
+              "name": "Tomás waits until buscador de estudiantes does become visible",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 131,
+              "startedAt": "2026-10-27T05:25:37.874Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 27,
+                "column": 78
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-buscador-de-estud-6674b4c33e.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 39
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Cuando consulta en el buscador el documento \"abc\"",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 453,
+          "startedAt": "2026-10-27T05:25:38.080Z",
+          "children": [
+            {
+              "type": "Task",
+              "name": "Tomás busca en el panel el documento abc",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 434,
+              "startedAt": "2026-10-27T05:25:38.083Z",
+              "children": [
+                {
+                  "type": "Interaction",
+                  "name": "Tomás waits until campo documento del estudiante does become visible",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 24,
+                  "startedAt": "2026-10-27T05:25:38.083Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 38,
+                    "column": 7
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-campo-documento-d-21d95acca9.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás enters \"abc\" into campo documento del estudiante",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 7,
+                  "startedAt": "2026-10-27T05:25:38.172Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 39,
+                    "column": 33
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--abc--into-campo-docum-27ea4eb923.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                },
+                {
+                  "type": "Interaction",
+                  "name": "Tomás clicks on botón Buscar",
+                  "outcome": {
+                    "code": 64
+                  },
+                  "duration": 201,
+                  "startedAt": "2026-10-27T05:25:38.251Z",
+                  "children": [],
+                  "location": {
+                    "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/tasks.ts",
+                    "line": 40,
+                    "column": 13
+                  },
+                  "artifacts": [
+                    {
+                      "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-buscar-14a14dd5ab.png",
+                      "type": "screenshot"
+                    }
+                  ]
+                }
+              ],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 71,
+                "column": 60
+              }
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 40
+          }
+        },
+        {
+          "type": "Task",
+          "name": "Entonces debe ver bajo el buscador el error \"El documento tiene 10 dígitos, sin letras, puntos ni espacios.\"",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 78,
+          "startedAt": "2026-10-27T05:25:38.534Z",
+          "children": [
+            {
+              "type": "Interaction",
+              "name": "Tomás ensures that the text of error del buscador does eventually equal \"El documento tiene 10 dígitos, sin letras, puntos ni espacios.\"",
+              "outcome": {
+                "code": 64
+              },
+              "duration": 15,
+              "startedAt": "2026-10-27T05:25:38.536Z",
+              "children": [],
+              "location": {
+                "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/step-definitions/sebas-e2e.steps.ts",
+                "line": 82,
+                "column": 49
+              },
+              "artifacts": [
+                {
+                  "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-ensures-that-the-text-of-erro-664466bb5b.png",
+                  "type": "screenshot"
+                }
+              ]
+            }
+          ],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas-e2e.feature",
+            "line": 41
+          }
+        },
+        {
+          "type": "Task",
+          "name": "After",
+          "outcome": {
+            "code": 64
+          },
+          "duration": 2,
+          "startedAt": "2026-10-27T05:25:38.613Z",
+          "children": [],
+          "location": {
+            "path": "C:/Users/sebas/OneDrive/Desktop/Sebas/reservas_gimnasio_udem/regression_testing/serenityjs/features/sebas/actors.ts",
+            "line": 43
+          }
+        }
+      ],
+      "narrative": "Como estudiante o entrenador del gimnasio UdeM\nQuiero usar la interfaz web\nPara comprobar de punta a punta RF06, RF07, RF08, RF09 y RF10",
+      "artifacts": [
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-se-asegura-de-que-exista-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "x64qo301uu08sop4mijl2sxz"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-preparador-deja-a-laura-est-soyudem-40ad070d69.png",
+          "type": "screenshot",
+          "activityId": "xvwu77j52fxayzp57e9frukn"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-navigates-to--http---localhos-33b4179048.png",
+          "type": "screenshot",
+          "activityId": "u0lpyey51h8s24gpxdu3nbrn"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--tomas-coach-udem-edu--766a17da3f.png",
+          "type": "screenshot",
+          "activityId": "ewev7acfbf0occfwr7hlzdy6"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--1000000002--into-camp-f0d755ddd0.png",
+          "type": "screenshot",
+          "activityId": "w5qu9tjuozga9bogn6212v7x"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-ingresar-419aef2c32.png",
+          "type": "screenshot",
+          "activityId": "dzgl6mtefe3x7gmmta1lx55b"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-buscador-de-estud-6674b4c33e.png",
+          "type": "screenshot",
+          "activityId": "it2t4dpjontuw7tes17zaeif"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-waits-until-campo-documento-d-21d95acca9.png",
+          "type": "screenshot",
+          "activityId": "hywct4w8yu3v2q2v6oy64j0a"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-enters--abc--into-campo-docum-27ea4eb923.png",
+          "type": "screenshot",
+          "activityId": "rh25n5y9uausl6wmjn4m1m89"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-clicks-on-bot-n-buscar-14a14dd5ab.png",
+          "type": "screenshot",
+          "activityId": "yt06y2qh6uo4z97gkvfhcn0m"
+        },
+        {
+          "path": "test-runs/2026-10-27T05-25-28.819Z/screenshot-win32-chromium-156-0-4314-42-tom-s-ensures-that-the-text-of-erro-664466bb5b.png",
+          "type": "screenshot",
+          "activityId": "d4bx8ijs5zt8srjh8zj8ef63"
+        }
+      ],
+      "cast": [
+        {
+          "name": "Preparador",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        },
+        {
+          "name": "Tomás",
+          "abilities": [
+            {
+              "name": "PerformActivities"
+            },
+            {
+              "name": "AnswerQuestions"
+            },
+            {
+              "name": "RaiseErrors"
+            },
+            {
+              "name": "ScheduleWork",
+              "details": "{\"scheduler\":{\"clock\":{\"timeAdjustment\":{\"milliseconds\":0}},\"interactionTimeout\":{\"milliseconds\":5000}}}"
+            },
+            {
+              "name": "BrowseTheWebWithPlaywright"
+            },
+            {
+              "name": "ConsultarLaBaseDeDatos"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "type": "feature",
+      "name": "E2E de navegador - reservas del estudiante y búsqueda del entrenador"
+    },
+    {
+      "type": "tag",
+      "name": "sebas-e2e"
+    },
+    {
+      "type": "tag",
+      "name": "rf06"
+    },
+    {
+      "type": "tag",
+      "name": "rf07"
+    },
+    {
+      "type": "tag",
+      "name": "rf08"
+    },
+    {
+      "type": "tag",
+      "name": "rf09"
+    },
+    {
+      "type": "tag",
+      "name": "rf10"
+    }
+  ],
+  "testRunner": {
+    "name": "Cucumber",
+    "version": "13.3.0"
+  },
+  "systemContext": {
+    "nodeVersion": "v24.19.0",
+    "os": {
+      "name": "win32",
+      "version": "10.0.26300",
+      "arch": "x64"
+    },
+    "serenityVersion": "3.48.0",
+    "runtime": {
+      "provider": "localhost (Sebas)",
+      "buildNumber": "2026-10-27 05:25",
+      "branch": "main",
+      "commit": "cf4d90b",
+      "commitMessage": "ScreenPy de Sebas: login con token y evidencia 25/25",
+      "commitAuthor": "Sebas",
+      "repositoryUrl": "https://github.com/ocamilavillero09/reservas_gimnasio_udem.git"
+    },
+    "projectName": "serenityjs-e2e-screenplay",
+    "packageManager": "npm"
+  },
+  "testRunId": "2026-10-27T05-25-28.819Z",
+  "attempt": 1
+}

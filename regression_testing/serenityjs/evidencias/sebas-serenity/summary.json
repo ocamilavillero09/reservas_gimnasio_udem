@@ -1,0 +1,68 @@
+{
+  "$schema": "https://serenity-js.org/schemas/report-summary.json",
+  "generated": "2026-10-27T05:25:39.236Z",
+  "title": "serenityjs-e2e-screenplay",
+  "schemaVersion": 1,
+  "reportUrl": "./index.html",
+  "ci": {
+    "commit": "cf4d90b",
+    "branch": "main"
+  },
+  "latestRun": {
+    "timestamp": "2026-10-27T05:25:28.133Z",
+    "label": "2026-10-27T05-25-28.819Z",
+    "totals": {
+      "passed": 4,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "compromised": 0,
+      "error": 0
+    },
+    "duration": 10572
+  },
+  "runs": 2,
+  "delta": {
+    "passed": -24,
+    "failed": 0,
+    "pending": 0,
+    "skipped": 0,
+    "compromised": 0,
+    "error": 0
+  },
+  "failureClusters": [],
+  "consistency": {
+    "flaky": [],
+    "inconsistent": [],
+    "degraded": [],
+    "recovered": []
+  },
+  "scores": {
+    "passRate": 100,
+    "completeness": 100,
+    "consistency": 100,
+    "confidence": 100
+  },
+  "slowest": [
+    {
+      "name": "Reservar el bloque de las 06:00 desde el panel (RF07 exitoso)",
+      "source": "sebas-e2e.feature:11",
+      "duration": 3233
+    },
+    {
+      "name": "Consultar y cancelar la reserva activa desde Mis reservas (RF08 y RF09 exitoso)",
+      "source": "sebas-e2e.feature:20",
+      "duration": 2986
+    },
+    {
+      "name": "El entrenador encuentra la reserva activa de una estudiante (RF10 exitoso)",
+      "source": "sebas-e2e.feature:31",
+      "duration": 2207
+    },
+    {
+      "name": "El entrenador escribe un documento con formato inválido (RF10 error)",
+      "source": "sebas-e2e.feature:38",
+      "duration": 2125
+    }
+  ]
+}
