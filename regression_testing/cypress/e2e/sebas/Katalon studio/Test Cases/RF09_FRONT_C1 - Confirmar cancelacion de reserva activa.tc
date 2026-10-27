@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>RF09_FRONT_C1 - Confirmar cancelacion de reserva activa</name>
+   <tag>GenAI</tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>cb3eac50-8f41-4605-b6b7-23c9942af6a3</testCaseGuid>
+</TestCaseEntity>

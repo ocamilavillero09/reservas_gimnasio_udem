@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>RF14_FRONT_C1 - Consultar historial de reservas</name>
+   <tag>GenAI</tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>46e19c5c-e7ff-425e-8437-2cb14b9db47a</testCaseGuid>
+</TestCaseEntity>

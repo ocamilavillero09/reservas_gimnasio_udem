@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>RF08_FRONT_C1 - Estado vacio sin reservas</name>
+   <tag>GenAI</tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>3411d100-9f32-4a31-9216-3556c56fda56</testCaseGuid>
+</TestCaseEntity>
