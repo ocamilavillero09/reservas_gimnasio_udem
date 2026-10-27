@@ -63,10 +63,10 @@ cambie `AI_PROVIDER` a `openai` o `gemini` y escriba la clave en `.env`.
 ## Estado
 
 - `npm run typecheck` pasa sin errores.
-- Los 3 casos pasaron contra la app real (MongoDB, Django y Vite) con las
-  acciones de la IA **simuladas**, para comprobar datos, selectores,
-  aserciones y evidencias.
-- **Pendiente:** ejecutarlos con Ollama. Con modelos locales pequeños,
+- **Los 3 casos pasaron con Gemini** contra la app real (MongoDB, Django y
+  Vite) el 27-oct. Las evidencias están en `evidencias/`.
+- RF08 inicia sesión por la API para obtener el token antes de crear la
+  reserva de prueba, porque la API exige el token de sesión.
+- Con Ollama (`qwen2.5:7b`) no se ejecutaron. Con modelos locales pequeños,
   `observe` y `extract` pueden fallar porque el modelo no respeta el formato
-  JSON que pide Stagehand (lo advierte también el README del profe). Si pasa,
-  pruebe un modelo más capaz o OpenAI/Gemini.
+  JSON que pide Stagehand.

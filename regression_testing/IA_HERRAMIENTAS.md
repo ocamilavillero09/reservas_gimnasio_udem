@@ -1,6 +1,6 @@
 # Herramientas de IA en las pruebas
 
-Este documento resume cómo usamos cuatro herramientas con IA para probar la app de reservas del gimnasio, qué salió bien, qué salió mal y qué falta.
+Este documento resume cómo usamos las herramientas con IA para probar la app de reservas del gimnasio, qué salió bien, qué salió mal y qué falta.
 
 **Cómo leerlo.** Todo está basado en archivos del repositorio. Cuando un dato no está en ningún archivo, dice **"no verificado"** y explica de dónde viene.
 
@@ -10,6 +10,10 @@ Este documento resume cómo usamos cuatro herramientas con IA para probar la app
 | TestSprite | RF01, RF02 | 12 de 12 pasan, pero con aserciones débiles. |
 | Browser Use | RF15 | 4 de 4 pasan con `gemini-3-flash-preview`, confirmados con lectura independiente de la página. |
 | Stagehand | RF02 | 1 de 3 casos pasó. **(a) y (c) pendientes de ejecutar.** |
+| Stagehand (Sebas) | RF06, RF08, RF10 | 3 de 3 pasan con Gemini, verificados con selectores `data-cy`. |
+| Cypress Cloud: `cy.prompt` y Studio IA | RF06, RF07, RF10 | 6 pruebas ejecutadas en Cypress Cloud, con videos y capturas. |
+| Katalon Studio (AI Assistant) | RF08, RF09, RF14 | 3 casos generados con ayuda de la IA y ejecutados, con capturas. |
+| BugBug | RF07, RF10 | 3 pruebas grabadas, con capturas. |
 
 ---
 
@@ -150,6 +154,61 @@ Los casos (a) y (c) **no se dan por pasados**. Ninguna ejecución los completó,
 - Una copia de la prueba está en [stagehand/](../stagehand/), sin claves.
 - La ruta de los datos de prueba está escrita para este computador (se puede cambiar con `GIMNASIO_FIXTURES`).
 - Tras 5 intentos fallidos el backend bloquea el correo 15 minutos. Cada ejecución hace solo un intento fallido.
+
+---
+
+## 5. Herramientas de Sebas — RF06, RF07, RF08, RF09, RF10 y RF14
+
+Todo está en [cypress/e2e/sebas/](cypress/e2e/sebas/). La regla es la misma de la lección: **la IA actúa o lee, y el código da el veredicto** con los selectores `data-cy` de la app.
+
+### 5.1 Stagehand — RF06, RF08 y RF10
+
+**Qué se le pidió.** Adaptar el proyecto del profe (Stagehand 4.3.0) a tres casos frontend. La IA usa `act` para hacer clics, `observe` para encontrar elementos y `extract` para leer datos. Ver [Stagehand/README.md](cypress/e2e/sebas/Stagehand/README.md).
+
+| Caso | La IA hace | El código verifica |
+|---|---|---|
+| RF06_FRONT_C2 | `act` + `observe` + `extract` de los 6 bloques | Que lo extraído coincida bloque a bloque con la página |
+| RF08_FRONT_C2 | `act` (abre "Mis reservas") + `extract` | Estado `Activa`, hora `06:00` y que la IA leyó lo mismo |
+| RF10_FRONT_C2 | `observe` del campo + `act` (escribe `abc` y busca) | Que `observe` apuntó a `buscar-documento` y el mensaje de error exacto |
+
+**Qué corregimos.** RF08 fallaba con 401 al crear la reserva de prueba por la API, porque la API ahora exige el token de sesión. Se agregó el inicio de sesión (`tokenDe`) antes de crear la reserva.
+
+**Resultado: 3 de 3 pasan con Gemini** (27-oct). Cada caso deja un JSON con los pasos de la IA, el resultado y los tokens, y una captura en [Stagehand/evidencias/](cypress/e2e/sebas/Stagehand/evidencias/).
+
+| Caso | Pasos de la IA | Tokens de entrada / salida | Tiempo de la IA |
+|---|---|---|---|
+| RF06 | act, observe, extract | 7445 / 2507 | 73 s |
+| RF08 | act, extract | 3672 / 750 | 45 s |
+| RF10 | observe, act, act | 7546 / 1305 | 10 s |
+
+- **No verificado:** el nombre exacto del modelo de Gemini. Está en el `.env` local, que no se sube al repositorio, y los JSON solo guardan el proveedor (`gemini`).
+
+### 5.2 Cypress Cloud: `cy.prompt` y Cypress Studio IA — RF06, RF07 y RF10
+
+**Qué se le pidió.** Dos formas de usar la IA de Cypress (Cypress 15.13, proyecto aparte en [Cypress Cloud/](cypress/e2e/sebas/Cypress%20Cloud/)):
+- `cy.prompt`: la prueba se escribe en lenguaje natural y la IA la convierte en comandos ([cy_prompt.cy.js](cypress/e2e/sebas/Cypress%20Cloud/Pruebas/cy_prompt.cy.js)).
+- Cypress Studio IA: se graba la prueba en el navegador y la IA sugiere las aserciones ([studio_ai.cy.js](cypress/e2e/sebas/Cypress%20Cloud/Pruebas/studio_ai.cy.js)).
+
+**Qué verificamos.** Después de cada `cy.prompt`, el código comprueba con `data-cy`: el título exacto y los 6 bloques (RF06), el contador `1/1` y el bloque reservado (RF07), y el nombre de Laura con 0 reservas (RF10). Las sugerencias de Studio IA se revisaron antes de aceptarlas.
+
+**Resultado.** 6 pruebas (3 con `cy.prompt` y 3 con Studio IA) ejecutadas en Cypress Cloud. Los videos y las capturas están en [Evidencia/videos/](cypress/e2e/sebas/Cypress%20Cloud/Evidencia/videos/).
+- **No verificado en archivos:** el número de la ejecución en Cypress Cloud. Vive en el panel web de Cypress Cloud.
+- `cy.prompt` solo funciona con sesión en Cypress Cloud y en navegadores Chromium.
+
+### 5.3 Katalon Studio con AI Assistant — RF08, RF09 y RF14
+
+**Qué se le pidió.** Generar con el asistente de IA de Katalon los casos RF08_FRONT_C1 (estado vacío sin reservas), RF09_FRONT_C1 (confirmar la cancelación) y RF14_FRONT_C1 (historial). El asistente se activó con una clave personal de Gemini.
+
+**Resultado.** Los 3 casos están en [Katalon studio/Test Cases/](cypress/e2e/sebas/Katalon%20studio/Test%20Cases/) y las capturas de la generación y de la ejecución en [Katalon studio/Evidencia/](cypress/e2e/sebas/Katalon%20studio/Evidencia/).
+
+### 5.4 BugBug — RF07 y RF10
+
+**Qué se hizo.** Se grabaron en BugBug tres pruebas: intentar una segunda reserva (RF07), buscar con el campo vacío (RF10) y buscar a un estudiante con reserva activa (RF10). Las capturas están en [Bugbug/](cypress/e2e/sebas/Bugbug/).
+
+### Limitaciones
+
+- Stagehand y `cy.prompt` dependen de un servicio externo. Si la cuota de Gemini o de Cypress Cloud se agota, la prueba no se puede ejecutar. Eso no es un fallo de la app.
+- Los resultados de Cypress Cloud y de BugBug se guardan también en sus paneles web. En el repositorio solo quedan los videos y las capturas.
 
 ---
 
