@@ -14,15 +14,18 @@ describe('RF09 - Cancelar reservas (API)', () => {
     cy.escenarioBase();
   });
 
+  // Con autenticación por token (VUL-04) solo la dueña cancela su reserva: las
+  // peticiones van con la sesión de la estudiante.
+
   it('RF09_C1 - Un ID inválido responde 400', () => {
-    cy.api('DELETE', `${ruta}id-invalido/`).then((r) => {
+    cy.api('DELETE', `${ruta}id-invalido/`, undefined, { como: usuarios.estudiante.email }).then((r) => {
       expect(r.status).to.eq(400);
       expect(r.body.error).to.contain('inválido');
     });
   });
 
   it('RF09_C2 - Una reserva inexistente responde 404', () => {
-    cy.api('DELETE', `${ruta}000000000000000000000000/`).then((r) => {
+    cy.api('DELETE', `${ruta}000000000000000000000000/`, undefined, { como: usuarios.estudiante.email }).then((r) => {
       expect(r.status).to.eq(404);
       expect(r.body.error).to.contain('no encontrada');
     });
@@ -35,7 +38,7 @@ describe('RF09 - Cancelar reservas (API)', () => {
       slotId: 1,
       estado: 'CANCELADA',
     }).then((id) => {
-      return cy.api('DELETE', `${ruta}${id}/`);
+      return cy.api('DELETE', `${ruta}${id}/`, undefined, { como: usuarios.estudiante.email });
     }).then((r) => {
       expect(r.status).to.eq(409);
       expect(r.body.error).to.contain('ya no está activa');
@@ -49,7 +52,7 @@ describe('RF09 - Cancelar reservas (API)', () => {
       slotId: 1,
       estado: 'ACTIVA',
     }).then((id) => {
-      return cy.api('DELETE', `${ruta}${id}/`).then((r) => {
+      return cy.api('DELETE', `${ruta}${id}/`, undefined, { como: usuarios.estudiante.email }).then((r) => {
         expect(r.status).to.eq(200);
         expect(r.body.tipo).to.eq('RESERVA_CANCELADA');
         expect(r.body.message).to.contain('Cupo liberado');

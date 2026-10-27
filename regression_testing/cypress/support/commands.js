@@ -13,10 +13,47 @@ export const HOY = () => fechaBogota(0);
 export const AYER = () => fechaBogota(-1);
 export const MANANA = () => fechaBogota(1);
 
+// Tokens de sesión por correo. La API identifica a quien actúa por su token
+// (VUL-01 a VUL-04), así que cada petición viaja con el token del usuario que
+// la hace, igual que hace la interfaz. Se llenan con las respuestas del
+// registro y del inicio de sesión.
+const tokens = {};
+
+// Quién actúa en la petición: actor_email si viene (acciones del personal) y,
+// si no, email (acciones del estudiante sobre sus propios datos).
+function quienActua(ruta, body) {
+  const consulta = new URLSearchParams(ruta.split('?')[1] || '');
+  const campo = (nombre) => (body && typeof body === 'object' && body[nombre]) || consulta.get(nombre);
+  return String(campo('actor_email') || campo('email') || '').trim().toLowerCase();
+}
+
+function peticion(method, ruta, body, token) {
+  return cy.request({
+    method,
+    url: `${API()}${ruta}`,
+    body,
+    failOnStatusCode: false,
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  }).then((r) => {
+    if (r.body && r.body.token && body && body.email) tokens[String(body.email).toLowerCase()] = r.body.token;
+    return r;
+  });
+}
+
 // Petición a la API que devuelve la respuesta aunque sea un error, para poder
 // verificar los casos negativos (400, 403, 404, 409).
-Cypress.Commands.add('api', (method, ruta, body) =>
-  cy.request({ method, url: `${API()}${ruta}`, body, failOnStatusCode: false }));
+// Con { como: correo } se usa el token de ese usuario aunque la petición no
+// diga quién actúa (por ejemplo, para probar que falta un campo obligatorio).
+Cypress.Commands.add('api', (method, ruta, body, { como } = {}) =>
+  peticion(method, ruta, body, tokens[(como || quienActua(ruta, body)).toLowerCase()]));
+
+// Token de un usuario ya registrado, para peticiones armadas a mano (PDF).
+Cypress.Commands.add('tokenDe', (email) => cy.wrap(tokens[String(email).toLowerCase()] || ''));
+
+// La misma petición, pero sin token: lo que haría un atacante que solo conoce
+// el correo de la víctima. La usan las pruebas de vulnerabilidades.
+Cypress.Commands.add('apiSinCredenciales', (method, ruta, body) =>
+  peticion(method, ruta, body, null));
 
 Cypress.Commands.add('limpiarBd', () => cy.task('db:limpiar'));
 

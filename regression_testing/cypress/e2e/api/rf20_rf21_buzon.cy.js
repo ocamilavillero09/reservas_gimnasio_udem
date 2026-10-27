@@ -38,11 +38,15 @@ describe('RF20 — Enviar falla o sugerencia (API)', () => {
   });
 
   it('API-RF20-05 · Sin correo → 400', () => {
-    enviar({ mensaje: 'Hola' }).its('status').should('eq', 400);
+    // Laura tiene sesión, pero el cuerpo no trae el correo obligatorio.
+    cy.api('POST', '/suggestions/', { mensaje: 'Hola' }, { como: u.estudiante.email })
+      .its('status').should('eq', 400);
   });
 
-  it('API-RF20-06 · Correo que no está registrado → 404', () => {
-    enviar({ email: 'fantasma@soyudemedellin.edu.co', mensaje: 'Hola' }).its('status').should('eq', 404);
+  // Un correo que no está registrado no puede tener sesión: desde la
+  // autenticación con token (VUL-03) la API responde 401 antes que la vista.
+  it('API-RF20-06 · Correo que no está registrado → 401', () => {
+    enviar({ email: 'fantasma@soyudemedellin.edu.co', mensaje: 'Hola' }).its('status').should('eq', 401);
   });
 
   it('API-RF20-07 · Un entrenador no usa el buzón → 403', () => {

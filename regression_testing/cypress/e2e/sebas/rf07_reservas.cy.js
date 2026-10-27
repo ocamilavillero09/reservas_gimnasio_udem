@@ -16,19 +16,22 @@ describe('RF07 - Crear reservas (API)', () => {
   });
 
   it('RF07_C1 - Sin campos obligatorios responde 400', () => {
-    cy.api('POST', ruta, {}).then((r) => {
+    // Con autenticación por token (VUL-01) la petición va con la sesión de la estudiante.
+    cy.api('POST', ruta, {}, { como: u.estudiante.email }).then((r) => {
       expect(r.status).to.eq(400);
       expect(r.body.error).to.contain('obligatorios');
     });
   });
 
-  it('RF07_C2 - Usuario inexistente responde 404', () => {
+  // Un usuario que no existe no puede tener sesión: desde la autenticación
+  // con token (VUL-01) la API responde 401 antes de llegar a la vista.
+  it('RF07_C2 - Usuario inexistente responde 401', () => {
     cy.api('POST', ruta, {
       email: 'inexistente@soyudemedellin.edu.co',
       slotId: 1,
     }).then((r) => {
-      expect(r.status).to.eq(404);
-      expect(r.body.error).to.contain('no existe');
+      expect(r.status).to.eq(401);
+      expect(r.body.tipo).to.eq('NO_AUTENTICADO');
     });
   });
 

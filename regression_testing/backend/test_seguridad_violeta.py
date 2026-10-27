@@ -36,8 +36,7 @@ class SeguridadRegistroTests(GymApiTestCase):
         assert_that(resp.status_code, equal_to(201))
         assert_that(resp.data, is_not(has_key('password')))
 
-    # hallazgos: el sistema no se defiende
-    @unittest.expectedFailure
+    # Corregido: api/db.py (role_for_email exige una sola arroba).
     def test_hallazgo_registro_con_dos_arrobas_se_rechaza(self):
         resp = self._post_registro(email='intruso@gmail.com@udemedellin.edu.co')
         assert_that(resp.status_code, equal_to(400))
@@ -159,16 +158,16 @@ class SeguridadPerfilTests(GymApiTestCase):
         assert_that(guardada.get('peso'), is_(none()))
 
     # hallazgos
-    @unittest.expectedFailure
+    # Corregido: api/autenticacion.py (token de sesión, VUL-01/VUL-02).
     def test_hallazgo_perfil_ajeno_no_se_lee_sin_credencial(self):
         self._register()
-        resp = self.client.get('/api/users/profile/', {'email': ESTUDIANTE})
+        resp = self.anonimo.get('/api/users/profile/', {'email': ESTUDIANTE})
         assert_that(resp.status_code, is_in([401, 403]))
 
-    @unittest.expectedFailure
+    # Corregido: api/autenticacion.py (token de sesión, VUL-01).
     def test_hallazgo_perfil_ajeno_no_se_modifica_sin_credencial(self):
         self._register()
-        resp = self.client.put(
+        resp = self.anonimo.put(
             '/api/users/profile/',
             {'email': ESTUDIANTE, 'peso': 41},
             format='json',
@@ -193,10 +192,10 @@ class SeguridadEntrenadorTests(GymApiTestCase):
         resp = self.client.get('/api/users/entrenador/', {'email': ESTUDIANTE})
         assert_that(resp.status_code, equal_to(403))
 
-    @unittest.expectedFailure
+    # Corregido: api/autenticacion.py (token de sesión, VUL-01).
     def test_hallazgo_perfil_de_entrenador_no_se_lee_sin_credencial(self):
         self._register(email=PROFESOR, name='Coach')
-        resp = self.client.get('/api/users/entrenador/', {'email': PROFESOR})
+        resp = self.anonimo.get('/api/users/entrenador/', {'email': PROFESOR})
         assert_that(resp.status_code, is_in([401, 403]))
 
 
@@ -208,10 +207,10 @@ class SeguridadAdministradorTests(GymApiTestCase):
         resp = self.client.get('/api/users/administrador/', {'email': PROFESOR})
         assert_that(resp.status_code, equal_to(403))
 
-    @unittest.expectedFailure
+    # Corregido: api/autenticacion.py (token de sesión, VUL-01).
     def test_hallazgo_perfil_de_administrador_no_se_lee_sin_credencial(self):
         self._register(email=ADMIN, name='Jefa')
-        resp = self.client.get('/api/users/administrador/', {'email': ADMIN})
+        resp = self.anonimo.get('/api/users/administrador/', {'email': ADMIN})
         assert_that(resp.status_code, is_in([401, 403]))
 
 
@@ -238,8 +237,8 @@ class SeguridadInasistenciasTests(GymApiTestCase):
         assert_that(resp.data, is_not(has_key('password')))
         assert_that(resp.data, is_not(has_key('_id')))
 
-    @unittest.expectedFailure
+    # Corregido: api/autenticacion.py (token de sesión, VUL-01).
     def test_hallazgo_reporte_ajeno_no_se_lee_sin_credencial(self):
         self._register()
-        resp = self.client.get('/api/reports/personal/', {'email': ESTUDIANTE})
+        resp = self.anonimo.get('/api/reports/personal/', {'email': ESTUDIANTE})
         assert_that(resp.status_code, is_in([401, 403]))

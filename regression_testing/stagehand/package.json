@@ -1,0 +1,15 @@
+{
+  "name": "stagehand-camila",
+  "private": true,
+  "type": "module",
+  "description": "Pruebas con Stagehand (act, observe y extract) sobre RF11, RF12, RF13, RF16, RF20 y RF21",
+  "scripts": {
+    "test": "node --test --test-reporter=spec \"pruebas/*.test.mjs\""
+  },
+  "dependencies": {
+    "@browserbasehq/stagehand": "4.2.1",
+    "dotenv": "18.0.9",
+    "mongodb": "6.21.0",
+    "zod": "4.6.7"
+  }
+}

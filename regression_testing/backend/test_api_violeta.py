@@ -1,3 +1,4 @@
+from django.test import override_settings
 from hamcrest import assert_that, equal_to, has_key, none, is_not
 from api import db as db_module
 from .test_violeta import GymApiTestCase, ESTUDIANTE, PROFESOR, ADMIN
@@ -108,11 +109,17 @@ class ApiPerfilEstudianteTest(GymApiTestCase):
         assert_that(resp.data, has_key('campos'))
         assert_that(resp.data['campos'], has_key('altura'))
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_perfil_sin_correo_rechazado(self):
         resp = self.client.put('/api/users/profile/', {'peso': 70}, format='json')
         assert_that(resp.status_code, equal_to(400))
         assert_that(resp.data, has_key('error'))
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_perfil_usuario_inexistente(self):
         resp = self.client.get('/api/users/profile/?email=nadie@soyudemedellin.edu.co')
         assert_that(resp.status_code, equal_to(404))
@@ -137,6 +144,9 @@ class ApiPerfilEntrenadorTest(GymApiTestCase):
         assert_that(resp.data['role'], equal_to('ENTRENADOR'))
         assert_that(resp.data['estado'], equal_to('ACTIVO'))
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_perfil_entrenador_usuario_inexistente(self):
         resp = self.client.get('/api/users/entrenador/?email=nadie@udem.edu.co')
         assert_that(resp.status_code, equal_to(404))
@@ -161,6 +171,9 @@ class ApiPerfilAdministradorTest(GymApiTestCase):
         assert_that(resp.data['estado'], equal_to('ACTIVO'))
         assert_that(resp.data['es_principal'], equal_to(True))
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_perfil_administrador_usuario_inexistente(self):
         resp = self.client.get('/api/users/administrador/?email=nadie@udemedellin.edu.co')
         assert_that(resp.status_code, equal_to(404))
@@ -194,11 +207,17 @@ class ApiReporteInasistencias(GymApiTestCase):
         assert_that(resp.data['total_asistencias'], equal_to(0))
         assert_that(resp.data['total_cancelaciones'], equal_to(0))
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_reporte_inasistencias_usuario_inexistente(self):
         resp = self.client.get('/api/reports/personal/?email=nadie@soyudemedellin.edu.co')
         assert_that(resp.status_code, equal_to(404))
         assert_that(resp.data, has_key('error'))
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_reporte_inasistencias_sin_correo(self):
         resp = self.client.get('/api/reports/personal/')
         assert_that(resp.status_code, equal_to(400))

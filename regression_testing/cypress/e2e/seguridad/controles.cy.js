@@ -85,10 +85,13 @@ describe('Seguridad — controles presentes', () => {
     cy.sembrarReserva(u.estudiante.email).then((id) => {
       const cuerpo = { actor_email: u.entrenador.email, reservation_id: id };
       const url = `${Cypress.env('apiUrl')}/attendance/register/`;
-      // Se lanzan a la vez desde el navegador.
-      cy.window().then((w) => Promise.all([1, 2, 3].map(() =>
-        w.fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpo) })
-          .then((r) => r.status))))
+      // Se lanzan a la vez desde el navegador, con la sesión del entrenador.
+      cy.tokenDe(u.entrenador.email).then((token) => cy.window().then((w) => Promise.all([1, 2, 3].map(() =>
+        w.fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(cuerpo),
+        }).then((r) => r.status)))))
         .then((estados) => {
           expect(estados.filter((s) => s === 200), 'exactamente un éxito').to.have.length(1);
         });

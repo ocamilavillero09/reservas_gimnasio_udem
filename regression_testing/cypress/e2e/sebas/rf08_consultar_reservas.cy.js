@@ -16,7 +16,8 @@ describe('RF08 - Consultar reservas (API)', () => {
   });
 
   it('RF08_C1 - Sin correo responde 400', () => {
-    cy.api('GET', ruta).then((r) => {
+    // Con autenticación por token (VUL-01) la petición va con la sesión de la estudiante.
+    cy.api('GET', ruta, undefined, { como: usuarios.estudiante.email }).then((r) => {
       expect(r.status).to.eq(400);
       expect(r.body.error).to.contain('email');
     });

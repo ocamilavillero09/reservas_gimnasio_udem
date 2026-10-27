@@ -65,10 +65,11 @@ describe('RF16 — Registro diario del entrenador (API)', () => {
   });
 
   it('API-RF16-07 · El PDF del registro se genera para el entrenador', () => {
-    cy.request({
+    cy.tokenDe(u.entrenador.email).then((token) => cy.request({
       url: `${Cypress.env('apiUrl')}/reports/daily/entrenador.pdf?actor_email=${u.entrenador.email}`,
+      headers: { Authorization: `Bearer ${token}` },
       encoding: 'binary',
-    }).then((r) => {
+    })).then((r) => {
       expect(r.status).to.eq(200);
       expect(r.headers['content-type']).to.contain('application/pdf');
       expect(r.body.slice(0, 4)).to.eq('%PDF');
