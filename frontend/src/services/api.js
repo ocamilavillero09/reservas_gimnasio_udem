@@ -21,10 +21,32 @@ function baseValida(valor) {
 // entran en esta entrega de pruebas. Fuera de ahí son internos de este cliente.
 export const BASE = baseValida(import.meta.env.VITE_API_URL);
 
+// Token de sesión (VUL-01 a VUL-04). El backend identifica al usuario por este
+// token y no por el correo que mande la interfaz. Vive en sessionStorage, no en
+// localStorage: se borra al cerrar la pestaña y no queda en el disco.
+const TOKEN_KEY = 'gym_udem_token';
+
+export const sesionToken = {
+  leer() {
+    try { return sessionStorage.getItem(TOKEN_KEY); } catch { return null; }
+  },
+  guardar(token) {
+    try {
+      if (token) sessionStorage.setItem(TOKEN_KEY, token);
+      else sessionStorage.removeItem(TOKEN_KEY);
+    } catch { /* sin almacenamiento, el token solo dura lo que la página */ }
+  },
+};
+
 export async function request(path, options = {}) {
+  const token = sesionToken.leer();
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
   });
   const data = await res.json();
   if (!res.ok) {
@@ -49,7 +71,12 @@ export const authApi = {
   // RF01 — Registrar una cuenta (backend: registrar_cuenta)
   registrarCuenta: (body) => request('/auth/register/', { method: 'POST', body: JSON.stringify(body) }),
   // RF02 — Iniciar sesión (backend: iniciar_sesion)
-  iniciarSesion: (body) => request('/auth/login/', { method: 'POST', body: JSON.stringify(body) }),
+  iniciarSesion: async (body) => {
+    const user = await request('/auth/login/', { method: 'POST', body: JSON.stringify(body) });
+    sesionToken.guardar(user.token);
+    return user;
+  },
+  cerrarSesion: () => sesionToken.guardar(null),
   // Rehidrata la sesión al recargar la página (la sesión no se pierde con F5).
   session:  (email) => request(`/auth/session/?email=${encodeURIComponent(email)}`),
 };

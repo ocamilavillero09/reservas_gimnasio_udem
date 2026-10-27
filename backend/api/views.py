@@ -7,6 +7,7 @@ from drf_yasg import openapi
 from .seguridad import (
     minutos_de_bloqueo, registrar_fallo, limpiar_fallos, respuesta_bloqueo,
 )
+from .autenticacion import emitir_token, usuario_de
 from .db import (
     ahora_utc,
     get_db, seed_slots, hash_password, verify_password, serialize,
@@ -297,6 +298,7 @@ def registrar_cuenta(request):
         'role': role,
         'documento': documento,
         'es_principal': es_principal,
+        'token': emitir_token(email),
     }, status=201)
 
 
@@ -384,7 +386,7 @@ def iniciar_sesion(request):
             status=403,
         )
 
-    return Response(_perfil_sesion(user))
+    return Response({**_perfil_sesion(user), 'token': emitir_token(email)})
 
 
 @swagger_auto_schema(
@@ -835,6 +837,17 @@ def cancelar_reserva(request, reservation_id):
             {'error': 'ID de reserva inválido.'},
             status=400
         )
+
+    # VUL-04 — Solo el dueño cancela su reserva. Antes bastaba con conocer el
+    # identificador para cancelar la de cualquiera (IDOR).
+    usuario = usuario_de(request)
+    if usuario:
+        ajena = db.reservations.find_one({'_id': oid, 'email': {'$ne': usuario['email']}})
+        if ajena:
+            return Response(
+                {'error': 'Solo puedes cancelar tus propias reservas.'},
+                status=403
+            )
 
     # La condición sobre el estado es la guardia: de dos peticiones
     # simultáneas de cancelación, solo una encuentra la reserva ACTIVA.

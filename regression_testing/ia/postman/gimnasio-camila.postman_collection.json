@@ -1,0 +1,817 @@
+{
+  "info": {
+    "name": "Gimnasio UdeM — RF11, RF12, RF13, RF16, RF20, RF21 (Camila)",
+    "description": "Colección base para Postbot / Agent Mode. Primero se corre \"0. Sesiones\" (guarda los tokens) y luego cada requisito. Las cuentas deben existir: regístralas con las peticiones de \"Preparación\" sobre una base de pruebas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:8000/api"
+    },
+    {
+      "key": "entrenador_email",
+      "value": "tomas.coach@udem.edu.co"
+    },
+    {
+      "key": "entrenador_doc",
+      "value": "1000000002"
+    },
+    {
+      "key": "admin_email",
+      "value": "ana.admin@udemedellin.edu.co"
+    },
+    {
+      "key": "admin_doc",
+      "value": "1000000001"
+    },
+    {
+      "key": "estudiante_email",
+      "value": "laura.est@soyudemedellin.edu.co"
+    },
+    {
+      "key": "estudiante_doc",
+      "value": "1000000003"
+    },
+    {
+      "key": "token_entrenador",
+      "value": ""
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "token_estudiante",
+      "value": ""
+    },
+    {
+      "key": "sugerencia_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Preparación (registrar cuentas)",
+      "item": [
+        {
+          "name": "Registrar administradora",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/auth/register/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ana Administradora\",\n  \"email\": \"{{admin_email}}\",\n  \"documento\": \"{{admin_doc}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar entrenador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/auth/register/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tomás Entrenador\",\n  \"email\": \"{{entrenador_email}}\",\n  \"documento\": \"{{entrenador_doc}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/auth/register/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Laura Estudiante\",\n  \"email\": \"{{estudiante_email}}\",\n  \"documento\": \"{{estudiante_doc}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "0. Sesiones",
+      "item": [
+        {
+          "name": "Login entrenador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/auth/login/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{entrenador_email}}\",\n  \"documento\": \"{{entrenador_doc}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y devuelve token', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_entrenador', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login administradora",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/auth/login/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"documento\": \"{{admin_doc}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y devuelve token', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_admin', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/auth/login/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{estudiante_email}}\",\n  \"documento\": \"{{estudiante_doc}}\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y devuelve token', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token_estudiante', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "RF11 — Registrar asistencia",
+      "item": [
+        {
+          "name": "Buscar estudiante por documento",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/students/lookup/?documento={{estudiante_doc}}&actor_email={{entrenador_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "students",
+                "lookup"
+              ],
+              "query": [
+                {
+                  "key": "documento",
+                  "value": "{{estudiante_doc}}"
+                },
+                {
+                  "key": "actor_email",
+                  "value": "{{entrenador_email}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Registrar asistencia por documento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/attendance/register/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "attendance",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actor_email\": \"{{entrenador_email}}\",\n  \"documento\": \"{{estudiante_doc}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Sin token → 401",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/attendance/register/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "attendance",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actor_email\": \"{{entrenador_email}}\",\n  \"documento\": \"{{estudiante_doc}}\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RF12 — Reservas sin asistencia",
+      "item": [
+        {
+          "name": "Pendientes de hoy",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/attendance/pending/?actor_email={{entrenador_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "attendance",
+                "pending"
+              ],
+              "query": [
+                {
+                  "key": "actor_email",
+                  "value": "{{entrenador_email}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Estudiante no autorizado → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/attendance/pending/?actor_email={{estudiante_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "attendance",
+                "pending"
+              ],
+              "query": [
+                {
+                  "key": "actor_email",
+                  "value": "{{estudiante_email}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "RF13 — Procesar inasistencias",
+      "item": [
+        {
+          "name": "Cerrar la jornada (entrenador)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/attendance/process/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "attendance",
+                "process"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actor_email\": \"{{entrenador_email}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Administradora no cierra → 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/attendance/process/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "attendance",
+                "process"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actor_email\": \"{{admin_email}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Fecha futura → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/attendance/process/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "attendance",
+                "process"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actor_email\": \"{{entrenador_email}}\",\n  \"fecha\": \"2099-01-01\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RF16 — Registro diario",
+      "item": [
+        {
+          "name": "Registro diario del entrenador",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/reports/daily/entrenador/?actor_email={{entrenador_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "reports",
+                "daily",
+                "entrenador"
+              ],
+              "query": [
+                {
+                  "key": "actor_email",
+                  "value": "{{entrenador_email}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "PDF del registro",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/reports/daily/entrenador.pdf?actor_email={{entrenador_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "reports",
+                "daily",
+                "entrenador.pdf"
+              ],
+              "query": [
+                {
+                  "key": "actor_email",
+                  "value": "{{entrenador_email}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    },
+    {
+      "name": "RF20 — Enviar sugerencia",
+      "item": [
+        {
+          "name": "Estudiante envía mensaje",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/suggestions/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "suggestions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{estudiante_email}}\",\n  \"mensaje\": \"El bloque de las 06:00 no carga.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Mensaje vacío → 400",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/suggestions/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "suggestions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{estudiante_email}}\",\n  \"mensaje\": \"   \"\n}"
+            }
+          }
+        },
+        {
+          "name": "A nombre de otra persona → 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_entrenador}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/suggestions/",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "suggestions"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{estudiante_email}}\",\n  \"mensaje\": \"Suplantación\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "RF21 — Buzón",
+      "item": [
+        {
+          "name": "Consultar buzón",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/suggestions/inbox/?actor_email={{admin_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "suggestions",
+                "inbox"
+              ],
+              "query": [
+                {
+                  "key": "actor_email",
+                  "value": "{{admin_email}}"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const m = pm.response.json().mensajes || [];",
+                  "if (m.length) pm.collectionVariables.set('sugerencia_id', m[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Borrar mensaje",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_admin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/suggestions/{{sugerencia_id}}/?actor_email={{admin_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "suggestions",
+                "{{sugerencia_id}}"
+              ],
+              "query": [
+                {
+                  "key": "actor_email",
+                  "value": "{{admin_email}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Estudiante no ve el buzón → 403",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_estudiante}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base}}/suggestions/inbox/?actor_email={{estudiante_email}}",
+              "host": [
+                "{{base}}"
+              ],
+              "path": [
+                "suggestions",
+                "inbox"
+              ],
+              "query": [
+                {
+                  "key": "actor_email",
+                  "value": "{{estudiante_email}}"
+                }
+              ]
+            },
+            "description": ""
+          }
+        }
+      ]
+    }
+  ]
+}

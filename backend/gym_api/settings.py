@@ -10,6 +10,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-gym-udem-2024-change-in-pr
 # al visitante la traza, la configuración y la lista de rutas internas. Para
 # desarrollar con el modo depuración hay que pedirlo: DEBUG=True.
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+# VUL-01 a VUL-04 — Toda la API, salvo registro, login, configuración y
+# horarios, exige el token de sesión. AUTENTICACION_OBLIGATORIA=False solo sirve
+# para migrar por fases una suite que todavía no lo envía.
+AUTENTICACION_OBLIGATORIA = os.getenv('AUTENTICACION_OBLIGATORIA', 'True') == 'True'
 ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '*').split(',') if h.strip()]
 
 INSTALLED_APPS = [
@@ -32,6 +37,9 @@ MIDDLEWARE = [
     # VUL-07 / VUL-08 / VUL-09 — Valida la forma del cuerpo y responde JSON sin
     # trazas ante cualquier error de la API (api/seguridad.py).
     'api.seguridad.ProteccionAPI',
+    # VUL-01 a VUL-04 — La identidad sale del token, no del cliente
+    # (api/autenticacion.py).
+    'api.autenticacion.AutenticacionAPI',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Protección contra peticiones falsificadas desde otro sitio.
     #

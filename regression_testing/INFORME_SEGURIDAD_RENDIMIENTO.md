@@ -74,6 +74,8 @@ Las evidencias de cada una (el error de la prueba antes y después, con su infor
 
 ### 2.4 Mejora prioritaria pendiente: autenticación con token
 
+> **Actualización (refactorización final):** este diseño ya se aplicó. VUL-01 a VUL-04 pasan (11/11). Los cambios y la comparación antes/después están en [`REFACTORIZACION.md`](REFACTORIZACION.md).
+
 Las cuatro vulnerabilidades pendientes tienen una sola causa, y no se corrigieron en esta entrega a propósito. La solución cambia el contrato de **todos** los endpoints, así que obliga a actualizar el frontend y las suites del equipo (Django, Vitest, Playwright y Katalon). Es una decisión del equipo.
 
 Diseño propuesto:

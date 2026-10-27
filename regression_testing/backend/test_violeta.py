@@ -1,3 +1,4 @@
+from django.test import override_settings
 from django.test import TestCase
 from rest_framework.test import APIClient
 import mongomock
@@ -17,11 +18,57 @@ DOCUMENTOS = {
 }
 
 
+class ClienteConSesion(APIClient):
+    """APIClient que actúa con la sesión de quien hace la petición.
+
+    La API identifica al usuario por su token (VUL-01 a VUL-04). Este cliente
+    guarda el token que devuelven el registro y el inicio de sesión, y lo envía
+    en nombre del `actor_email` o del `email` de cada petición, igual que hace
+    la interfaz con el usuario que inició sesión.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.tokens = {}
+
+    def _con_token(self, metodo, path, data=None, **extra):
+        from urllib.parse import parse_qs, urlparse
+        datos = data if isinstance(data, dict) else {}
+        consulta = {k: v[0] for k, v in parse_qs(urlparse(path).query).items()}
+        quien = str(datos.get('actor_email') or consulta.get('actor_email')
+                    or datos.get('email') or consulta.get('email') or '').strip().lower()
+        token = self.tokens.get(quien)
+        if token:
+            extra.setdefault('HTTP_AUTHORIZATION', f'Bearer {token}')
+        resp = getattr(super(), metodo)(path, data, **extra)
+        token_nuevo = getattr(resp, 'data', None) and isinstance(resp.data, dict) and resp.data.get('token')
+        if token_nuevo and quien:
+            self.tokens[quien] = token_nuevo
+        return resp
+
+    def get(self, path, data=None, **extra):
+        return self._con_token('get', path, data, **extra)
+
+    def post(self, path, data=None, **extra):
+        return self._con_token('post', path, data, **extra)
+
+    def put(self, path, data=None, **extra):
+        return self._con_token('put', path, data, **extra)
+
+    def patch(self, path, data=None, **extra):
+        return self._con_token('patch', path, data, **extra)
+
+    def delete(self, path, data=None, **extra):
+        return self._con_token('delete', path, data, **extra)
+
+
 class GymApiTestCase(TestCase):
 
     def setUp(self):
         db_module._client = mongomock.MongoClient(tz_aware=True)
-        self.client = APIClient()
+        self.client = ClienteConSesion()
+        # Sin token: lo que puede hacer quien solo conoce el correo de otro.
+        self.anonimo = APIClient()
 
     def tearDown(self):
         db_module._client = None
@@ -165,13 +212,31 @@ class IniciarSesionCaminosTests(GymApiTestCase):
 # RF03 — Consultar y actualizar mi perfil (estudiante)
 class PerfilEstudianteCaminosTests(GymApiTestCase):
  
+    # Camino de la vista que la autenticación con token corta antes (401):
+ 
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+ 
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
+ 
     def test_rf03_camino_1_2_4_5_21_get_sin_correo(self):
         resp = self.client.get('/api/users/profile/', {'email': ''})
         assert_that(resp.status_code, equal_to(400))
  
+    # Camino de la vista que la autenticación con token corta antes (401):
+ 
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+ 
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
+ 
     def test_rf03_camino_1_3_4_5_21_put_sin_correo(self):
         resp = self.client.put('/api/users/profile/', {'email': '', 'edad': 21}, format='json')
         assert_that(resp.status_code, equal_to(400))
+ 
+    # Camino de la vista que la autenticación con token corta antes (401):
+ 
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+ 
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
  
     def test_rf03_camino_1_2_4_6_7_21_get_usuario_inexistente(self):
         resp = self.client.get('/api/users/profile/', {'email': 'fantasma@x.com'})
@@ -225,9 +290,21 @@ class PerfilEstudianteCaminosTests(GymApiTestCase):
 # RF04 — Consultar el perfil del entrenador
 class PerfilEntrenadorCaminosTests(GymApiTestCase):
  
+    # Camino de la vista que la autenticación con token corta antes (401):
+ 
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+ 
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
+ 
     def test_rf04_camino_1_2_3_10_sin_correo(self):
         resp = self.client.get('/api/users/entrenador/', {'email': ''})
         assert_that(resp.status_code, equal_to(400))
+ 
+    # Camino de la vista que la autenticación con token corta antes (401):
+ 
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+ 
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
  
     def test_rf04_camino_1_2_4_5_6_10_usuario_inexistente(self):
         resp = self.client.get('/api/users/entrenador/', {'email': 'fantasma@x.com'})
@@ -255,9 +332,21 @@ class PerfilEntrenadorCaminosTests(GymApiTestCase):
 # RF05 — Consultar el perfil del administrador
 class PerfilAdministradorCaminosTests(GymApiTestCase):
  
+    # Camino de la vista que la autenticación con token corta antes (401):
+ 
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+ 
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
+ 
     def test_rf05_camino_1_2_3_12_sin_correo(self):
         resp = self.client.get('/api/users/administrador/', {'email': ''})
         assert_that(resp.status_code, equal_to(400))
+ 
+    # Camino de la vista que la autenticación con token corta antes (401):
+ 
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+ 
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
  
     def test_rf05_camino_1_2_4_5_6_12_usuario_inexistente(self):
         resp = self.client.get('/api/users/administrador/', {'email': 'fantasma@x.com'})
@@ -287,10 +376,16 @@ class PerfilAdministradorCaminosTests(GymApiTestCase):
 class InasistenciasCaminosTests(GymApiTestCase):
     # cubre los 4 caminos de la tabla de caminos de RF15
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_rf15_camino_1_2_3_13_email_vacio(self):
         resp = self.client.get('/api/reports/personal/', {'email': ''})
         assert_that(resp.status_code, equal_to(400))
 
+    # Camino de la vista que la autenticación con token corta antes (401):
+    # se recorre en modo de transición. La autenticación se prueba aparte.
+    @override_settings(AUTENTICACION_OBLIGATORIA=False)
     def test_rf15_camino_1_2_4_5_6_13_usuario_no_encontrado(self):
         resp = self.client.get('/api/reports/personal/', {'email': 'fantasma@x.com'})
         assert_that(resp.status_code, equal_to(404))

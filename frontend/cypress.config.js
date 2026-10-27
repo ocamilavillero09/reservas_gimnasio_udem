@@ -57,7 +57,19 @@ const tareasBd = {
     return null;
   }),
   'db:actualizarUsuario': ({ email, campos }) => conDb(async (db) => {
-    await db.collection('users').updateOne({ email }, { $set: campos });
+    // Las fechas llegan del navegador como texto (cy.task las serializa en
+    // JSON), pero el validador de MongoDB exige tipo fecha en *_hasta.
+    const valores = { ...campos };
+    for (const [clave, valor] of Object.entries(valores)) {
+      if (clave.endsWith('_hasta') && typeof valor === 'string') valores[clave] = new Date(valor);
+    }
+    await db.collection('users').updateOne({ email }, { $set: valores });
+    return null;
+  }),
+  // Deja un bloque de una jornada con los cupos que necesite el caso (RF07_C8).
+  'db:fijarCupos': ({ fecha, slotId, cantidad }) => conDb(async (db) => {
+    await db.collection('disponibilidad').updateOne(
+      { fecha, slotId }, { $set: { cupos_disponibles: cantidad } }, { upsert: true });
     return null;
   }),
   // Guarda resultados (por ejemplo las violaciones de accesibilidad) junto a

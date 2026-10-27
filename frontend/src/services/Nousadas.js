@@ -16,7 +16,11 @@
 //  Estar en este archivo no las desconecta: los componentes las siguen usando
 //  y la aplicación se comporta igual. Es una separación para leer el código.
 // ============================================================================
-import { BASE, request } from './api';
+import { BASE, request, sesionToken } from './api';
+
+// Un enlace no puede enviar la cabecera Authorization: los PDF llevan el token
+// en la dirección (el backend solo lo acepta así en las rutas .pdf).
+const conToken = (url) => `${url}&token=${encodeURIComponent(sesionToken.leer() || '')}`;
 
 
 // RF21/RF22 — Gestión de usuarios por el ADMINISTRADOR PRINCIPAL.
@@ -46,8 +50,8 @@ export const registroDiarioApi = {
     request(`/reports/daily/administrador/?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
   // RF18 — Descargar el registro en PDF, entrenador (backend: descargar_registro_entrenador).
   descargarRegistroEntrenador: (actorEmail, fecha = '') =>
-    `${BASE}/reports/daily/entrenador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
+    conToken(`${BASE}/reports/daily/entrenador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
   // RF19 — Descargar el registro en PDF, administrador (backend: descargar_registro_administrador).
   descargarRegistroAdministrador: (actorEmail, fecha = '') =>
-    `${BASE}/reports/daily/administrador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`,
+    conToken(`${BASE}/reports/daily/administrador.pdf?actor_email=${encodeURIComponent(actorEmail)}&fecha=${fecha}`),
 };

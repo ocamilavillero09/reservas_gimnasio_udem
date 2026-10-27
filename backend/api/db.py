@@ -1,6 +1,7 @@
 import hashlib
 import math
 import os
+import re
 from datetime import date, datetime, timedelta, timezone
 from pymongo import MongoClient
 from pymongo.errors import DuplicateKeyError
@@ -163,13 +164,21 @@ def alerta_inasistencias(user: dict):
     return None
 
 
+_PARTE_LOCAL = re.compile(r'[a-z0-9._%+-]+')
+
+
 def role_for_email(email: str):
-    """Rol que corresponde al dominio del correo, o None si no es institucional."""
+    """Rol que corresponde al dominio del correo, o None si no es institucional.
+
+    El correo debe tener UNA sola arroba. Antes bastaba con que terminara en el
+    dominio, así que `intruso@gmail.com@udemedellin.edu.co` se registraba como
+    administrador (hallazgo de test_seguridad_violeta.py).
+    """
     email = (email or '').strip().lower()
-    for dominio, rol in DOMINIOS_ROL.items():
-        if email.endswith(dominio):
-            return rol
-    return None
+    local, arroba, dominio = email.partition('@')
+    if not arroba or '@' in dominio or not _PARTE_LOCAL.fullmatch(local):
+        return None
+    return DOMINIOS_ROL.get(f'@{dominio}')
 
 
 def ahora_utc() -> datetime:
