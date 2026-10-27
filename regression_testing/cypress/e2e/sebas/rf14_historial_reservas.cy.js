@@ -16,7 +16,8 @@ describe('RF14 - Historial de reservas (API)', () => {
   });
 
   it('RF14_C1 - Email faltante responde 400', () => {
-    cy.api('GET', ruta).then((r) => {
+    // Con autenticación por token (VUL-01) la petición va con la sesión de la estudiante.
+    cy.api('GET', ruta, undefined, { como: usuarios.estudiante.email }).then((r) => {
       expect(r.status).to.eq(400);
       expect(r.body.error).to.contain('email');
     });

@@ -88,9 +88,11 @@ describe('RF11 — Registrar asistencia (API)', () => {
       });
     });
 
-    it('API-RF11-10 · Actor que no existe → 403', () => {
+    // Un actor que no existe no puede tener sesión: desde la autenticación con
+    // token (VUL-01) la API lo rechaza antes de llegar a la vista, con 401.
+    it('API-RF11-10 · Actor que no existe → 401', () => {
       cy.api('POST', '/attendance/register/', { actor_email: 'nadie@udem.edu.co', documento: u.estudiante.documento })
-        .its('status').should('eq', 403);
+        .its('status').should('eq', 401);
     });
 
     it('API-RF11-11 · Id de reserva con formato inválido → 400', () => {

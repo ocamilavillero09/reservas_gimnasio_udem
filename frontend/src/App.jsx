@@ -149,7 +149,8 @@ export default function App() {
         // ya no existe (404) o fue desactivada (403); ante un fallo de red se
         // conserva la sesión guardada y se avisa.
         if (cancelado) return;
-        if (err?.status === 404 || err?.status === 403) {
+        // 401: no hay token (otra pestaña o venció). Hay que volver a entrar.
+        if (err?.status === 404 || err?.status === 403 || err?.status === 401) {
           saveSession(null);
           setView('login');
         } else {
@@ -183,6 +184,7 @@ export default function App() {
   };
 
   const handleLogout = () => {
+    authApi.cerrarSesion();
     saveSession(null);
     setView('login');
     setReservations([]);

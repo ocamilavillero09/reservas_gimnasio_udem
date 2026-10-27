@@ -69,7 +69,8 @@ describe('RF12 — Reservas sin asistencia registrada (API)', () => {
     pendientes(u.estudiante.email).its('status').should('eq', 403);
   });
 
-  it('API-RF12-08 · Sin actor → 403', () => {
-    cy.api('GET', '/attendance/pending/').its('status').should('eq', 403);
+  // Sin actor no hay token: 401 desde la autenticación con token (VUL-01).
+  it('API-RF12-08 · Sin actor → 401', () => {
+    cy.api('GET', '/attendance/pending/').its('status').should('eq', 401);
   });
 });

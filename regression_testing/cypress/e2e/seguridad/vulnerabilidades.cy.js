@@ -17,19 +17,19 @@ describe('Seguridad — vulnerabilidades', () => {
   context('A01 — Control de acceso roto (requiere autenticación)', () => {
     it('VUL-01 · Sin credenciales, conocer el correo del administrador NO debe dar acceso al buzón', () => {
       cy.api('POST', '/suggestions/', { email: u.estudiante.email, mensaje: 'Mensaje privado' });
-      cy.api('GET', `/suggestions/inbox/?actor_email=${u.admin.email}`)
+      cy.apiSinCredenciales('GET', `/suggestions/inbox/?actor_email=${u.admin.email}`)
         .its('status').should('be.oneOf', [401, 403]);
     });
 
     it('VUL-02 · La sesión de un usuario NO debe consultarse sin credenciales (expone su documento, que es su contraseña)', () => {
-      cy.api('GET', `/auth/session/?email=${u.admin.email}`).then((r) => {
+      cy.apiSinCredenciales('GET', `/auth/session/?email=${u.admin.email}`).then((r) => {
         expect(r.body, 'la respuesta no debe traer el documento').not.to.have.property('documento');
         expect(r.status).to.be.oneOf([401, 403]);
       });
     });
 
     it('VUL-03 · Nadie debe poder enviar mensajes al buzón a nombre de otro estudiante', () => {
-      cy.api('POST', '/suggestions/', { email: u.estudiante.email, mensaje: 'Mensaje que Laura nunca escribió' })
+      cy.apiSinCredenciales('POST', '/suggestions/', { email: u.estudiante.email, mensaje: 'Mensaje que Laura nunca escribió' })
         .its('status').should('be.oneOf', [401, 403]);
     });
 

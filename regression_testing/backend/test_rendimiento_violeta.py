@@ -180,9 +180,12 @@ class RendimientoSimultaneoTests(GymApiTestCase):
         self._register()
         codigos = []
 
+        token = self.client.tokens[ESTUDIANTE]
+
         def una_lectura(_):
             cliente = APIClient()
-            resp = cliente.get('/api/users/profile/', {'email': ESTUDIANTE})
+            resp = cliente.get('/api/users/profile/', {'email': ESTUDIANTE},
+                               HTTP_AUTHORIZATION=f'Bearer {token}')
             codigos.append(resp.status_code)
 
         inicio = time.perf_counter()
