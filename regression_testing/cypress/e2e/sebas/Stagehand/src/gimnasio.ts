@@ -29,12 +29,23 @@ export const usuarios = JSON.parse(readFileSync(FIXTURES, 'utf8')) as Record<Cla
 
 // ── Datos de prueba ─────────────────────────────────────────────────────────
 
-async function api(method: string, ruta: string, body?: unknown): Promise<Response> {
+async function api(method: string, ruta: string, body?: unknown, token?: string): Promise<Response> {
   return fetch(`${API_URL}${ruta}`, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
+}
+
+// La API exige el token de sesión (VUL-01 a VUL-04): se obtiene iniciando
+// sesión con el correo y el documento del usuario del fixture.
+async function tokenDe(email: string): Promise<string> {
+  const usuario = Object.values(usuarios).find((u) => u.email === email);
+  if (!usuario) throw new Error(`No existe ${email} en el fixture de usuarios.`);
+  const respuesta = await api('POST', '/auth/login/', { email, documento: usuario.documento });
+  const cuerpo = (await respuesta.json()) as { token?: string };
+  if (!cuerpo.token) throw new Error(`No se pudo iniciar sesión como ${email}: ${respuesta.status}`);
+  return cuerpo.token;
 }
 
 // Equivale a cy.escenarioBase(): base vacía y los cuatro usuarios del fixture.
@@ -60,7 +71,7 @@ export async function escenarioBase(): Promise<void> {
 
 // Reserva para mañana por la API, como cy.api('POST', '/reservations/', ...).
 export async function reservarPorApi(email: string, slotId = 1): Promise<void> {
-  const respuesta = await api('POST', '/reservations/', { email, slotId });
+  const respuesta = await api('POST', '/reservations/', { email, slotId }, await tokenDe(email));
   if (respuesta.status !== 201) {
     throw new Error(`No se pudo crear la reserva: ${respuesta.status} ${await respuesta.text()}`);
   }
