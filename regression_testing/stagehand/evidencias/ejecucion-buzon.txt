@@ -1,0 +1,35 @@
+[stagehand] INFO stagehand.init
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":1408,"completionTokens":135,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":1850}
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":2709,"completionTokens":171,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":1592}
+[stagehand] INFO Starting observation {"category":"observation","instruction":"find the \"Enviar al administrador\" button"}
+[stagehand] INFO Observation completed {"category":"observation","promptTokens":725,"completionTokens":207,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":1809,"resultCount":1}
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":1191,"completionTokens":258,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":1914}
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":1205,"completionTokens":124,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":1649}
+▶ Stagehand — buzón de sugerencias (RF20, RF21)
+  [32m✔ SH-RF20 · La estudiante envía un reporte y queda guardado [90m(63421.829542ms)[39m[39m
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":1466,"completionTokens":202,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":1875}
+  [31m✖ SH-RF21 · La administradora extrae el mensaje del buzón y lo borra [90m(35567.036292ms)[39m[39m
+[stagehand] INFO stagehand.close
+[31m✖ Stagehand — buzón de sugerencias (RF20, RF21) [90m(99940.182834ms)[39m[39m
+[34mℹ tests 2[39m
+[34mℹ suites 1[39m
+[34mℹ pass 1[39m
+[34mℹ fail 1[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 100326.038209[39m
+
+[31m✖ failing tests:[39m
+
+test at pruebas/camila.test.mjs:131:3
+[31m✖ SH-RF21 · La administradora extrae el mensaje del buzón y lo borra [90m(35567.036292ms)[39m[39m
+  Error: Failed after 3 attempts. Last error: AI_APICallError: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+  * Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.
+  Please retry in 1h43m16.829084792s.
+      at RPCClient.receiveResponse (file:///Users/camilavillero/Downloads/reservas_gimnasio_udem-main/regression_testing/stagehand/node_modules/@browserbasehq/stagehand/dist/index.mjs:4041:18)
+      at RPCClient.receive (file:///Users/camilavillero/Downloads/reservas_gimnasio_udem-main/regression_testing/stagehand/node_modules/@browserbasehq/stagehand/dist/index.mjs:3974:9)
+      at RPCClient.cdp.onmessage (file:///Users/camilavillero/Downloads/reservas_gimnasio_udem-main/regression_testing/stagehand/node_modules/@browserbasehq/stagehand/dist/index.mjs:3851:42)
+      at CDPClient.handleMessage (file:///Users/camilavillero/Downloads/reservas_gimnasio_udem-main/regression_testing/stagehand/node_modules/@browserbasehq/stagehand/dist/index.mjs:3550:35) {
+    [cause]: { code: -32603, message: 'Failed after 3 attempts. Last error: AI_APICallError: You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3-flash, description: Generate content requests per day limit exceeded on Free Tier. See https://ai.google.dev/gemini-api/docs/rate-limits.\nPlease retry in 1h43m16.829084792s.', data: { name: 'AI_RetryError' } }
+  }

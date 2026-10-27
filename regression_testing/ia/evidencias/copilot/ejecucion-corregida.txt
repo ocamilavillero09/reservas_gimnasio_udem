@@ -1,0 +1,41 @@
+Creating test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...
+Found 6 test(s).
+Operations to perform:
+  Synchronize unmigrated apps: api, corsheaders, drf_yasg, rest_framework, staticfiles
+  Apply all migrations: auth, contenttypes
+Synchronizing apps without migrations:
+  Creating tables...
+    Running deferred SQL...
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying auth.0002_alter_permission_name_max_length... OK
+  Applying auth.0003_alter_user_email_max_length... OK
+  Applying auth.0004_alter_user_username_opts... OK
+  Applying auth.0005_alter_user_last_login_null... OK
+  Applying auth.0006_require_contenttypes_0002... OK
+  Applying auth.0007_alter_validators_add_error_messages... OK
+  Applying auth.0008_alter_user_username_max_length... OK
+  Applying auth.0009_alter_user_last_name_max_length... OK
+  Applying auth.0010_alter_group_name_max_length... OK
+  Applying auth.0011_update_proxy_permissions... OK
+  Applying auth.0012_alter_user_first_name_max_length... OK
+System check identified no issues (0 silenced).
+test_actor_email_distinto (regression_testing.backend.test_autenticacion_copilot.AutenticacionAPITests) ... 2026-10-27 00:27:41,398 WARNING django.request Forbidden: /api/reports/personal/
+ok
+test_peticion_sin_token (regression_testing.backend.test_autenticacion_copilot.AutenticacionAPITests) ... 2026-10-27 00:27:41,399 WARNING django.request Unauthorized: /api/reports/personal/
+ok
+test_ruta_inexistente (regression_testing.backend.test_autenticacion_copilot.AutenticacionAPITests) ... 2026-10-27 00:27:41,402 WARNING django.request Not Found: /api/no-existe/
+ok
+test_ruta_publica_sin_token (regression_testing.backend.test_autenticacion_copilot.AutenticacionAPITests) ... ok
+test_token_alterado (regression_testing.backend.test_autenticacion_copilot.AutenticacionAPITests) ... 2026-10-27 00:27:41,405 WARNING django.request Unauthorized: /api/reports/personal/
+ok
+test_token_inactivo (regression_testing.backend.test_autenticacion_copilot.AutenticacionAPITests) ... 2026-10-27 00:27:41,406 WARNING django.request Unauthorized: /api/reports/personal/
+ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.011s
+
+OK
+Destroying test database for alias 'default' ('file:memorydb_default?mode=memory&cache=shared')...

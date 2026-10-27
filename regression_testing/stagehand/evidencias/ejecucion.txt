@@ -1,0 +1,6 @@
+
+> test
+> node --test --test-reporter=spec "pruebas/*.test.mjs"
+
+[stagehand] INFO stagehand.init
+[stagehand] INFO Starting observation {"category":"observation","instruction":"find the institutional email input of the login form"}

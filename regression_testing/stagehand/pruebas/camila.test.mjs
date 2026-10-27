@@ -4,6 +4,7 @@
 //   observe()  localiza elementos y devuelve selectores reales (sin hacer nada);
 //   act()      ejecuta una acción descrita en lenguaje natural;
 //   extract()  lee datos de la página y los valida con un esquema de zod.
+// Los avisos emergentes duran 5 s: se leen directamente con leerAviso().
 // Las aserciones se hacen sobre lo extraído y, además, sobre la base de datos:
 // que el modelo "crea" que algo pasó no basta.
 import assert from 'node:assert/strict';
@@ -13,7 +14,7 @@ import { z } from 'zod/v4';
 
 import {
   abrirNavegador, aceptarConfirmaciones, confirmacionesMostradas, contarSugerencias, CUENTAS,
-  dejarMensaje, evidencia, iniciarSesion, leerReserva, leerUsuario, prepararBase,
+  dejarMensaje, evidencia, iniciarSesion, leerAviso, leerReserva, leerUsuario, prepararBase,
   registrarResultado, sembrarReservaDeHoy,
 } from '../soporte.mjs';
 
@@ -26,8 +27,6 @@ const PENDIENTES = z.object({
     bloque: z.string().describe('hora del bloque reservado, por ejemplo 06:00'),
   })),
 });
-
-const AVISO = z.object({ mensaje: z.string().describe('texto del aviso emergente que acaba de aparecer') });
 
 const TOTALES = z.object({
   asistencias: z.number(),
@@ -61,7 +60,7 @@ describe('Stagehand — panel del entrenador (RF11, RF12, RF13, RF16)', () => {
     assert.ok(boton.length > 0, 'observe debe encontrar el botón de registrar asistencia');
     await s.stagehand.act('click the "Registrar asistencia" button of the search result');
 
-    const { data: aviso } = await s.stagehand.extract('extract the notification message shown at the top right', AVISO);
+    const aviso = await leerAviso(s.page);
     assert.match(aviso.mensaje, /Asistencia registrada/);
     assert.equal((await leerReserva(estudiante.email)).estado, 'COMPLETADA');
 
@@ -79,7 +78,7 @@ describe('Stagehand — panel del entrenador (RF11, RF12, RF13, RF16)', () => {
     await iniciarSesion(s, entrenador);
     await s.stagehand.act('type "9999999999" into the student identity document search field');
     await s.stagehand.act('click the "Buscar" button');
-    const { data: aviso } = await s.stagehand.extract('extract the error notification message', AVISO);
+    const aviso = await leerAviso(s.page);
     assert.match(aviso.mensaje, /9999999999/);
     await evidencia(s.page, 'SH-RF11-02-inexistente');
     registrarResultado('SH-RF11-02', { aviso });
@@ -96,7 +95,7 @@ describe('Stagehand — panel del entrenador (RF11, RF12, RF13, RF16)', () => {
 
     const confirmaciones = await confirmacionesMostradas(s.page);
     assert.match(confirmaciones[0] ?? '', /Se marcarán 1 inasistencias/);
-    const { data: aviso } = await s.stagehand.extract('extract the notification message shown at the top right', AVISO);
+    const aviso = await leerAviso(s.page);
     assert.match(aviso.mensaje, /Se procesaron 1 inasistencias/);
     assert.equal((await leerUsuario(estudiante.email)).no_show_count, 1);
 
@@ -122,7 +121,7 @@ describe('Stagehand — buzón de sugerencias (RF20, RF21)', () => {
     await s.stagehand.act('type "El bloque de las 06:00 no se ve en el celular." into the report message field');
     await s.stagehand.act('click the "Enviar al administrador" button');
 
-    const { data: aviso } = await s.stagehand.extract('extract the notification message shown at the top right', AVISO);
+    const aviso = await leerAviso(s.page);
     assert.match(aviso.mensaje, /llegó al administrador/);
     assert.equal(await contarSugerencias(), 1);
     await evidencia(s.page, 'SH-RF20-enviado');
@@ -147,7 +146,7 @@ describe('Stagehand — buzón de sugerencias (RF20, RF21)', () => {
     await s.stagehand.act('click the "Borrar" button of the message');
     const confirmaciones = await confirmacionesMostradas(s.page);
     assert.match(confirmaciones[0] ?? '', /No se puede deshacer/);
-    const { data: aviso } = await s.stagehand.extract('extract the notification message shown at the top right', AVISO);
+    const aviso = await leerAviso(s.page);
     assert.match(aviso.mensaje, /Mensaje borrado/);
     assert.equal(await contarSugerencias(), 0);
     await evidencia(s.page, 'SH-RF21-02-borrado');
