@@ -96,8 +96,10 @@ def _post(ruta, cuerpo):
     return _llamar(req)
 
 
-def _get(ruta):
-    return _llamar(urllib.request.Request(f'{API}{ruta}'))
+def _get(ruta, token=None):
+    # Desde la refactorizacion la API exige el token de sesion (Authorization).
+    cabeceras = {'Authorization': f'Bearer {token}'} if token else {}
+    return _llamar(urllib.request.Request(f'{API}{ruta}', headers=cabeceras))
 
 
 def escenario_base(usuarios):
@@ -425,7 +427,9 @@ def comparar(esperado, obtenido):
 
 def consultar_api(estudiante, entrenador, documento):
     q = urllib.parse.urlencode({'documento': documento, 'actor_email': entrenador['email']})
-    return _get(f'/students/lookup/?{q}')
+    # El entrenador inicia sesion por la API para obtener su token, igual que hace la interfaz.
+    _, sesion = _post('/auth/login/', {'email': entrenador['email'], 'documento': entrenador['documento']})
+    return _get(f'/students/lookup/?{q}', sesion.get('token'))
 
 
 async def correr_caso(caso, usuarios, headless, sello):
