@@ -1,0 +1,147 @@
+{
+  "caso": "RF06_FRONT_C2 — Verificar cupos y estado de los horarios",
+  "proveedor": "gemini",
+  "fecha": "2026-10-27T01:13:28.636Z",
+  "resultado": "PASÓ",
+  "pasos": [
+    {
+      "tipo": "act",
+      "instruccion": "Haz clic en la opción Reservar del menú superior",
+      "resultado": {
+        "data": {
+          "success": true,
+          "message": "Action [click] performed successfully on selector: xpath=/html[1]/body[1]/div[1]/div[1]/nav[1]/div[1]/div[2]/button[1]",
+          "actionDescription": "Botón Reservar en el menú de navegación superior",
+          "actions": [
+            {
+              "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/nav[1]/div[1]/div[2]/button[1]",
+              "description": "Botón Reservar en el menú de navegación superior",
+              "method": "click",
+              "arguments": []
+            }
+          ]
+        },
+        "metadata": {
+          "cache": {
+            "status": "DISABLED"
+          },
+          "usage": {
+            "inputTokens": 2652,
+            "outputTokens": 334,
+            "reasoningTokens": 0,
+            "cachedInputTokens": 0,
+            "inferenceTimeMs": 3201
+          }
+        }
+      }
+    },
+    {
+      "tipo": "observe",
+      "instruccion": "Encuentra los botones para reservar cupo de cada bloque horario",
+      "resultado": [
+        {
+          "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/div[1]/div[5]/div[1]/button[1]",
+          "description": "Botón para reservar cupo en el bloque horario de las 06:00",
+          "method": "click",
+          "arguments": []
+        },
+        {
+          "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/div[1]/div[5]/div[2]/button[1]",
+          "description": "Botón para reservar cupo en el bloque horario de las 08:00",
+          "method": "click",
+          "arguments": []
+        },
+        {
+          "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/div[1]/div[5]/div[3]/button[1]",
+          "description": "Botón para reservar cupo en el bloque horario de las 10:00",
+          "method": "click",
+          "arguments": []
+        },
+        {
+          "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/div[1]/div[5]/div[4]/button[1]",
+          "description": "Botón para reservar cupo en el bloque horario de las 12:00",
+          "method": "click",
+          "arguments": []
+        },
+        {
+          "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/div[1]/div[5]/div[5]/button[1]",
+          "description": "Botón para reservar cupo en el bloque horario de las 14:00",
+          "method": "click",
+          "arguments": []
+        },
+        {
+          "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/div[1]/div[5]/div[6]/button[1]",
+          "description": "Botón para reservar cupo en el bloque horario de las 16:00",
+          "method": "click",
+          "arguments": []
+        }
+      ]
+    },
+    {
+      "tipo": "extract",
+      "instruccion": "Extrae cada bloque horario de la sección Disponibilidad en tiempo real: la hora de inicio (HH:MM), el número de cupos disponibles, el total de cupos y el texto del estado (por ejemplo Disponible).",
+      "resultado": {
+        "bloques": [
+          {
+            "hora": "06:00",
+            "disponibles": 20,
+            "total": 20,
+            "estado": "Disponible"
+          },
+          {
+            "hora": "08:00",
+            "disponibles": 20,
+            "total": 20,
+            "estado": "Disponible"
+          },
+          {
+            "hora": "10:00",
+            "disponibles": 20,
+            "total": 20,
+            "estado": "Disponible"
+          },
+          {
+            "hora": "12:00",
+            "disponibles": 20,
+            "total": 20,
+            "estado": "Disponible"
+          },
+          {
+            "hora": "14:00",
+            "disponibles": 20,
+            "total": 20,
+            "estado": "Disponible"
+          },
+          {
+            "hora": "16:00",
+            "disponibles": 20,
+            "total": 20,
+            "estado": "Disponible"
+          }
+        ]
+      }
+    }
+  ],
+  "metricas": {
+    "actPromptTokens": 2652,
+    "actCompletionTokens": 334,
+    "actReasoningTokens": 0,
+    "actCachedInputTokens": 0,
+    "actInferenceTimeMs": 3201,
+    "extractPromptTokens": 2589,
+    "extractCompletionTokens": 1310,
+    "extractReasoningTokens": 0,
+    "extractCachedInputTokens": 0,
+    "extractInferenceTimeMs": 19212,
+    "observePromptTokens": 2204,
+    "observeCompletionTokens": 863,
+    "observeReasoningTokens": 0,
+    "observeCachedInputTokens": 0,
+    "observeInferenceTimeMs": 50925,
+    "totalPromptTokens": 7445,
+    "totalCompletionTokens": 2507,
+    "totalReasoningTokens": 0,
+    "totalCachedInputTokens": 0,
+    "totalInferenceTimeMs": 73338
+  }
+}

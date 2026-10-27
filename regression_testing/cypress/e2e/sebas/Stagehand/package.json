@@ -1,0 +1,27 @@
+{
+  "name": "stagehand-gimnasio-sebas",
+  "version": "1.0.0",
+  "description": "Pruebas E2E con Stagehand para RF06_FRONT_C2, RF08_FRONT_C2 y RF10_FRONT_C2 de la app del gimnasio.",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck",
+    "test:rf06": "node --import tsx tests/rf06_horarios.e2e.ts",
+    "test:rf08": "node --import tsx tests/rf08_consultar_reservas.e2e.ts",
+    "test:rf10": "node --import tsx tests/rf10_buscar_reserva.e2e.ts",
+    "test:e2e:all": "npm run test:rf06 && npm run test:rf08 && npm run test:rf10"
+  },
+  "dependencies": {
+    "@browserbasehq/stagehand": "4.3.0",
+    "dotenv": "18.0.8",
+    "mongodb": "6.21.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  }
+}

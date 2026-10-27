@@ -1,0 +1,69 @@
+{
+  "caso": "RF08_FRONT_C2 — Consultar los detalles de una reserva activa",
+  "proveedor": "gemini",
+  "fecha": "2026-10-27T01:12:08.467Z",
+  "resultado": "PASÓ",
+  "pasos": [
+    {
+      "tipo": "act",
+      "instruccion": "Haz clic en la opción Mis reservas del menú superior",
+      "resultado": {
+        "data": {
+          "success": true,
+          "message": "Action [click] performed successfully on selector: xpath=/html[1]/body[1]/div[1]/div[1]/nav[1]/div[1]/div[2]/div[1]/button[1]",
+          "actionDescription": "Boton Mis reservas en el menú superior",
+          "actions": [
+            {
+              "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/nav[1]/div[1]/div[2]/div[1]/button[1]",
+              "description": "Boton Mis reservas en el menú superior",
+              "method": "click",
+              "arguments": []
+            }
+          ]
+        },
+        "metadata": {
+          "cache": {
+            "status": "DISABLED"
+          },
+          "usage": {
+            "inputTokens": 2696,
+            "outputTokens": 174,
+            "reasoningTokens": 0,
+            "cachedInputTokens": 0,
+            "inferenceTimeMs": 10307
+          }
+        }
+      }
+    },
+    {
+      "tipo": "extract",
+      "instruccion": "Extrae la reserva que aparece en la lista: la hora del bloque (HH:MM) y el texto de su estado.",
+      "resultado": {
+        "hora": "06:00",
+        "estado": "● Activa"
+      }
+    }
+  ],
+  "metricas": {
+    "actPromptTokens": 2696,
+    "actCompletionTokens": 174,
+    "actReasoningTokens": 0,
+    "actCachedInputTokens": 0,
+    "actInferenceTimeMs": 10307,
+    "extractPromptTokens": 976,
+    "extractCompletionTokens": 576,
+    "extractReasoningTokens": 0,
+    "extractCachedInputTokens": 0,
+    "extractInferenceTimeMs": 34985,
+    "observePromptTokens": 0,
+    "observeCompletionTokens": 0,
+    "observeReasoningTokens": 0,
+    "observeCachedInputTokens": 0,
+    "observeInferenceTimeMs": 0,
+    "totalPromptTokens": 3672,
+    "totalCompletionTokens": 750,
+    "totalReasoningTokens": 0,
+    "totalCachedInputTokens": 0,
+    "totalInferenceTimeMs": 45292
+  }
+}
