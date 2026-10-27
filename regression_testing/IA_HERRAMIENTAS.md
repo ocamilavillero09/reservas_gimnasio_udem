@@ -14,6 +14,9 @@ Este documento resume cómo usamos las herramientas con IA para probar la app de
 | Cypress Cloud: `cy.prompt` y Studio IA | RF06, RF07, RF10 | 6 pruebas ejecutadas en Cypress Cloud, con videos y capturas. |
 | Katalon Studio (AI Assistant) | RF08, RF09, RF14 | 3 casos generados con ayuda de la IA y ejecutados, con capturas. |
 | BugBug | RF07, RF10 | 3 pruebas grabadas, con capturas. |
+| GitHub Copilot (Camila) | Autenticación (RF11–RF21) | 0 de 6 sin cambios (el archivo no cargaba); 6 de 6 después de corregirlo. |
+| Playwright MCP (Camila) | RF11, RF16, RF20, RF21 | 3 de 3 recorridos correctos, verificados contra la base. La prueba generada pasó **sin cambios** (1 de 1). |
+| Stagehand (Camila) | RF11, RF12, RF13, RF16, RF20, RF21 | 2 de 5 pasan (RF20 y RF21). **3 pendientes** (RF11, RF12, RF13 y RF16) por cuota y por la regla RN12. |
 
 ---
 
@@ -212,6 +215,83 @@ Todo está en [cypress/e2e/sebas/](cypress/e2e/sebas/). La regla es la misma de 
 
 ---
 
+## 6. Herramientas de Camila — RF11, RF12, RF13, RF16, RF20 y RF21
+
+Las evidencias están en [ia/evidencias/](ia/evidencias/) y en [stagehand/evidencias/](stagehand/evidencias/). Se aplicó la misma regla: lo que dice la IA se contrasta con la base de datos o con la página.
+
+### 6.1 GitHub Copilot (Chat) — middleware de autenticación
+
+**Qué se le pidió.** Con [autenticacion.py](../backend/api/autenticacion.py) abierto: "Genera pruebas de Django para el middleware AutenticacionAPI: sin token (401), token alterado (401), cuenta INACTIVO (401), `actor_email` distinto al del token (403), ruta inexistente (404) y `/api/slots/` sin token (200). Usa mongomock como en `test_camila.py`."
+
+**Qué generó.** Seis pruebas con buenos nombres y los códigos esperados correctos. Las creó por su cuenta en `backend/api/test_autenticacion.py`, no en `regression_testing/backend/`. La copia sin tocar está en [test_autenticacion_generado_por_copilot.py](ia/evidencias/copilot/test_autenticacion_generado_por_copilot.py).
+
+**Resultado sin cambios: 0 de 6.** El archivo no carga: `NameError: name 'self' is not defined` ([ejecucion-sin-cambios.txt](ia/evidencias/copilot/ejecucion-sin-cambios.txt)).
+
+**Qué corregimos.**
+
+| # | Error de Copilot | Corrección |
+|---|---|---|
+| 1 | `@patch(..., return_value=self.db)` en el decorador de la clase, donde `self` no existe | La base mongomock se crea en `setUp`, como en `test_violeta.py` |
+| 2 | Usa `emitir_token` sin importarlo | `from api.autenticacion import emitir_token` |
+| 3 | `patch('backend.api.autenticacion.get_db')`: ese módulo no existe | Se reemplaza el cliente de `api.db` |
+| 4 | Espera 401 en `/api/slots/` sin token, que es una ruta pública (su propia sexta prueba espera 200 en la misma ruta) | Los casos de 401 y 403 usan una ruta protegida (`/api/reports/personal/`) |
+| 5 | Usuario `test@example.com` con rol `USER` | Correos institucionales y rol `ESTUDIANTE` |
+
+**Resultado corregido: 6 de 6 pasan** ([test_autenticacion_copilot.py](backend/test_autenticacion_copilot.py), [ejecucion-corregida.txt](ia/evidencias/copilot/ejecucion-corregida.txt)).
+
+**Limitaciones.**
+- Propuso bien **qué** probar, pero el código no se pudo ejecutar.
+- Inventó la ruta de un módulo y no conocía las reglas del sistema (rutas públicas, dominios y roles).
+- Guardó el archivo donde quiso, no donde estaban las demás pruebas.
+
+### 6.2 Playwright MCP (Copilot en modo Agent) — RF11, RF16, RF20 y RF21
+
+**Configuración.** Servidor `@playwright/mcp@0.0.83` en [.vscode/mcp.json](../.vscode/mcp.json). El agente controla un Chrome real sobre la app en `http://localhost:5173`.
+
+**Qué se le pidió y qué respondió.**
+
+| Prompt | Respuesta del agente | Verificación independiente |
+|---|---|---|
+| RF20: como Laura, enviar "Prueba con Playwright MCP" desde Historial | Aviso: "Tu reporte llegó al administrador. Gracias por avisar." | La base guarda el mensaje con `autor_email` de Laura ✅ |
+| RF21: como Ana, leer el buzón | 1 mensaje: Laura Estudiante, su correo, "Prueba con Playwright MCP", 00:43 | Coincide con la base. La hora está en Colombia (05:43 UTC), así que la corrección de DEF-04 funciona ✅ |
+| RF11 (error) y RF16: como Tomás, buscar 9999999999 y leer el registro diario | "No hay ningún estudiante registrado con el documento 9999999999." Totales en 0 | Texto exacto del backend; ese día no había reservas ✅ |
+| Generar una prueba de Playwright Test para el recorrido de RF20 | [ia_buzon.spec.js](e2e/ia_buzon.spec.js) con 8 selectores `data-cy` | Los 8 existen en el frontend; no inventó ninguno ✅ |
+
+**Resultado.** 3 de 3 recorridos correctos, y la prueba generada **pasó sin cambios** (1 de 1, [ejecucion-sin-cambios.txt](ia/evidencias/playwright-mcp/ejecucion-sin-cambios.txt)). El primer intento de ejecución falló porque faltaba el navegador de Playwright (`npx playwright install chromium`), no por la prueba ([ejecucion-sin-navegador-instalado.txt](ia/evidencias/playwright-mcp/ejecucion-sin-navegador-instalado.txt)). Las capturas que tomó el agente están en [playwright-mcp/](ia/evidencias/playwright-mcp/).
+
+**Comparación con 6.1.** El mismo Copilot acertó aquí y falló allá. La diferencia es el contexto: con el navegador, el agente leyó la página real (textos y `data-cy`); en el chat, adivinó cómo está armado el backend.
+
+**Limitaciones.**
+- Guardó sus capturas en la raíz del proyecto, no donde se le pidió.
+- Pide permiso en cada paso, así que no corre sin una persona.
+- Depende de que la app esté encendida y con datos. Los recorridos de asistencia (RF11 exitoso y RF13) no se pidieron porque se hicieron de madrugada, cuando la regla RN12 lo impide.
+
+### 6.3 Stagehand — RF11, RF12, RF13, RF16, RF20 y RF21
+
+**Qué se le pidió.** Cinco casos en [stagehand/pruebas/camila.test.mjs](stagehand/pruebas/camila.test.mjs). La IA usa `observe` para encontrar botones, `act` para las acciones y `extract` para leer tablas y totales con un esquema. El veredicto lo da el código, contra la base de datos. Ver [stagehand/README.md](stagehand/README.md).
+
+| Caso | Resultado | Modelo |
+|---|---|---|
+| SH-RF20: la estudiante envía un reporte | ✅ Pasa. `observe` encontró "Enviar al administrador" y el mensaje quedó en la base | `gemini-3-flash-preview` |
+| SH-RF21: la administradora extrae el buzón y borra el mensaje | ✅ Pasa. `extract` leyó autor, correo y texto exactos; el buzón quedó vacío | `gemini-3.1-flash-lite` |
+| SH-RF12-RF11, SH-RF11-02 y SH-RF13 (panel del entrenador) | ⏳ **Pendientes de ejecutar** | — |
+
+Las capturas y lo que devolvieron `observe` y `extract` están en [stagehand/evidencias/](stagehand/evidencias/) (`resultados.json`).
+
+**Qué corregimos en el camino** (cada log `ejecucion*.txt` es la evidencia):
+1. `gemini-2.5-flash` ya no está disponible para cuentas nuevas, y `gemini-3.8-flash` no respondió en 5 minutos. Se cambió de modelo.
+2. Una vez el modelo no encontró el campo del correo (`resultCount: 0`). El login ahora llena los campos con `data-cy` y la IA solo pulsa "Ingresar". Así, además, las credenciales nunca llegan al modelo.
+3. La capa gratuita admite 5 peticiones por minuto: se dejan 13 s entre llamadas (`LLM_INTERVALO_MS`).
+4. El aviso emergente dura 5 s, y `extract` llegaba tarde (tardó 103 s y devolvió un texto vacío). Los avisos se leen directamente con `leerAviso`; `extract` se usa para lo que permanece en pantalla.
+5. La segunda prueba encontró abierta la sesión de la primera. Ahora cada caso borra la sesión antes de empezar.
+
+**Limitaciones.**
+- La capa gratuita admite **20 peticiones por día por modelo**. SH-RF21 se terminó con otro modelo porque se agotó la cuota.
+- Los casos del panel registran asistencias: solo se pueden ejecutar desde las 06:00 (regla RN12).
+- Con las pausas por la cuota, cada caso tarda alrededor de un minuto.
+
+---
+
 ## Lección
 
 **Un "PASA" de la IA solo vale si se verifica con algo que no dependa de la IA.**
@@ -221,6 +301,7 @@ Lo vimos en los propios archivos:
 - **Browser Use.** La IA dijo "0 de 5" con seguridad cuando la página decía "3 de 5". Lo que la detectó fue el código que lee la página, no otra pregunta a la IA. A la inversa, el verificador también falló una vez (el toast): ningún veredicto se debe aceptar sin revisar de dónde sale.
 - **TestSprite.** "12 de 12" suena perfecto, pero varias pruebas solo miran que aparezca un botón. Un "pasa" con una aserción floja es solo un "no se rompió".
 - **Stagehand.** Se diseñó con la regla correcta: la IA solo hace los clics, y la verificación es código con texto exacto. Los casos que no se ejecutaron se quedan como "pendiente", no como "pasó".
+- **Copilot.** El mismo asistente generó código que no cargaba (0 de 6) cuando adivinó el backend, y una prueba que pasó sin cambios cuando leyó la página real con Playwright MCP. Lo que cambia el resultado es el contexto que tiene la IA.
 - **Mismo problema sin IA.** En Cypress, la prueba E2E-RF05-01 comprobaba el texto "Administrador principal" con `have.text`, que no exige que el texto sea visible. Se corrigió agregando `.should('be.visible')` y la prueba volvió a pasar (2 de 2). Ver [rf05_perfil_administrador.cy.js](cypress/e2e/violeta/rf05_perfil_administrador.cy.js).
 
 Reglas prácticas:

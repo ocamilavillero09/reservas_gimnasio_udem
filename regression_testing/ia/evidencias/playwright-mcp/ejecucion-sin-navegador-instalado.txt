@@ -1,0 +1,22 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › ../regression_testing/e2e/ia_buzon.spec.js:3:5 › Laura envía un reporte al administrador desde Historial (1ms)
+
+
+  1) [chromium] › ../regression_testing/e2e/ia_buzon.spec.js:3:5 › Laura envía un reporte al administrador desde Historial 
+
+    Error: browserType.launch: Executable doesn't exist at /Users/camilavillero/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/ia_buzon-Laura-envía-un-re-be085-ministrador-desde-Historial-chromium/error-context.md
+
+  1 failed
+    [chromium] › ../regression_testing/e2e/ia_buzon.spec.js:3:5 › Laura envía un reporte al administrador desde Historial 
