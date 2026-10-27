@@ -1,5 +1,6 @@
 import requests
 from screenpy import Actor
+from screenplay.abilities.iniciar_sesion_en_la_api import cabeceras_de
 from screenpy.pacing import beat
 
 
@@ -21,5 +22,6 @@ class CancelarReserva:
     def perform_as(self, actor: Actor) -> None:
         self.respuesta = requests.delete(
             f"{self.url}/{self.reservation_id}/",
+            headers=cabeceras_de(actor),
             timeout=10,
         )

@@ -9,8 +9,13 @@ from screenplay.tasks.buscar_estudiante import BuscarEstudiante
 from screenplay.tasks.consultar_historial import ConsultarHistorial
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
-import json
+import os
+
+import pytest
 import requests
+from bson import ObjectId
+from pymongo import MongoClient
+from screenplay.abilities.iniciar_sesion_en_la_api import IniciarSesionEnLaApi
 
 def fecha_de_reserva():
     # Misma regla que la API (RN03/RN04): el día siguiente en America/Bogota.
@@ -20,54 +25,99 @@ def asegurar_jornada():
     # GET /api/slots/ crea la disponibilidad del día siguiente si todavía no existe.
     requests.get("http://localhost:8000/api/slots/", timeout=10).raise_for_status()
 
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
+MONGO_DB = os.environ.get("MONGO_DB", "gym_udem")
+URL_API = "http://localhost:8000/api"
+
+# Cuentas de prueba (las mismas de seed_e2e.js y de los pasos de Serenity/JS).
+CUENTAS = {
+    "e2e1": {"name": "Estudiante E2E Uno", "email": "1@soyudemedellin.edu.co", "documento": "1111111111"},
+    "e2e2": {"name": "Estudiante E2E Dos", "email": "es@soyudemedellin.edu.co", "documento": "2222222222"},
+    "penalizacion": {
+        "name": "Estudiante E2E Penalizacion",
+        "email": "prueba.e2e.penalizacion@soyudemedellin.edu.co",
+        "documento": "3333333333",
+    },
+    "entrenador": {"name": "Entrenador E2E", "email": "3@udem.edu.co", "documento": "4444444444"},
+}
+RESERVA_CANCELADA_SEED = "6ac81dc345b1dd6d13b418da"
+
+
+def base_de_datos():
+    cliente = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    return cliente, cliente[MONGO_DB]
+
+
+def actor_con_sesion(nombre, cuenta):
+    # La API exige el token de sesión: el actor inicia sesión con su cuenta.
+    datos = CUENTAS[cuenta]
+    return Actor.named(nombre).who_can(IniciarSesionEnLaApi.como(datos["email"], datos["documento"]))
+
+
+@pytest.fixture(autouse=True)
+def preparar_datos():
+    # Cada prueba parte del mismo estado: cuentas registradas, sin reservas
+    # activas, sin penalización y con la reserva ya cancelada de seed_e2e.js.
+    for datos in CUENTAS.values():
+        respuesta = requests.post(f"{URL_API}/auth/register/", json=datos, timeout=10)
+        assert respuesta.status_code in (201, 409), respuesta.text
+
+    correos = [datos["email"] for datos in CUENTAS.values()]
+    cliente, db = base_de_datos()
+    try:
+        for reserva in db.reservations.find({"email": {"$in": correos}, "estado": "ACTIVA"}):
+            db.disponibilidad.update_one(
+                {"fecha": reserva["reserva_date"], "slotId": reserva["slotId"]},
+                {"$inc": {"cupos_disponibles": 1}},
+            )
+        db.reservations.delete_many({"email": {"$in": correos}, "estado": "ACTIVA"})
+        db.users.update_many(
+            {"email": {"$in": correos}},
+            {"$set": {"estado": "ACTIVO", "penalizado_hasta": None, "no_show_count": 0}},
+        )
+        db.login_intentos.delete_many({"email": {"$in": correos}})
+        ayer = (datetime.now(ZoneInfo("America/Bogota")) - timedelta(days=1)).date().isoformat()
+        ahora = datetime.now(timezone.utc)
+        db.reservations.replace_one(
+            {"_id": ObjectId(RESERVA_CANCELADA_SEED)},
+            {
+                "email": CUENTAS["e2e1"]["email"], "slotId": 1, "hour": "06:00",
+                "reserva_date": ayer, "date": ayer, "estado": "CANCELADA",
+                "created_by": CUENTAS["e2e1"]["email"], "created_at": ahora, "cancelled_at": ahora,
+            },
+            upsert=True,
+        )
+    finally:
+        cliente.close()
+    yield
+
+
 def consultar_cupos(fecha, slot_id):
-    import json
-    import subprocess
-
     asegurar_jornada()
+    cliente, db = base_de_datos()
+    try:
+        return db.disponibilidad.find_one({"fecha": fecha, "slotId": slot_id})["cupos_disponibles"]
+    finally:
+        cliente.close()
 
-    javascript = (
-        "JSON.stringify(db.disponibilidad.findOne("
-        f"{{fecha:'{fecha}',slotId:{slot_id}}},"
-        "{_id:0,cupos_disponibles:1}))"
-    )
 
-    resultado = subprocess.run(
-        [
-            "docker", "exec", "reservas_gimnasio_udem-database-1",
-            "mongosh", "gym_udem", "--quiet", "--eval", javascript,
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+def preparar_penalizacion(email, dias):
+    cliente, db = base_de_datos()
+    try:
+        db.users.update_one(
+            {"email": email},
+            {"$set": {"estado": "PENALIZADO", "penalizado_hasta": datetime.now(timezone.utc) + timedelta(days=dias)}},
+        )
+    finally:
+        cliente.close()
 
-    datos = json.loads(resultado.stdout.strip())
-    return datos["cupos_disponibles"]
 
-def preparar_penalizacion(email, dias): 
-    import subprocess
-
-    fecha = (
-        datetime.now(timezone.utc) + timedelta(days=dias)
-    ).isoformat()
-
-    javascript = (
-        "db.users.updateOne("
-        f"{{email:'{email}'}},"
-        f"{{$set:{{estado:'PENALIZADO',penalizado_hasta:new Date('{fecha}')}}}}"
-        ")"
-    )
-
-    subprocess.run(
-        [
-            "docker", "exec", "reservas_gimnasio_udem-database-1",
-            "mongosh", "gym_udem", "--quiet", "--eval", javascript,
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
+def poner_cupos(fecha, slot_id, cupos):
+    cliente, db = base_de_datos()
+    try:
+        db.disponibilidad.update_one({"fecha": fecha, "slotId": slot_id}, {"$set": {"cupos_disponibles": cupos}})
+    finally:
+        cliente.close()
 
 URL_REGISTRO = "http://localhost:8000/api/auth/register/"
 
@@ -130,7 +180,7 @@ def test_consultar_horarios_no_incluye_bloques_fuera_del_catalogo():  # RF06
 
         
 def test_reserva_rechaza_datos_obligatorios_vacios(): #RF07
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
 
     tarea = ReservarHorario.en(
         "http://localhost:8000/api/reservations/"
@@ -145,6 +195,7 @@ def test_reserva_rechaza_datos_obligatorios_vacios(): #RF07
     )
     
 def test_reserva_rechaza_estudiante_inexistente(): #RF07
+    # Sin sesión la API no deja reservar: responde 401 antes de buscar al estudiante.
     actor = Actor.named("Estudiante")
     tarea = ReservarHorario.en(
         "http://localhost:8000/api/reservations/",
@@ -156,10 +207,10 @@ def test_reserva_rechaza_estudiante_inexistente(): #RF07
     respuesta = tarea.respuesta
 
     assert respuesta is not None
-    assert respuesta.status_code == 404
+    assert respuesta.status_code == 401
     
 def test_reserva_rechaza_usuario_que_no_es_estudiante(): #RF07
-    actor = Actor.named("Entrenador")
+    actor = actor_con_sesion("Entrenador", "entrenador")
     tarea = ReservarHorario.en(
         "http://localhost:8000/api/reservations/",
         email="3@udem.edu.co",
@@ -173,7 +224,7 @@ def test_reserva_rechaza_usuario_que_no_es_estudiante(): #RF07
     assert respuesta.status_code == 403
 
 def test_reserva_rechaza_horario_inexistente(): #RF07
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea = ReservarHorario.en(
         "http://localhost:8000/api/reservations/",
         email="1@soyudemedellin.edu.co",
@@ -194,7 +245,7 @@ def test_reserva_rechaza_estudiante_penalizado():  # RF07
         dias=7,
     )
 
-    actor = Actor.named("Estudiante penalizado")
+    actor = actor_con_sesion("Estudiante penalizado", "penalizacion")
 
     tarea = ReservarHorario.en(
         "http://localhost:8000/api/reservations/",
@@ -215,7 +266,7 @@ def test_reserva_reactiva_estudiante_con_penalizacion_vencida():  # RF07
         dias=-7,
     )
 
-    actor = Actor.named("Estudiante con penalizacion vencida")
+    actor = actor_con_sesion("Estudiante con penalizacion vencida", "penalizacion")
 
     tarea = ReservarHorario.en(
         "http://localhost:8000/api/reservations/",
@@ -236,7 +287,7 @@ def test_reserva_rechaza_reserva_duplicada():  # RF07
     slot_id = 1
     url = "http://localhost:8000/api/reservations/"
 
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
 
     primera_reserva = ReservarHorario.en(
         url,
@@ -271,62 +322,19 @@ def test_reserva_rechaza_reserva_duplicada():  # RF07
         )
 
 def test_reserva_rechaza_bloque_sin_cupos():  # RF07
-    import subprocess
-
     fecha = fecha_de_reserva()
-    asegurar_jornada()
     slot_id = 1
-    docker = "reservas_gimnasio_udem-database-1"
 
     # Usa un estudiante distinto para evitar reservas duplicadas.
-    email = "es@soyudemedellin.edu.co"
-
-    consulta = (
-        "JSON.stringify(db.disponibilidad.findOne("
-        f"{{fecha:'{fecha}',slotId:{slot_id}}},"
-        "{_id:0,cupos_disponibles:1}))"
-    )
-
-    resultado = subprocess.run(
-        [
-            "docker", "exec", docker, "mongosh", "gym_udem",
-            "--quiet", "--eval", consulta,
-        ],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-
-    import json
-    cupos_originales = json.loads(resultado.stdout.strip())["cupos_disponibles"]
-
-    poner_cero = (
-        "db.disponibilidad.updateOne("
-        f"{{fecha:'{fecha}',slotId:{slot_id}}},"
-        "{$set:{cupos_disponibles:0}})"
-    )
-
-    restaurar = (
-        "db.disponibilidad.updateOne("
-        f"{{fecha:'{fecha}',slotId:{slot_id}}},"
-        f"{{$set:{{cupos_disponibles:{cupos_originales}}}}})"
-    )
+    cupos_originales = consultar_cupos(fecha, slot_id)
 
     try:
-        subprocess.run(
-            [
-                "docker", "exec", docker, "mongosh", "gym_udem",
-                "--quiet", "--eval", poner_cero,
-            ],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        poner_cupos(fecha, slot_id, 0)
 
-        actor = Actor.named("Estudiante sin cupos")
+        actor = actor_con_sesion("Estudiante sin cupos", "e2e2")
         tarea = ReservarHorario.en(
             "http://localhost:8000/api/reservations/",
-            email=email,
+            email=CUENTAS["e2e2"]["email"],
             slot_id=slot_id,
         )
 
@@ -338,17 +346,8 @@ def test_reserva_rechaza_bloque_sin_cupos():  # RF07
         assert respuesta.json()["tipo"] == "SIN_CUPOS"
 
     finally:
-        subprocess.run(
-            [
-                "docker", "exec", docker, "mongosh", "gym_udem",
-                "--quiet", "--eval", restaurar,
-            ],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        poner_cupos(fecha, slot_id, cupos_originales)
 
-        
 
 def test_reserva_exitosa_descuenta_un_cupo():  # RF07
     fecha = fecha_de_reserva()
@@ -359,7 +358,7 @@ def test_reserva_exitosa_descuenta_un_cupo():  # RF07
     cupos_antes = consultar_cupos(fecha, slot_id)
     assert cupos_antes > 0
 
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea = ReservarHorario.en(
         url,
         email=email,
@@ -386,7 +385,7 @@ def test_reserva_exitosa_descuenta_un_cupo():  # RF07
         )
   
 def test_consultar_reservas_requiere_email(): #RF08
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
 
     tarea = ConsultarReservas.en(
         "http://localhost:8000/api/reservations/"
@@ -401,10 +400,10 @@ def test_consultar_reservas_requiere_email(): #RF08
     )
     
 def test_consultar_reservas_con_email_valido(): #RF08
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea = ConsultarReservas.en(
         "http://localhost:8000/api/reservations/",
-        "estudiante@example.com",
+        CUENTAS["e2e1"]["email"],
     )
 
     actor.attempts_to(tarea)
@@ -415,7 +414,7 @@ def test_consultar_reservas_con_email_valido(): #RF08
     assert isinstance(respuesta.json(), list)
     
 def test_cancelar_reserva_rechaza_id_invalido(): #RF09
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
 
     tarea = CancelarReserva.en(
         "http://localhost:8000/api/reservations"
@@ -430,7 +429,7 @@ def test_cancelar_reserva_rechaza_id_invalido(): #RF09
     )
     
 def test_cancelar_reserva_inexistente(): #RF09
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea = CancelarReserva.en(
         "http://localhost:8000/api/reservations",
         "507f1f77bcf86cd799439011",
@@ -443,7 +442,7 @@ def test_cancelar_reserva_inexistente(): #RF09
     assert respuesta.status_code == 404  
     
 def test_cancelar_reserva_ya_cancelada(): #RF09
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea = CancelarReserva.en(
         "http://localhost:8000/api/reservations",
         "6ac81dc345b1dd6d13b418da",
@@ -464,7 +463,7 @@ def test_cancelar_reserva_libera_un_cupo():  # RF09
 
     cupos_antes = consultar_cupos(fecha, slot_id)
 
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea_reserva = ReservarHorario.en(
         url,
         email=email,
@@ -509,10 +508,11 @@ def test_cancelar_reserva_libera_un_cupo():  # RF09
     
     
 def test_buscar_estudiante_rechaza_usuario_sin_permisos(): #RF10
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
 
     tarea = BuscarEstudiante.en(
-        "http://localhost:8000/api/students/lookup/"
+        "http://localhost:8000/api/students/lookup/",
+        actor_email=CUENTAS["e2e1"]["email"],
     )
     actor.attempts_to(tarea)
 
@@ -523,7 +523,7 @@ def test_buscar_estudiante_rechaza_usuario_sin_permisos(): #RF10
         See.the(respuesta.status_code, IsEqualTo(403))
     )
 def test_buscar_estudiante_con_entrenador_autorizado(): #RF10
-    actor = Actor.named("Entrenador")
+    actor = actor_con_sesion("Entrenador", "entrenador")
     tarea = BuscarEstudiante.en(
         "http://localhost:8000/api/students/lookup/",
         documento="1111111111",
@@ -540,7 +540,7 @@ def test_buscar_estudiante_con_entrenador_autorizado(): #RF10
     assert isinstance(datos, dict)
     
 def test_buscar_estudiante_rechaza_documento_invalido():  # RF10
-    actor = Actor.named("Entrenador")
+    actor = actor_con_sesion("Entrenador", "entrenador")
     tarea = BuscarEstudiante.en(
         "http://localhost:8000/api/students/lookup/",
         documento="abc",
@@ -555,7 +555,7 @@ def test_buscar_estudiante_rechaza_documento_invalido():  # RF10
 
 
 def test_buscar_estudiante_inexistente():  # RF10
-    actor = Actor.named("Entrenador")
+    actor = actor_con_sesion("Entrenador", "entrenador")
 
     tarea = BuscarEstudiante.en(
         "http://localhost:8000/api/students/lookup/",
@@ -570,7 +570,7 @@ def test_buscar_estudiante_inexistente():  # RF10
     assert respuesta.status_code == 404
     
 def test_consultar_historial_requiere_email(): #RF14
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
 
     tarea = ConsultarHistorial.en(
         "http://localhost:8000/api/reservations/history/"
@@ -585,7 +585,7 @@ def test_consultar_historial_requiere_email(): #RF14
     )
     
 def test_consultar_historial_con_email_valido(): #RF14
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea = ConsultarHistorial.en(
         "http://localhost:8000/api/reservations/history/",
         "1@soyudemedellin.edu.co",
@@ -599,7 +599,7 @@ def test_consultar_historial_con_email_valido(): #RF14
     assert isinstance(respuesta.json(), list)
     
 def test_consultar_historial_solo_pasadas(): #RF14
-    actor = Actor.named("Estudiante")
+    actor = actor_con_sesion("Estudiante", "e2e1")
     tarea = ConsultarHistorial.en(
         "http://localhost:8000/api/reservations/history/",
         "1@soyudemedellin.edu.co",

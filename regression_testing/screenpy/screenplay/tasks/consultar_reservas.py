@@ -1,5 +1,6 @@
 import requests
 from screenpy import Actor
+from screenplay.abilities.iniciar_sesion_en_la_api import cabeceras_de
 from screenpy.pacing import beat
 
 
@@ -23,5 +24,6 @@ class ConsultarReservas:
         self.respuesta = requests.get(
             self.url,
             params=parametros,
+            headers=cabeceras_de(actor),
             timeout=10,
         )
