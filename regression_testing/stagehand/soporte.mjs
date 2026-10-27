@@ -16,8 +16,12 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017';
 const MONGO_DB = process.env.MONGO_DB || 'gym_udem';
 
 // Proveedor y modelo, en el formato de Stagehand: openai/…, anthropic/… o google/….
-const MODELO = process.env.MODELO || 'google/gemini-2.5-flash';
+const MODELO = process.env.MODELO || 'google/gemini-3-flash-preview';
 const LLM_API_KEY = process.env.LLM_API_KEY;
+
+// La capa gratuita de Gemini admite 5 peticiones por minuto: se deja al menos
+// este tiempo entre dos llamadas al modelo. Con un plan de pago se puede bajar a 0.
+const INTERVALO_MS = Number(process.env.LLM_INTERVALO_MS ?? 13000);
 
 // Las mismas cuentas que las pruebas de Cypress y de Serenity/JS.
 export const CUENTAS = {
@@ -84,6 +88,7 @@ export async function abrirNavegador() {
     viewport: { width: 1280, height: 1100 },
   });
   const stagehand = await Stagehand.create({ browser, model: { modelName: MODELO, apiKey: LLM_API_KEY } });
+  conRitmo(stagehand);
   const [page] = await browser.context.pages();
   return {
     stagehand,
@@ -95,17 +100,37 @@ export async function abrirNavegador() {
   };
 }
 
+/** Espacia observe(), act() y extract() para no superar la cuota del modelo. */
+let ultimaLlamada = 0;
+function conRitmo(stagehand) {
+  for (const metodo of ['observe', 'act', 'extract']) {
+    const original = stagehand[metodo].bind(stagehand);
+    stagehand[metodo] = async (...args) => {
+      const espera = ultimaLlamada + INTERVALO_MS - Date.now();
+      if (espera > 0) await new Promise((r) => setTimeout(r, espera));
+      try {
+        return await original(...args);
+      } finally {
+        ultimaLlamada = Date.now();
+      }
+    };
+  }
+}
+
 /**
- * Inicia sesión. observe() localiza los campos y devuelve sus selectores; el
- * correo y el documento se escriben con el selector, así que las credenciales
- * NUNCA se envían al modelo de lenguaje. act() pulsa el botón.
+ * Inicia sesión. El correo y el documento se escriben con sus selectores
+ * data-cy, así que las credenciales NUNCA se envían al modelo de lenguaje, y el
+ * login no depende de que el modelo encuentre los campos. act() pulsa el botón.
  */
 export async function iniciarSesion({ stagehand, page }, cuenta) {
+  // Cada caso empieza sin la sesión del anterior (la app la guarda en el navegador).
   await page.goto(FRONT_URL);
-  const { data: correo } = await stagehand.observe('find the institutional email input of the login form');
-  const { data: documento } = await stagehand.observe('find the identity document (password) input of the login form');
-  await page.locator(correo[0].selector).fill(cuenta.email);
-  await page.locator(documento[0].selector).fill(cuenta.documento);
+  await page.evaluate(() => { localStorage.clear(); sessionStorage.clear(); });
+  await page.goto(FRONT_URL);
+  // React dibuja el formulario después de cargar la página: hay que esperarlo.
+  await page.waitForSelector('[data-cy="login-email"]', { timeout: 15000 });
+  await page.locator('[data-cy="login-email"]').fill(cuenta.email);
+  await page.locator('[data-cy="login-documento"]').fill(cuenta.documento);
   await stagehand.act('click the "Ingresar" button to log in');
   await page.waitForSelector('[data-cy="nav-perfil"]', { timeout: 15000 });
 }
@@ -121,6 +146,15 @@ export const aceptarConfirmaciones = (page) => page.evaluate(() => {
 });
 
 export const confirmacionesMostradas = (page) => page.evaluate(() => window.__confirmaciones || []);
+
+/**
+ * Lee el aviso emergente. Dura 5 s en pantalla y las llamadas al modelo van
+ * espaciadas por la cuota, así que extract() llegaría tarde: se lee directamente.
+ */
+export async function leerAviso(page) {
+  await page.waitForSelector('[data-cy="toast-mensaje"]', { timeout: 10000 });
+  return { mensaje: await page.evaluate(() => document.querySelector('[data-cy="toast-mensaje"]')?.textContent ?? '') };
+}
 
 // ── Evidencias ───────────────────────────────────────────────────────────────
 export async function evidencia(page, nombre) {

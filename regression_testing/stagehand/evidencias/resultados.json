@@ -1,0 +1,36 @@
+{
+  "SH-RF20": {
+    "observeEnviar": [
+      {
+        "selector": "xpath=/html[1]/body[1]/div[1]/div[1]/div[1]/div[2]/form[1]/button[1]",
+        "description": "The 'Enviar al administrador' button within the report/suggestion form.",
+        "method": "click",
+        "arguments": []
+      }
+    ],
+    "aviso": {
+      "mensaje": "Tu reporte llegó al administrador. Gracias por avisar."
+    },
+    "modelo": "google/gemini-3-flash-preview",
+    "fecha": "2026-10-27T05:16:07.570Z"
+  },
+  "SH-RF21": {
+    "buzon": {
+      "mensajes": [
+        {
+          "autor": "Laura Estudiante",
+          "correo": "laura.est@soyudemedellin.edu.co",
+          "texto": "No carga el historial."
+        }
+      ]
+    },
+    "confirmaciones": [
+      "¿Borrar del buzón el mensaje de Laura Estudiante? No se puede deshacer."
+    ],
+    "aviso": {
+      "mensaje": "Mensaje borrado del buzón."
+    },
+    "modelo": "google/gemini-3.1-flash-lite",
+    "fecha": "2026-10-27T05:19:10.606Z"
+  }
+}

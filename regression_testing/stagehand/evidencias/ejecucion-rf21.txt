@@ -1,0 +1,18 @@
+[stagehand] INFO stagehand.init
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":1407,"completionTokens":37,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":9111}
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":2651,"completionTokens":56,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":971}
+[stagehand] INFO Starting extraction using an accessibility snapshot {"category":"extraction","instruction":"extract every message of the \"Buzón de sugerencias\" card"}
+[stagehand] INFO Extraction incomplete after processing all data {"category":"extraction","promptTokens":1849,"completionTokens":90,"inferenceTimeMs":2588}
+[stagehand] INFO Act inference completed {"category":"action","promptTokens":2202,"completionTokens":66,"reasoningTokens":0,"cachedInputTokens":0,"inferenceTimeMs":1282}
+▶ Stagehand — buzón de sugerencias (RF20, RF21)
+  [32m✔ SH-RF21 · La administradora extrae el mensaje del buzón y lo borra [90m(55093.721083ms)[39m[39m
+[stagehand] INFO stagehand.close
+[32m✔ Stagehand — buzón de sugerencias (RF20, RF21) [90m(55996.995916ms)[39m[39m
+[34mℹ tests 1[39m
+[34mℹ suites 1[39m
+[34mℹ pass 1[39m
+[34mℹ fail 0[39m
+[34mℹ cancelled 0[39m
+[34mℹ skipped 0[39m
+[34mℹ todo 0[39m
+[34mℹ duration_ms 56371.515542[39m

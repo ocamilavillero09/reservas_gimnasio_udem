@@ -4,9 +4,9 @@ Stagehand (v4.2.1) controla un navegador con instrucciones en lenguaje natural a
 
 | Capacidad | Para qué se usa aquí |
 |---|---|
-| `observe()` | Localiza elementos y devuelve selectores reales sin actuar: los campos del login, los botones "Registrar asistencia", "Cerrar jornada" y "Enviar al administrador". En el login, el correo y el documento se escriben con esos selectores, así que **las credenciales nunca llegan al modelo**. |
+| `observe()` | Localiza elementos y devuelve selectores reales sin actuar: los botones "Registrar asistencia", "Cerrar jornada" y "Enviar al administrador". En el login, el correo y el documento se escriben con sus selectores `data-cy`, así que **las credenciales nunca llegan al modelo**. |
 | `act()` | Ejecuta acciones descritas en texto: buscar un documento, registrar la asistencia, cerrar la jornada, enviar y borrar mensajes. |
-| `extract()` | Lee datos de la página validados con un esquema de zod: la tabla de pendientes, los cuatro totales del registro diario, el aviso emergente y los mensajes del buzón. |
+| `extract()` | Lee datos de la página validados con un esquema de zod: la tabla de pendientes, los cuatro totales del registro diario y los mensajes del buzón. Los avisos emergentes duran 5 s y las llamadas al modelo van espaciadas por la cuota, así que esos se leen directamente (`leerAviso`). |
 
 Las aserciones se hacen sobre lo extraído **y sobre la base de datos** (estado de la reserva, contador de inasistencias, mensajes guardados). No basta con que el modelo "crea" que algo pasó.
 
@@ -32,7 +32,7 @@ cp .env.example .env                       # y pon tu clave en LLM_API_KEY
 npm test
 ```
 
-`MODELO` acepta `google/…`, `openai/…` o `anthropic/…`. El valor por defecto es `google/gemini-2.5-flash`, que tiene capa gratuita en Google AI Studio.
+`MODELO` acepta `google/…`, `openai/…` o `anthropic/…`. El valor por defecto es `google/gemini-3-flash-preview`, que tiene capa gratuita en Google AI Studio. Esa capa admite 5 peticiones por minuto, así que las pruebas dejan 13 s entre llamadas al modelo (`LLM_INTERVALO_MS`) y la ejecución completa tarda unos 6 minutos. Google retiró `gemini-2.5-flash` para las cuentas nuevas; si un modelo deja de estar disponible, cambia `MODELO` en el `.env`.
 
 > ⚠️ Las pruebas borran usuarios, reservas y mensajes de la base. Úsenlas solo con la base de pruebas.
 

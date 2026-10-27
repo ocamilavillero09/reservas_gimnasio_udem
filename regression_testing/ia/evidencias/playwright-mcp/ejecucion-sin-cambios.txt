@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › ../regression_testing/e2e/ia_buzon.spec.js:3:5 › Laura envía un reporte al administrador desde Historial (2.9s)
+
+  1 passed (6.1s)
