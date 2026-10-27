@@ -1,0 +1,14 @@
+{
+  "name": "cypress-cloud-sebas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pruebas de Sebas con Cypress Cloud: cy.prompt y Cypress Studio con IA (RF06, RF07 y RF10).",
+  "scripts": {
+    "abrir": "cypress open --e2e --browser chrome",
+    "prompt": "cypress run --e2e --browser chrome --headed --spec \"Pruebas/cy_prompt.cy.js\""
+  },
+  "devDependencies": {
+    "cypress": "15.13.0",
+    "mongodb": "6.21.0"
+  }
+}
